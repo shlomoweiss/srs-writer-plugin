@@ -164,7 +164,7 @@ export class SRSAgentEngine implements ISessionObserver {
       this.state.stage = 'completed';
       
       // 记录取消操作
-      this.recordExecution('result', '计划执行已取消 - 项目切换', false, 'system', null)
+      this.recordExecution('result', vscode.l10n.t('Plan execution cancelled - project switch'), false, 'system', null)
         .then(() => {
           this.logger.info('✅ Plan execution cancelled successfully');
           resolve();
@@ -225,7 +225,7 @@ export class SRSAgentEngine implements ISessionObserver {
 
     // 🚀 修复：第一轮也记录用户输入，确保所有对话都有完整的Turn记录
     // 之前的bug：第一轮时由于executionHistory为空，不记录用户输入，导致第一轮对话完全丢失
-    await this.recordExecution('result', `--- 新任务开始: ${userInput} ---`, true);
+    await this.recordExecution('result', vscode.l10n.t('--- New task started: {0} ---', userInput), true);
     this.logger.info(`🔍 [DEBUG-CONTEXT] Task separator added. New executionHistory.length: ${this.state.executionHistory.length}`);
     
     // 限制历史记录大小，避免内存无限增长
@@ -234,7 +234,7 @@ export class SRSAgentEngine implements ISessionObserver {
       this.logger.info('🗑️ Trimmed execution history to prevent memory overflow');
     }
 
-    this.stream.markdown('🚀 **开始分析任务...**\n\n');
+    this.stream.markdown(vscode.l10n.t('🚀 **Starting task analysis...**\n\n'));
 
     // 调用新的执行循环方法
     await this._runExecutionLoop();
@@ -275,15 +275,15 @@ export class SRSAgentEngine implements ISessionObserver {
    */
   public async handleUserResponse(response: string): Promise<void> {
     if (this.state.stage !== 'awaiting_user' || !this.state.pendingInteraction) {
-        this.stream.markdown('⚠️ 当前没有等待用户输入的操作。\n\n');
+        this.stream.markdown(vscode.l10n.t('⚠️ There is no operation currently awaiting user input.\n\n'));
         return;
     }
     
     const interaction = this.state.pendingInteraction;
-    this.stream.markdown(`👤 **您的回复**: ${response}\n\n`);
-    
+    this.stream.markdown(vscode.l10n.t('👤 **Your response**: {0}\n\n', response));
+
     // 记录用户交互
-    await this.recordExecution('user_interaction', `用户回复: ${response}`, true);
+    await this.recordExecution('user_interaction', vscode.l10n.t('User response: {0}', response), true);
     
     // 🚀 修复：用户回复后，无条件清除当前的pendingInteraction
     // specialist如果需要新的交互，会通过askQuestion工具重新设置
@@ -296,7 +296,7 @@ export class SRSAgentEngine implements ISessionObserver {
       try {
         // 🚀 新架构：使用扩展的resumeContext恢复PlanExecutor状态
         if (this.state.resumeContext.planExecutorState) {
-          this.stream.markdown(`🔄 **正在恢复PlanExecutor执行状态...**\n\n`);
+          this.stream.markdown(vscode.l10n.t('🔄 **Resuming PlanExecutor execution state...**\n\n'));
           
           const resumeResult = await this.resumePlanExecutorWithUserResponse(response);
           
@@ -332,22 +332,22 @@ export class SRSAgentEngine implements ISessionObserver {
           
         } else {
           // 🚀 兼容性：处理旧格式的resumeContext
-          this.stream.markdown(`⚠️ **检测到旧格式的resumeContext**\n\n`);
-          this.stream.markdown(`正在尝试兼容性处理...\n\n`);
-          
+          this.stream.markdown(vscode.l10n.t('⚠️ **Detected legacy resumeContext format**\n\n'));
+          this.stream.markdown(vscode.l10n.t('Attempting compatibility processing...\n\n'));
+
           await this.handleLegacyResumeContext(response);
         }
         
       } catch (error) {
         this.logger.error(`❌ 恢复specialist执行失败: ${(error as Error).message}`);
-        this.stream.markdown(`❌ **恢复执行失败**: ${(error as Error).message}\n\n`);
-        this.stream.markdown(`请重新开始您的任务。\n\n`);
-        
+        this.stream.markdown(vscode.l10n.t('❌ **Resume execution failed**: {0}\n\n', (error as Error).message));
+        this.stream.markdown(vscode.l10n.t('Please restart your task.\n\n'));
+
         // 清除状态
         this.state.resumeContext = undefined;
         this.state.stage = 'completed';
-        
-        await this.recordExecution('result', `恢复执行失败: ${(error as Error).message}`, false);
+
+        await this.recordExecution('result', vscode.l10n.t('Resume execution failed: {0}', (error as Error).message), false);
         return;
       }
       
@@ -462,7 +462,7 @@ export class SRSAgentEngine implements ISessionObserver {
   }
 
   private async executeIteration(): Promise<void> {
-    this.logger.info(`🔄 执行第 ${this.state.iterationCount + 1} 轮迭代`);
+    this.logger.info(`🔄 Executing iteration ${this.state.iterationCount + 1}`);
     
     // 1. AI规划阶段
     const plan = await this.generatePlan();
@@ -475,7 +475,7 @@ export class SRSAgentEngine implements ISessionObserver {
     this.logger.info(`🔍 [DEBUG] - thought: ${plan.thought.substring(0, 100)}...`);
     
     // 2. 透明显示AI思考过程
-    this.stream.markdown(`> 🤖 **AI思考**: ${plan.thought}\n\n`);
+    this.stream.markdown(vscode.l10n.t('> 🤖 **AI thinking**: {0}\n\n', plan.thought));
     this.recordExecution('thought', plan.thought);
     
     // 🚀 新增：检查PLAN_EXECUTION模式
@@ -497,7 +497,7 @@ export class SRSAgentEngine implements ISessionObserver {
           },
           onIterationStart: (current, max) => {
             // 只显示进度，不显示详细步骤
-            this.stream.progress(`第 ${current}/${max} 轮迭代...`);
+            this.stream.progress(vscode.l10n.t('Iteration {0}/{1}...', current, max));
           },
           onToolsStart: (toolCalls) => {
             // 静默执行，不显示工具启动信息
@@ -550,19 +550,19 @@ export class SRSAgentEngine implements ISessionObserver {
           onTaskComplete: (summary) => {
             // 🆕 改进2：只在迭代较多时显示执行摘要（避免与实时输出重复）
             if (executionSummary.length > 3) {
-              this.stream.markdown(`\n---\n### 📊 执行摘要\n\n`);
-              this.stream.markdown(`总共完成 **${executionSummary.length}** 轮迭代：\n\n`);
+              this.stream.markdown(vscode.l10n.t('\n---\n### 📊 Execution Summary\n\n'));
+              this.stream.markdown(vscode.l10n.t('Completed **{0}** iterations:\n\n', executionSummary.length));
 
               executionSummary.forEach(item => {
                 const statusIcon = item.success ? '✅' : '❌';
                 const toolList = item.tools.join(', ');
-                this.stream.markdown(`- ${statusIcon} 第${item.iteration}轮: ${toolList} (${item.duration}ms)\n`);
+                this.stream.markdown(vscode.l10n.t('- {0} Iteration {1}: {2} ({3}ms)\n', statusIcon, item.iteration, toolList, item.duration));
               });
 
               this.stream.markdown(`\n---\n\n`);
             }
 
-            this.stream.markdown(`\u00A0\u00A0\u00A0\u00A0📝 **任务完成** - ${summary}\n\n`);
+            this.stream.markdown(vscode.l10n.t('\u00A0\u00A0\u00A0\u00A0📝 **Task completed** - {0}\n\n', summary));
           }
         };
 
@@ -573,7 +573,7 @@ export class SRSAgentEngine implements ISessionObserver {
         if (plan.response_mode === 'PLAN_EXECUTION' && plan.execution_plan) {
           await this.recordExecution(
             'plan_execution',
-            `Orchestrator生成执行计划: ${plan.execution_plan.planId}`,
+            vscode.l10n.t('Orchestrator generated execution plan: {0}', plan.execution_plan.planId),
             true,
             'orchestrator',
             plan.execution_plan  // 完整的execution_plan JSON
@@ -593,10 +593,10 @@ export class SRSAgentEngine implements ISessionObserver {
         
         // 根据执行结果更新引擎状态
         if (executionResult.intent === 'plan_completed') {
-          this.stream.markdown(`🎉 **计划执行完成**: ${executionResult.result?.summary}\n\n`);
+          this.stream.markdown(vscode.l10n.t('🎉 **Plan execution completed**: {0}\n\n', executionResult.result?.summary));
           this.logger.info(`🔍 [DEBUG-CONTEXT] === PLAN EXECUTION COMPLETED ===`);
         this.logger.info(`🔍 [DEBUG-CONTEXT] About to record execution: "计划执行完成: ${executionResult.result?.summary}"`);
-        await this.recordExecution('result', `计划执行完成: ${executionResult.result?.summary}`, true, 'planExecutor', executionResult.result?.planExecutionContext);
+        await this.recordExecution('result', vscode.l10n.t('Plan execution completed: {0}', executionResult.result?.summary), true, 'planExecutor', executionResult.result?.planExecutionContext);
                   this.logger.info(`🔍 [DEBUG-CONTEXT] Plan execution recorded. New executionHistory.length: ${this.state.executionHistory.length}`);
           
           // 🔍 [DEBUG-SESSION-SYNC] 检查计划完成后的session状态
@@ -624,28 +624,28 @@ export class SRSAgentEngine implements ISessionObserver {
           this.state.stage = 'awaiting_user';
           this.state.pendingInteraction = {
             type: 'input',
-            message: executionResult.result?.question || '需要您的确认',
+            message: executionResult.result?.question || vscode.l10n.t('Your confirmation is needed'),
             options: []
           };
           this.state.resumeContext = executionResult.result?.resumeContext;
-          
+
           this.stream.markdown(`💬 **${executionResult.result?.question}**\n\n`);
-          this.stream.markdown(`⏸️ **等待您的回复...**\n\n`);  // 🚀 修复3：添加明确的等待提示
-          await this.recordExecution('user_interaction', `向用户提问: ${executionResult.result?.question}`, true);
+          this.stream.markdown(vscode.l10n.t('⏸️ **Awaiting your response...**\n\n'));  // 🚀 修复3：添加明确的等待提示
+          await this.recordExecution('user_interaction', vscode.l10n.t('Asked user: {0}', executionResult.result?.question), true);
           return;
         } else {
           // 其他情况，记录并继续
           this.logger.info(`🔍 [DEBUG] 未知的planAndExecute结果: ${executionResult.intent}`);
-          this.stream.markdown(`ℹ️ **计划执行状态**: ${executionResult.intent}\n\n`);
+          this.stream.markdown(vscode.l10n.t('ℹ️ **Plan execution status**: {0}\n\n', executionResult.intent));
           // 🚀 新增：plan_execution模式下设置完成状态，避免显示执行总结
           this.state.stage = 'completed';
           return;
         }
-        
+
       } catch (error) {
         this.logger.error(`❌ [DEBUG] planAndExecute执行失败`, error as Error);
-        this.stream.markdown(`❌ **计划执行出错**: ${(error as Error).message}\n\n`);
-        await this.recordExecution('result', `计划执行出错: ${(error as Error).message}`, false, 'planExecutor', null);
+        this.stream.markdown(vscode.l10n.t('❌ **Plan execution error**: {0}\n\n', (error as Error).message));
+        await this.recordExecution('result', vscode.l10n.t('Plan execution error: {0}', (error as Error).message), false, 'planExecutor', null);
         this.state.stage = 'error';
         return;
       }
@@ -683,7 +683,7 @@ export class SRSAgentEngine implements ISessionObserver {
         this.logger.info(`🚨 [TOKEN_LIMIT_DEBUG] - direct_response前100字符: ${plan.direct_response.substring(0, 100)}`);
 
         // 显示回复
-        this.stream.markdown(`💬 **AI回复**: ${plan.direct_response}\n\n`);
+        this.stream.markdown(vscode.l10n.t('💬 **AI response**: {0}\n\n', plan.direct_response));
         this.logger.info(`🚨 [TOKEN_LIMIT_DEBUG] 已调用stream.markdown显示响应`);
 
         await this.recordExecution('result', plan.direct_response, true);
@@ -712,14 +712,14 @@ export class SRSAgentEngine implements ISessionObserver {
 
         if (emptyPlanCount >= 2) {
           // 连续多次空响应，这是异常情况
-          this.stream.markdown(`❌ **AI 无法继续处理此任务**\n\n`);
-          this.stream.markdown(`系统检测到AI连续返回空响应，可能是以下原因：\n`);
-          this.stream.markdown(`- 任务超出AI能力范围\n`);
-          this.stream.markdown(`- 缺少必要的上下文信息\n`);
-          this.stream.markdown(`- 系统内部错误\n\n`);
-          this.stream.markdown(`请尝试重新描述您的需求，或者联系技术支持。\n\n`);
+          this.stream.markdown(vscode.l10n.t('❌ **AI cannot continue processing this task**\n\n'));
+          this.stream.markdown(vscode.l10n.t('System detected AI returning empty responses consecutively. Possible reasons:\n'));
+          this.stream.markdown(vscode.l10n.t('- Task exceeds AI capabilities\n'));
+          this.stream.markdown(vscode.l10n.t('- Missing necessary context information\n'));
+          this.stream.markdown(vscode.l10n.t('- System internal error\n\n'));
+          this.stream.markdown(vscode.l10n.t('Please try rephrasing your request, or contact technical support.\n\n'));
 
-          await this.recordExecution('result', `Orchestrator连续${emptyPlanCount}次返回空plan，任务终止`, false);
+          await this.recordExecution('result', vscode.l10n.t('Orchestrator returned empty plan {0} times consecutively, task terminated', emptyPlanCount), false);
           this.state.stage = 'error';
           return;
         }
@@ -747,13 +747,13 @@ export class SRSAgentEngine implements ISessionObserver {
         // 🚀 Code Review修复：添加整体重复检测
         const recentExecution = this.loopDetector.hasRecentToolExecution(toolCall.name, toolCall.args, this.state.executionHistory);
         if (recentExecution) {
-          this.stream.markdown(`⏭️ **跳过重复调用**: ${toolCall.name} (30秒内已执行)\n`);
+          this.stream.markdown(vscode.l10n.t('⏭️ **Skipping duplicate call**: {0} (already executed within 30 seconds)\n', toolCall.name));
           this.recordExecution(
-            'tool_call_skipped', 
-            `跳过重复: ${toolCall.name}`, 
-            true, 
-            toolCall.name, 
-            { reason: 'duplicate_in_time_window' }, 
+            'tool_call_skipped',
+            vscode.l10n.t('Skipping duplicate: {0}', toolCall.name),
+            true,
+            toolCall.name,
+            { reason: 'duplicate_in_time_window' },
             toolCall.args
           );
           continue; // 跳过这个工具
@@ -808,7 +808,7 @@ export class SRSAgentEngine implements ISessionObserver {
       
       // 🚀 Code Review修复：关键逻辑 - 如果所有工具都被跳过
       if (!hasNewToolCalls) {
-        this.stream.markdown(`�� **所有工具都已执行过，启动智能总结**\n\n`);
+        this.stream.markdown(vscode.l10n.t('🔄 **All tools have already been executed, starting intelligent summary**\n\n'));
         await this.loopDetector.forceDirectResponse(
           this.state,
           this.stream,
@@ -830,9 +830,9 @@ export class SRSAgentEngine implements ISessionObserver {
   }
 
   private async handleError(error: Error): Promise<void> {
-    this.logger.error('Agent执行错误', error as Error);
+    this.logger.error('Agent execution error', error as Error);
     this.state.stage = 'error';
-    this.stream.markdown(`❌ **执行过程中发生错误**: ${error.message}\n\n`);
+    this.stream.markdown(vscode.l10n.t('❌ **An error occurred during execution**: {0}\n\n', error.message));
   }
 
   public getState(): AgentState {
@@ -852,7 +852,7 @@ export class SRSAgentEngine implements ISessionObserver {
    */
   private async generatePlan(): Promise<AIPlan> {
     if (!this.orchestrator) {
-      throw new Error('Orchestrator未初始化');
+      throw new Error(vscode.l10n.t('Orchestrator not initialized'));
     }
     
     // 🐛 DEBUG: 记录generatePlan中使用的currentTask值
@@ -922,12 +922,12 @@ export class SRSAgentEngine implements ISessionObserver {
       
       return plan;
     } catch (error) {
-      this.logger.error('❌ [DEBUG] 规划生成失败', error as Error);
+      this.logger.error('❌ [DEBUG] Plan generation failed', error as Error);
       // 返回安全的降级计划
       return {
-        thought: '规划生成失败，使用降级策略',
+        thought: vscode.l10n.t('Plan generation failed, using fallback strategy'),
         response_mode: AIResponseMode.KNOWLEDGE_QA,
-        direct_response: '抱歉，我在规划时遇到了问题。能请您换一种方式表达吗？',
+        direct_response: vscode.l10n.t('Sorry, I encountered an issue while planning. Could you rephrase your request?'),
         tool_calls: []
       };
     }
@@ -1006,7 +1006,7 @@ export class SRSAgentEngine implements ISessionObserver {
     if (toolCalls.length === 1) {
       return toolCalls[0].name;
     } else {
-      return `${toolCalls[0].name} 和其它共${toolCalls.length}个工具`;
+      return vscode.l10n.t('{0} and {1} other tools', toolCalls[0].name, toolCalls.length - 1);
     }
   }
 
@@ -1041,31 +1041,31 @@ export class SRSAgentEngine implements ISessionObserver {
     switch (toolName) {
       case 'executeSemanticEdits':
       case 'executeMarkdownEdits':
-        return `应用${result.appliedCount || result.appliedIntents?.length || 0}个编辑`;
+        return vscode.l10n.t('Applied {0} edits', result.appliedCount || result.appliedIntents?.length || 0);
 
       case 'executeYAMLEdits':
-        return `应用${result.appliedEdits?.length || 0}个编辑`;
+        return vscode.l10n.t('Applied {0} edits', result.appliedEdits?.length || 0);
 
       case 'readFileWithStructure':
       case 'readMarkdownFile':
         const sizeKB = Math.round((result.metadata?.documentLength || result.content?.length || 0) / 1024);
-        return `读取文件 (${sizeKB}KB)`;
-      
+        return vscode.l10n.t('Read file ({0}KB)', sizeKB);
+
       case 'taskComplete':
-        return result.summary || '任务完成';
-      
+        return result.summary || vscode.l10n.t('Task completed');
+
       case 'askQuestion':
-        return `等待用户输入：${result.question || result.chatQuestion || ''}`;
+        return vscode.l10n.t('Awaiting user input: {0}', result.question || result.chatQuestion || '');
 
       case 'listFiles':
-        return `发现${result.structure?.totalCount || 0}个文件`;
+        return vscode.l10n.t('Found {0} files', result.structure?.totalCount || 0);
 
       case 'createDirectory':
-        return '创建目录';
+        return vscode.l10n.t('Created directory');
 
       case 'writeFile':
-        return '写入文件';
-      
+        return vscode.l10n.t('Wrote file');
+
       default:
         return '';
     }
@@ -1090,11 +1090,10 @@ export class SRSAgentEngine implements ISessionObserver {
                
       case 'result':
         // 重要的业务结果和里程碑
-        return content.includes('专家') || 
-               content.includes('任务完成') ||
-               content.includes('新任务开始') ||
-               content.includes('specialist') ||
-               content.includes('恢复执行');
+        return content.includes('specialist') ||
+               content.includes('Task completed') ||
+               content.includes('New task started') ||
+               content.includes('Resume execution');
                
       default:
         return false;
@@ -1113,8 +1112,8 @@ export class SRSAgentEngine implements ISessionObserver {
     switch (type) {
       case 'user_interaction':
         // 根据内容判断是用户响应还是向用户提问
-        return content.includes('用户回复') ? 
-          OperationType.USER_RESPONSE_RECEIVED : 
+        return content.includes('User response') ?
+          OperationType.USER_RESPONSE_RECEIVED :
           OperationType.USER_QUESTION_ASKED;
           
       case 'tool_call':
@@ -1130,7 +1129,7 @@ export class SRSAgentEngine implements ISessionObserver {
         
       case 'result':
         // 根据内容判断具体的结果类型
-        if (content.includes('专家') || content.includes('specialist')) {
+        if (content.includes('specialist')) {
           return OperationType.SPECIALIST_INVOKED;
         }
         return OperationType.AI_RESPONSE_RECEIVED;
@@ -1278,7 +1277,7 @@ export class SRSAgentEngine implements ISessionObserver {
             },
             askQuestionContext: {
               toolCall: { name: 'askQuestion', args: {} },
-              question: parsedResult.chatQuestion || '需要您的确认',
+              question: parsedResult.chatQuestion || vscode.l10n.t('Your confirmation is required'),
               originalResult: parsedResult,
               timestamp: Date.now()
             },
@@ -1286,7 +1285,7 @@ export class SRSAgentEngine implements ISessionObserver {
               nextAction: 'continue_specialist_execution',
               resumePoint: 'next_iteration',
               expectedUserResponseType: 'answer',
-              contextualHints: ['遗留的resumeContext，建议重新开始任务']
+              contextualHints: [vscode.l10n.t('Legacy resumeContext, recommend restarting the task')]
             }
           };
           
@@ -1301,11 +1300,11 @@ export class SRSAgentEngine implements ISessionObserver {
           
           // 在聊天中显示问题
           this.stream.markdown(`💬 **${parsedResult.chatQuestion}**\n\n`);
-          this.stream.markdown(`请在下方输入您的回答...\n\n`);
-          
+          this.stream.markdown(vscode.l10n.t('Please enter your response below...\n\n'));
+
           await this.recordExecution(
             'user_interaction',
-            `专家工具 ${toolCall.name} 需要用户交互: ${parsedResult.chatQuestion}`,
+            vscode.l10n.t('Specialist tool {0} needs user interaction: {1}', toolCall.name, parsedResult.chatQuestion),
             true,
             toolCall.name,
             parsedResult,
@@ -1320,24 +1319,24 @@ export class SRSAgentEngine implements ISessionObserver {
       // 🚀 修复：正确检查工具执行结果状态
       if (!result.success) {
         // 工具执行失败的处理
-        const errorMsg = result.error || '未知错误';
-        this.stream.markdown(`❌ **${toolCall.name}** 执行失败 (${duration}ms): ${errorMsg}\n\n`);
-        
+        const errorMsg = result.error || vscode.l10n.t('Unknown error');
+        this.stream.markdown(vscode.l10n.t('❌ **{0}** execution failed ({1}ms): {2}\n\n', toolCall.name, duration, errorMsg));
+
         await this.recordExecution(
-          'tool_call', 
-          `${toolCall.name} 执行失败: ${errorMsg}`, 
-          false, 
-          toolCall.name, 
-          result, 
+          'tool_call',
+          vscode.l10n.t('{0} execution failed: {1}', toolCall.name, errorMsg),
+          false,
+          toolCall.name,
+          result,
           toolCall.args,
           duration
         );
-        
+
         return { needsUserInteraction: false };
       }
-      
+
       // 正常处理（工具执行成功且无用户交互需求）
-      this.stream.markdown(`✅ **${toolCall.name}** 执行成功 (${duration}ms)\n`);
+      this.stream.markdown(vscode.l10n.t('✅ **{0}** execution succeeded ({1}ms)\n', toolCall.name, duration));
       if (result.result) {
         let outputText: string;
         if (typeof result.result === 'string') {
@@ -1346,18 +1345,18 @@ export class SRSAgentEngine implements ISessionObserver {
           try {
             outputText = JSON.stringify(result.result, null, 2);
           } catch (serializeError) {
-            outputText = `[输出序列化失败: ${(serializeError as Error).message}]`;
+            outputText = vscode.l10n.t('[Output serialization failed: {0}]', (serializeError as Error).message);
           }
         }
         this.stream.markdown(`\`\`\`json\n${outputText}\n\`\`\`\n\n`);
       }
-      
+
       await this.recordExecution(
-        'tool_call', 
-        `${toolCall.name} 执行成功`, 
-        true, 
-        toolCall.name, 
-        result, 
+        'tool_call',
+        vscode.l10n.t('{0} execution succeeded', toolCall.name),
+        true,
+        toolCall.name,
+        result,
         toolCall.args,
         duration
       );
@@ -1367,20 +1366,20 @@ export class SRSAgentEngine implements ISessionObserver {
     } catch (error) {
       const duration = Date.now() - startTime;
       const errorMsg = (error as Error).message;
-      
-      this.stream.markdown(`❌ **${toolCall.name}** 执行失败 (${duration}ms): ${errorMsg}\n\n`);
-      
+
+      this.stream.markdown(vscode.l10n.t('❌ **{0}** execution failed ({1}ms): {2}\n\n', toolCall.name, duration, errorMsg));
+
       await this.recordExecution(
-        'tool_call', 
-        `${toolCall.name} 执行失败: ${errorMsg}`, 
-        false, 
-        toolCall.name, 
-        { error: errorMsg, stack: (error as Error).stack }, 
+        'tool_call',
+        vscode.l10n.t('{0} execution failed: {1}', toolCall.name, errorMsg),
+        false,
+        toolCall.name,
+        { error: errorMsg, stack: (error as Error).stack },
         toolCall.args,
         duration,
         'EXECUTION_FAILED'
       );
-      
+
       return { needsUserInteraction: false };
     }
   }
@@ -1389,7 +1388,7 @@ export class SRSAgentEngine implements ISessionObserver {
    * 🚀 新增：提取原始specialist上下文
    */
   private extractOriginalSpecialistContext(resumeContext: any): any {
-    this.logger.info(`🔍 提取原始specialist上下文`);
+    this.logger.info(`🔍 Extracting original specialist context`);
     
     // 从复杂的resumeContext中提取原始的specialist状态
     if (resumeContext.askQuestionContext?.originalResult?.resumeContext) {
@@ -1453,7 +1452,7 @@ export class SRSAgentEngine implements ISessionObserver {
     const sessionContext = await this.restoreSessionContext(planExecutorState.sessionContext);
     
     // 3. 恢复specialist执行
-    this.stream.markdown(`🔄 **恢复specialist执行**: ${planExecutorState.specialistLoopState.specialistId} (第${originalSpecialistResumeContext.iteration}轮)\n\n`);
+    this.stream.markdown(vscode.l10n.t('🔄 **Resuming specialist execution**: {0} (iteration {1})\n\n', planExecutorState.specialistLoopState.specialistId, originalSpecialistResumeContext.iteration));
     
     try {
       // 使用新的resumeState参数正确恢复specialist执行
@@ -1475,7 +1474,7 @@ export class SRSAgentEngine implements ISessionObserver {
       
       // 🚀 如果specialist成功继续，需要更新PlanExecutor的循环状态
       if (continuedResult.success) {
-        this.stream.markdown(`✅ **Specialist执行成功**\n\n`);
+        this.stream.markdown(vscode.l10n.t('✅ **Specialist execution succeeded**\n\n'));
         
         // 🚀 CRITICAL FIX: 移除对TASK_FINISHED的错误特殊处理
         // 无论specialist返回什么nextStepType，都让PlanExecutor来决定是否继续执行剩余步骤
@@ -1501,7 +1500,7 @@ export class SRSAgentEngine implements ISessionObserver {
         this.state.stage = 'awaiting_user';
         this.state.pendingInteraction = {
           type: 'input',
-          message: continuedResult.question || '需要您的确认',
+          message: continuedResult.question || vscode.l10n.t('Your confirmation is needed'),
           options: []
         };
         
@@ -1532,7 +1531,7 @@ export class SRSAgentEngine implements ISessionObserver {
         this.logger.info(`🔍 [RESUME_STATE] 合并后planExecutorState存在: ${!!this.state.resumeContext?.planExecutorState}`);
         
         this.stream.markdown(`💬 **${continuedResult.question}**\n\n`);
-        this.stream.markdown(`⏸️ **等待您的回复...**\n\n`);  // 🚀 修复3：添加明确的等待提示
+        this.stream.markdown(vscode.l10n.t('⏸️ **Awaiting your response...**\n\n'));  // 🚀 修复3：添加明确的等待提示
         
         // 🚀 v2.0 (2025-10-08): 返回明确的intent
         return {
@@ -1549,9 +1548,9 @@ export class SRSAgentEngine implements ISessionObserver {
         };
         
       } else {
-        const errorMsg = ('error' in continuedResult) ? continuedResult.error : '执行失败';
-        this.stream.markdown(`❌ **Specialist执行失败**: ${errorMsg}\n\n`);
-        await this.recordExecution('result', `Specialist恢复执行失败: ${errorMsg}`, false);
+        const errorMsg = ('error' in continuedResult) ? (continuedResult.error || vscode.l10n.t('Unknown error')) : vscode.l10n.t('Execution failed');
+        this.stream.markdown(vscode.l10n.t('❌ **Specialist execution failed**: {0}\n\n', errorMsg));
+        await this.recordExecution('result', vscode.l10n.t('Specialist resume execution failed: {0}', errorMsg), false);
         
         // 🚀 v2.0 (2025-10-08): 返回明确的intent
         return {
@@ -1563,8 +1562,8 @@ export class SRSAgentEngine implements ISessionObserver {
       }
       
     } catch (error) {
-      this.logger.error(`❌ Specialist恢复执行异常: ${(error as Error).message}`);
-      this.stream.markdown(`❌ **恢复执行异常**: ${(error as Error).message}\n\n`);
+      this.logger.error(`❌ Specialist resume execution error: ${(error as Error).message}`);
+      this.stream.markdown(vscode.l10n.t('❌ **Resume execution error**: {0}\n\n', (error as Error).message));
       
       // 🚀 v2.0 (2025-10-08): 返回明确的intent
       return {
@@ -1584,7 +1583,7 @@ export class SRSAgentEngine implements ISessionObserver {
     specialistResult: SpecialistOutput,
     userResponse: string
   ): Promise<void> {
-    this.logger.info(`🔄 恢复PlanExecutor循环执行`);
+    this.logger.info(`🔄 Resuming PlanExecutor loop execution`);
 
     // 重新创建PlanExecutor，但恢复其循环状态
     const { PlanExecutor } = await import('./orchestrator/PlanExecutor');
@@ -1637,7 +1636,7 @@ export class SRSAgentEngine implements ISessionObserver {
       return currentContext;
       
     } catch (error) {
-      this.logger.error(`❌ 恢复SessionContext失败: ${(error as Error).message}`);
+      this.logger.error(`❌ Failed to restore SessionContext: ${(error as Error).message}`);
       // 返回当前上下文作为fallback
       return await this.getCurrentSessionContext();
     }
@@ -1685,10 +1684,10 @@ export class SRSAgentEngine implements ISessionObserver {
           ...baseContext.specialistLoopContext?.loopGuidance,
           userResponseReceived: userResponse,
           resumeInstructions: [
-            "用户已经回复了您的问题",
-            `用户回复: "${userResponse}"`,
-            "请基于用户的回复继续您的工作",
-            "如果任务完成，请使用taskComplete with nextStepType: 'TASK_FINISHED'"
+            "User has responded to your question",
+            `User response: "${userResponse}"`,
+            "Please continue your work based on the user's response",
+            "If the task is complete, use taskComplete with nextStepType: 'TASK_FINISHED'"
           ]
         }
       },
@@ -1703,7 +1702,7 @@ export class SRSAgentEngine implements ISessionObserver {
       resumeGuidance: resumeContext.resumeGuidance
     };
     
-    this.logger.info(`🔍 构建增强上下文：添加用户回复 "${userResponse}"`);
+    this.logger.info(`🔍 Building enhanced context: adding user response "${userResponse}"`);
     
     return enhancedContext;
   }
@@ -1734,7 +1733,7 @@ export class SRSAgentEngine implements ISessionObserver {
     
     return {
       planId: `${originalPlan.planId}_resumed`,
-      description: `恢复执行: ${originalPlan.description}`,
+      description: vscode.l10n.t('Resume execution: {0}', originalPlan.description),
       steps: remainingSteps
     };
   }
@@ -1745,33 +1744,33 @@ export class SRSAgentEngine implements ISessionObserver {
   private async handlePlanExecutionResult(result: any): Promise<void> {
     switch (result.intent) {
       case 'plan_completed':
-        this.stream.markdown(`🎉 **计划执行完成**: ${result.result?.summary}\n\n`);
+        this.stream.markdown(vscode.l10n.t('🎉 **Plan execution completed**: {0}\n\n', result.result?.summary));
         this.state.stage = 'completed';
         break;
         
       case 'plan_failed':
-        this.stream.markdown(`❌ **计划执行失败**: ${result.result?.error}\n\n`);
+        this.stream.markdown(vscode.l10n.t('❌ **Plan execution failed**: {0}\n\n', result.result?.error));
         this.state.stage = 'error';
         break;
-        
+
       case 'user_interaction_required':
-        this.stream.markdown(`💬 **需要进一步用户交互**: ${result.result?.question}\n\n`);
+        this.stream.markdown(vscode.l10n.t('💬 **Further user interaction required**: {0}\n\n', result.result?.question));
         this.state.stage = 'awaiting_user';
         this.state.pendingInteraction = {
           type: 'input',
-          message: result.result?.question || '需要您的确认',
+          message: result.result?.question || vscode.l10n.t('Your confirmation is needed'),
           options: []
         };
         this.state.resumeContext = result.result?.resumeContext;
         break;
-        
+
       default:
-        this.stream.markdown(`ℹ️ **计划执行状态**: ${result.intent}\n\n`);
+        this.stream.markdown(vscode.l10n.t('ℹ️ **Plan execution status**: {0}\n\n', result.intent));
         this.state.stage = 'completed';
         break;
     }
-    
-    await this.recordExecution('result', `计划执行结果: ${result.intent}`, result.intent !== 'plan_failed');
+
+    await this.recordExecution('result', vscode.l10n.t('Plan execution result: {0}', result.intent), result.intent !== 'plan_failed');
   }
 
   /**
@@ -1780,12 +1779,12 @@ export class SRSAgentEngine implements ISessionObserver {
   private async handleLegacyResumeContext(userResponse: string): Promise<void> {
     // 这里可以实现对旧格式resumeContext的兼容处理
     // 目前暂时显示升级提示
-    this.stream.markdown(`⚠️ **架构升级通知**\n\n`);
-    this.stream.markdown(`检测到旧格式的恢复上下文。新架构提供了更强大的状态管理能力。\n`);
-    this.stream.markdown(`您的回复已记录: "${userResponse}"\n\n`);
-    this.stream.markdown(`请重新开始您的任务以使用新的架构特性。\n\n`);
-    
-    await this.recordExecution('result', `旧格式resumeContext处理: ${userResponse}`, true);
+    this.stream.markdown(vscode.l10n.t('⚠️ **Architecture upgrade notice**\n\n'));
+    this.stream.markdown(vscode.l10n.t('Detected legacy resume context format. The new architecture provides more powerful state management.\n'));
+    this.stream.markdown(vscode.l10n.t('Your response has been recorded: "{0}"\n\n', userResponse));
+    this.stream.markdown(vscode.l10n.t('Please restart your task to use the new architecture features.\n\n'));
+
+    await this.recordExecution('result', vscode.l10n.t('Legacy resumeContext handling: {0}', userResponse), true);
   }
 
 
@@ -1919,7 +1918,7 @@ export class SRSAgentEngine implements ISessionObserver {
       }
     });
     
-    this.logger.info(`📊 提取已完成步骤: ${Object.keys(stepResults).length} 个`);
+    this.logger.info(`📊 Extracted completed steps: ${Object.keys(stepResults).length}`);
     return stepResults;
   }
 
@@ -1944,32 +1943,32 @@ export class SRSAgentEngine implements ISessionObserver {
    */
   private async showPlanRecoveryOptions(): Promise<void> {
     const state = this.state.planInterruptionState!;
-    
-    this.stream.markdown(`❌ **计划执行中断**: ${state.interruptionReason}\n\n`);
-    this.stream.markdown(`📋 **计划信息**:\n`);
-    this.stream.markdown(`- 计划: ${state.planDescription}\n`);
-    this.stream.markdown(`- 失败步骤: ${state.failedStep}\n`);
-    this.stream.markdown(`- 已完成: ${Object.keys(state.completedStepResults).length} 步骤\n`);
-    this.stream.markdown(`- 剩余: ${state.originalPlan.steps.length - state.failedStep + 1} 步骤\n\n`);
-    
+
+    this.stream.markdown(vscode.l10n.t('❌ **Plan execution interrupted**: {0}\n\n', state.interruptionReason));
+    this.stream.markdown(vscode.l10n.t('📋 **Plan information**:\n'));
+    this.stream.markdown(vscode.l10n.t('- Plan: {0}\n', state.planDescription));
+    this.stream.markdown(vscode.l10n.t('- Failed step: {0}\n', state.failedStep));
+    this.stream.markdown(vscode.l10n.t('- Completed: {0} steps\n', Object.keys(state.completedStepResults).length));
+    this.stream.markdown(vscode.l10n.t('- Remaining: {0} steps\n\n', state.originalPlan.steps.length - state.failedStep + 1));
+
     // 🚀 复用现有的选择交互机制
     this.state.stage = 'awaiting_user';
     this.state.pendingInteraction = {
       type: 'choice',
-      message: '计划执行遇到临时问题，您希望如何处理？',
+      message: vscode.l10n.t('Plan execution encountered a temporary issue. How would you like to proceed?'),
       options: [
-        '继续执行写作计划',
-        '结束写作计划'
+        vscode.l10n.t('Continue writing plan'),
+        vscode.l10n.t('End writing plan')
       ],
       toolCall: {
         name: 'internal_plan_recovery',
         args: { action: 'user_choice_pending' }
       }
     };
-    
-    this.stream.markdown(`**请选择**:\n`);
-    this.stream.markdown(`1. 继续执行写作计划 (从步骤 ${state.failedStep} 重新开始)\n`);
-    this.stream.markdown(`2. 结束写作计划\n\n`);
+
+    this.stream.markdown(vscode.l10n.t('**Please choose**:\n'));
+    this.stream.markdown(vscode.l10n.t('1. Continue writing plan (restart from step {0})\n', state.failedStep));
+    this.stream.markdown(vscode.l10n.t('2. End writing plan\n\n'));
   }
 
   /**
@@ -1980,7 +1979,7 @@ export class SRSAgentEngine implements ISessionObserver {
       await this.sessionManager.updateSessionWithLog({
         logEntry: {
           type: OperationType.PLAN_INTERRUPTED,
-          operation: `计划 ${interruptionState.planId} 被动中断，已保存恢复状态`,
+          operation: vscode.l10n.t('Plan {0} passively interrupted, recovery state saved', interruptionState.planId),
           success: true,
           userInput: {
             planId: interruptionState.planId,
@@ -1991,8 +1990,8 @@ export class SRSAgentEngine implements ISessionObserver {
           } as any
         }
       });
-      
-      this.logger.info(`📋 计划中断状态已持久化: ${interruptionState.planId}`);
+
+      this.logger.info(`📋 Plan interruption state persisted: ${interruptionState.planId}`);
       
     } catch (error) {
       this.logger.warn(`Failed to persist interruption state: ${(error as Error).message}`);
@@ -2004,9 +2003,9 @@ export class SRSAgentEngine implements ISessionObserver {
    */
   private async resumePlanFromInterruption(): Promise<void> {
     const interruptionState = this.state.planInterruptionState!;
-    
-    this.stream.markdown(`🔄 **正在恢复计划执行...**\n\n`);
-    this.stream.markdown(`📋 从步骤 ${interruptionState.failedStep} 重新开始\n\n`);
+
+    this.stream.markdown(vscode.l10n.t('🔄 **Resuming plan execution...**\n\n'));
+    this.stream.markdown(vscode.l10n.t('📋 Restarting from step {0}\n\n', interruptionState.failedStep));
     
     try {
       // 🚀 关键：调用 PlanExecutor.resumeFromStep() 保持原始上下文
@@ -2024,7 +2023,7 @@ export class SRSAgentEngine implements ISessionObserver {
       await this.sessionManager.updateSessionWithLog({
         logEntry: {
           type: OperationType.PLAN_RESUMED,
-          operation: `计划 ${interruptionState.planId} 恢复执行`,
+          operation: vscode.l10n.t('Plan {0} resumed execution', interruptionState.planId),
           success: executionResult.intent === 'plan_completed',
           userInput: {
             planId: interruptionState.planId,
@@ -2033,10 +2032,10 @@ export class SRSAgentEngine implements ISessionObserver {
           } as any
         }
       });
-      
+
       // 处理恢复结果
       if (executionResult.intent === 'plan_completed') {
-        this.stream.markdown(`✅ **计划恢复执行成功完成**\n\n`);
+        this.stream.markdown(vscode.l10n.t('✅ **Plan resume execution completed successfully**\n\n'));
         this.state.stage = 'completed';
         this.state.planInterruptionState = undefined; // 清除中断状态
         
@@ -2051,15 +2050,15 @@ export class SRSAgentEngine implements ISessionObserver {
           await this.showPlanRecoveryOptions();
         } else {
           // 不可恢复的失败
-          this.stream.markdown(`❌ **计划恢复执行失败**: ${executionResult.result?.error}\n\n`);
+          this.stream.markdown(vscode.l10n.t('❌ **Plan resume execution failed**: {0}\n\n', executionResult.result?.error));
           this.state.stage = 'error';
           this.state.planInterruptionState = undefined;
         }
       }
-      
+
     } catch (error) {
-      this.logger.error(`❌ 恢复计划执行异常: ${(error as Error).message}`);
-      this.stream.markdown(`❌ **恢复执行异常**: ${(error as Error).message}\n\n`);
+      this.logger.error(`❌ Resume plan execution error: ${(error as Error).message}`);
+      this.stream.markdown(vscode.l10n.t('❌ **Resume execution error**: {0}\n\n', (error as Error).message));
       this.state.stage = 'error';
       this.state.planInterruptionState = undefined;
     }
@@ -2070,24 +2069,24 @@ export class SRSAgentEngine implements ISessionObserver {
    */
   private async terminatePlan(): Promise<void> {
     const interruptionState = this.state.planInterruptionState!;
-    
-    this.stream.markdown(`❌ **计划执行已终止**\n\n`);
-    this.stream.markdown(`📋 **执行总结**:\n`);
-    this.stream.markdown(`- 计划: ${interruptionState.planDescription}\n`);
-    this.stream.markdown(`- 已完成: ${Object.keys(interruptionState.completedStepResults).length} 步骤\n`);
-    this.stream.markdown(`- 终止原因: 用户选择终止\n\n`);
-    
+
+    this.stream.markdown(vscode.l10n.t('❌ **Plan execution terminated**\n\n'));
+    this.stream.markdown(vscode.l10n.t('📋 **Execution summary**:\n'));
+    this.stream.markdown(vscode.l10n.t('- Plan: {0}\n', interruptionState.planDescription));
+    this.stream.markdown(vscode.l10n.t('- Completed: {0} steps\n', Object.keys(interruptionState.completedStepResults).length));
+    this.stream.markdown(vscode.l10n.t('- Termination reason: User chose to terminate\n\n'));
+
     // 记录计划终止
     await this.sessionManager.updateSessionWithLog({
       logEntry: {
         type: OperationType.PLAN_TERMINATED,
-        operation: `计划 ${interruptionState.planId} 用户选择终止`,
+        operation: vscode.l10n.t('Plan {0} terminated by user', interruptionState.planId),
         success: true,
         userInput: {
           planId: interruptionState.planId,
           terminatedAtStep: interruptionState.failedStep,
           completedSteps: Object.keys(interruptionState.completedStepResults).length,
-          reason: '用户选择终止'
+          reason: 'User chose to terminate'
         } as any
       }
     });
@@ -2126,11 +2125,11 @@ export class SRSAgentEngine implements ISessionObserver {
       
     } else {
       // 原有的失败处理逻辑（无法恢复的失败）
-      this.stream.markdown(`❌ **计划执行失败**: ${executionResult.result?.error}\n\n`);
-      this.logger.info(`🔍 [DEBUG-CONTEXT] === PLAN EXECUTION FAILED (不可恢复) ===`);
-      
-      this.logger.info(`🔍 [DEBUG-CONTEXT] About to record execution: "计划执行失败: ${executionResult.result?.error}"`);
-      await this.recordExecution('result', `计划执行失败: ${executionResult.result?.error}`, false, 'planExecutor', executionResult.result?.planExecutionContext);
+      this.stream.markdown(vscode.l10n.t('❌ **Plan execution failed**: {0}\n\n', executionResult.result?.error));
+      this.logger.info(`🔍 [DEBUG-CONTEXT] === PLAN EXECUTION FAILED (unrecoverable) ===`);
+
+      this.logger.info(`🔍 [DEBUG-CONTEXT] About to record execution: "Plan execution failed: ${executionResult.result?.error}"`);
+      await this.recordExecution('result', vscode.l10n.t('Plan execution failed: {0}', executionResult.result?.error), false, 'planExecutor', executionResult.result?.planExecutionContext);
       this.logger.info(`🔍 [DEBUG-CONTEXT] Plan execution failure recorded. New executionHistory.length: ${this.state.executionHistory.length}`);
         
       // 🚨 新增：Engine状态变为error的详细追踪
@@ -2161,10 +2160,10 @@ export class SRSAgentEngine implements ISessionObserver {
         this.stream.markdown(this.formatSpecialistWorkingMessage(specialistId) + '\n\n');
       },
       onIterationStart: (current: number, max: number) => {
-        this.stream.progress(`第 ${current}/${max} 轮迭代...`);
+        this.stream.progress(vscode.l10n.t('Iteration {0}/{1}...', current, max));
       },
       onTaskComplete: (summary: string) => {
-        this.stream.markdown(`📝 **任务完成** - ${summary}\n\n`);
+        this.stream.markdown(vscode.l10n.t('📝 **Task completed** - {0}\n\n', summary));
       }
     };
   }
@@ -2181,7 +2180,7 @@ export class SRSAgentEngine implements ISessionObserver {
     const lines: string[] = [];
 
     // 标题行
-    lines.push(`📋 **任务计划** - ${plan.description}\n`);
+    lines.push(vscode.l10n.t('📋 **Task Plan** - {0}\n', plan.description));
 
     // 步骤列表（显示完整description）
     if (plan.steps && Array.isArray(plan.steps)) {
@@ -2229,21 +2228,21 @@ export class SRSAgentEngine implements ISessionObserver {
    */
   private simplifySpecialistName(specialistId: string): string {
     const nameMap: Record<string, string> = {
-      'project_initializer': '项目初始化',
-      'overall_description_writer': '撰写项目概述',
-      'biz_req_and_rule_writer': '定义业务需求',
-      'use_case_writer': '生成用例',
-      'user_journey_writer': '撰写用户旅程',
-      'user_story_writer': '编写用户故事',
-      'fr_writer': '编写功能需求',
-      'nfr_writer': '定义非功能需求',
-      'ifr_and_dar_writer': '指定接口需求',
-      'adc_writer': '记录假设约束',
-      'summary_writer': '编写执行摘要',
-      'prototype_designer': '设计原型',
-      'document_formatter': '文档格式化检查',
-      'srs_reviewer': '审查文档',
-      'risk_analysis_writer': '风险分析'
+      'project_initializer': vscode.l10n.t('Project Initialization'),
+      'overall_description_writer': vscode.l10n.t('Write Project Overview'),
+      'biz_req_and_rule_writer': vscode.l10n.t('Define Business Requirements'),
+      'use_case_writer': vscode.l10n.t('Generate Use Cases'),
+      'user_journey_writer': vscode.l10n.t('Write User Journey'),
+      'user_story_writer': vscode.l10n.t('Write User Stories'),
+      'fr_writer': vscode.l10n.t('Write Functional Requirements'),
+      'nfr_writer': vscode.l10n.t('Define Non-functional Requirements'),
+      'ifr_and_dar_writer': vscode.l10n.t('Specify Interface Requirements'),
+      'adc_writer': vscode.l10n.t('Record Assumptions and Constraints'),
+      'summary_writer': vscode.l10n.t('Write Executive Summary'),
+      'prototype_designer': vscode.l10n.t('Design Prototype'),
+      'document_formatter': vscode.l10n.t('Document Format Check'),
+      'srs_reviewer': vscode.l10n.t('Review Document'),
+      'risk_analysis_writer': vscode.l10n.t('Risk Analysis')
     };
     return nameMap[specialistId] || specialistId;
   }

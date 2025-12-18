@@ -210,7 +210,7 @@ export class ContextManager {
     
     // 调试日志（可选）
     if (duration && duration > 5000) {
-      this.logger.warn(`慢操作检测: ${toolName} 耗时 ${duration}ms`);
+      this.logger.warn(vscode.l10n.t('Slow operation detected: {0} took {1}ms', toolName || 'unknown', duration || 0));
     }
   }
 
@@ -251,14 +251,14 @@ export class ContextManager {
     
     switch (stage) {
       case 'completed':
-        stream.markdown('\n✅ **任务执行完成**\n\n');
+        stream.markdown(vscode.l10n.t('\n✅ **Task execution completed**\n\n'));
         this.generateExecutionSummary(state, stream);
         break;
       case 'error':
-        stream.markdown('\n❌ **任务执行中断**\n\n');
+        stream.markdown(vscode.l10n.t('\n❌ **Task execution interrupted**\n\n'));
         break;
       case 'awaiting_user':
-        stream.markdown('\n⏸️ **等待用户输入**\n\n');
+        stream.markdown(vscode.l10n.t('\n⏸️ **Waiting for user input**\n\n'));
         break;
       default:
         break;
@@ -280,14 +280,14 @@ export class ContextManager {
       .reduce((sum, s) => sum + (s.duration || 0), 0);
     
     stream.markdown('---\n');
-    stream.markdown('### 🎯 执行总结\n\n');
-    stream.markdown(`**迭代轮次**: ${state.iterationCount}\n`);
-    stream.markdown(`**工具调用**: ${toolCalls} (跳过: ${skipped})\n`);
-    stream.markdown(`**成功/失败**: ${successful} / ${failed}\n`);
+    stream.markdown(vscode.l10n.t('### 🎯 Execution Summary\n\n'));
+    stream.markdown(vscode.l10n.t('**Iterations**: {0}\n', state.iterationCount));
+    stream.markdown(vscode.l10n.t('**Tool calls**: {0} (skipped: {1})\n', toolCalls, skipped));
+    stream.markdown(vscode.l10n.t('**Success/Failed**: {0} / {1}\n', successful, failed));
     if (totalDuration > 0) {
-      stream.markdown(`**总耗时**: ${totalDuration}ms\n`);
+      stream.markdown(vscode.l10n.t('**Total duration**: {0}ms\n', totalDuration));
     }
-    stream.markdown(`**执行模式**: 智能状态机 + 分层工具执行\n\n`);
+    stream.markdown(vscode.l10n.t('**Execution mode**: Intelligent state machine + Layered tool execution\n\n'));
   }
 
   // ============================================================================
@@ -332,18 +332,18 @@ export class ContextManager {
     const successRate = appliedCount + failedCount > 0 ? 
       ((appliedCount / (appliedCount + failedCount)) * 100).toFixed(1) : '0';
 
-    let summary = `**语义编辑执行结果**\n`;
-    summary += `- 成功应用: ${appliedCount}个编辑操作\n`;
-    summary += `- 执行失败: ${failedCount}个编辑操作\n`;
-    summary += `- 成功率: ${successRate}%\n`;
-    
+    let summary = vscode.l10n.t('**Semantic Edit Execution Result**\n');
+    summary += vscode.l10n.t('- Successfully applied: {0} edit operations\n', appliedCount);
+    summary += vscode.l10n.t('- Failed: {0} edit operations\n', failedCount);
+    summary += vscode.l10n.t('- Success rate: {0}%\n', successRate);
+
     if (result.metadata?.executionTime) {
-      summary += `- 执行时间: ${result.metadata.executionTime}ms\n`;
+      summary += vscode.l10n.t('- Execution time: {0}ms\n', result.metadata.executionTime);
     }
 
     // 如果有失败的操作，列出失败原因
     if (result.failedIntents?.length > 0) {
-      summary += `\n**失败的编辑操作**:\n`;
+      summary += vscode.l10n.t('\n**Failed edit operations**:\n');
       result.failedIntents.forEach((intent: any, index: number) => {
         summary += `${index + 1}. ${intent.type} → "${intent.target.sectionName}"\n`;
       });
@@ -351,7 +351,7 @@ export class ContextManager {
 
     // 如果有语义错误，也要列出
     if (result.semanticErrors?.length > 0) {
-      summary += `\n**语义分析问题**: ${result.semanticErrors.join(', ')}\n`;
+      summary += vscode.l10n.t('\n**Semantic analysis issues**: {0}\n', result.semanticErrors.join(', '));
     }
 
     return summary;
@@ -365,29 +365,29 @@ export class ContextManager {
       return `\`\`\`json\n${JSON.stringify(result, null, 2)}\n\`\`\``;
     }
 
-    let summary = `**文档结构分析结果**\n`;
-    summary += `- 文件内容: ${result.content?.length || 0}字符\n`;
-    
+    let summary = vscode.l10n.t('**Document Structure Analysis Result**\n');
+    summary += vscode.l10n.t('- File content: {0} characters\n', result.content?.length || 0);
+
     if (result.structure) {
-      summary += `- 标题数量: ${result.structure.headings?.length || 0}个\n`;
-      summary += `- 章节数量: ${result.structure.sections?.length || 0}个\n`;
-      
+      summary += vscode.l10n.t('- Heading count: {0}\n', result.structure.headings?.length || 0);
+      summary += vscode.l10n.t('- Section count: {0}\n', result.structure.sections?.length || 0);
+
       // 列出主要标题结构
       if (result.structure.headings?.length > 0) {
-        summary += `\n**文档结构**:\n`;
+        summary += vscode.l10n.t('\n**Document structure**:\n');
         result.structure.headings.slice(0, 5).forEach((heading: any, index: number) => {
           const indent = '  '.repeat(Math.max(0, heading.level - 1));
           summary += `${indent}- ${heading.text} (H${heading.level})\n`;
         });
-        
+
         if (result.structure.headings.length > 5) {
-          summary += `  ... 还有 ${result.structure.headings.length - 5} 个标题\n`;
+          summary += vscode.l10n.t('  ... and {0} more headings\n', result.structure.headings.length - 5);
         }
       }
     }
 
     if (result.semanticMap?.editTargets?.length > 0) {
-      summary += `\n**可编辑的语义目标**: ${result.semanticMap.editTargets.length}个\n`;
+      summary += vscode.l10n.t('\n**Editable semantic targets**: {0}\n', result.semanticMap.editTargets.length);
     }
 
     return summary;

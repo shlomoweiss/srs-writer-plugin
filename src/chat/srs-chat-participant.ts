@@ -91,18 +91,18 @@ export class SRSChatParticipant implements ISessionObserver {
             if (error instanceof vscode.LanguageModelError) {
                 this.logger.error(`Language Model API Error - Code: ${error.code}, Message: ${error.message}`);
                 
-                stream.markdown(`❌ **AI模型服务错误**\n\n`);
-                stream.markdown(`**错误代码**: \`${error.code || 'unknown'}\`\n\n`);
-                stream.markdown(`**错误信息**: ${error.message}\n\n`);
-                stream.markdown(`这是来自VSCode Language Model API的错误。请检查您的GitHub Copilot配置和订阅状态。\n\n`);
-                stream.markdown(`💡 **建议**: 使用错误代码 \`${error.code}\` 搜索相关解决方案。\n\n`);
+                stream.markdown(vscode.l10n.t('❌ **AI Model Service Error**\n\n'));
+                stream.markdown(vscode.l10n.t('**Error Code**: `{0}`\n\n', error.code || 'unknown'));
+                stream.markdown(vscode.l10n.t('**Error Message**: {0}\n\n', error.message));
+                stream.markdown(vscode.l10n.t('This is an error from VSCode Language Model API. Please check your GitHub Copilot configuration and subscription status.\n\n'));
+                stream.markdown(vscode.l10n.t('💡 **Suggestion**: Search for solutions using error code `{0}`.\n\n', error.code));
             } else {
                 // 其他错误的通用处理
-                const errorMessage = error instanceof Error ? error.message : '未知错误';
-                
-                stream.markdown(`❌ **处理请求时发生错误**\n\n`);
-                stream.markdown(`**错误信息**: ${errorMessage}\n\n`);
-                stream.markdown(`请稍后重试，或者换一种方式提问。\n\n`);
+                const errorMessage = error instanceof Error ? error.message : vscode.l10n.t('Unknown error');
+
+                stream.markdown(vscode.l10n.t('❌ **Error processing request**\n\n'));
+                stream.markdown(vscode.l10n.t('**Error Message**: {0}\n\n', errorMessage));
+                stream.markdown(vscode.l10n.t('Please try again later or rephrase your question.\n\n'));
             }
         } finally {
             const duration = Date.now() - startTime;
@@ -127,7 +127,7 @@ export class SRSChatParticipant implements ISessionObserver {
     ): Promise<void> {
         // 检查用户选择的模型
         if (!model) {
-            stream.markdown('⚠️ **未找到AI模型**\n\n请在Chat界面的下拉菜单中选择AI模型。');
+            stream.markdown(vscode.l10n.t('⚠️ **No AI model found**\n\nPlease select an AI model from the dropdown menu in the Chat interface.'));
             return;
         }
 
@@ -137,7 +137,7 @@ export class SRSChatParticipant implements ISessionObserver {
             return; // 已提示用户，无模型可用
         }
         
-        stream.progress('🧠 AI 智能引擎启动中...');
+        stream.progress(vscode.l10n.t('🧠 AI intelligent engine starting...'));
 
         // 1. 获取会话上下文
         const sessionContext = await this.getOrCreateSessionContext();
@@ -224,7 +224,7 @@ export class SRSChatParticipant implements ISessionObserver {
             const availableModels = await vscode.lm.selectChatModels();
 
             if (!availableModels || availableModels.length === 0) {
-                stream.markdown('⚠️ **No language models available**\n\nPlease configure GitHub Copilot or another language model provider.');
+                stream.markdown(vscode.l10n.t('⚠️ **No language models available**\n\nPlease configure GitHub Copilot or another language model provider.'));
                 this.logger.warn('No language models available from VS Code provider');
                 return null;
             }
@@ -251,14 +251,13 @@ export class SRSChatParticipant implements ISessionObserver {
 
             this.logger.warn(`Selected model "${selectedName}" is not available. Falling back to "${fallback.name}".`);
             stream.markdown(
-                `⚠️ Selected model \`${selectedName}\` is not available via your provider.\n` +
-                `Switched to \`${fallback.name}\` for this conversation.`
+                vscode.l10n.t('⚠️ Selected model `{0}` is not available via your provider.\nSwitched to `{1}` for this conversation.', selectedName, fallback.name)
             );
 
             return fallback;
         } catch (error) {
             this.logger.error('Failed to validate selected model availability', error as Error);
-            stream.markdown('❌ Failed to validate language model availability. Please retry or re-open VS Code.');
+            stream.markdown(vscode.l10n.t('❌ Failed to validate language model availability. Please retry or re-open VS Code.'));
             return null;
         }
     }
@@ -317,17 +316,17 @@ export class SRSChatParticipant implements ISessionObserver {
             if (sessionContext.projectName) {
                 // 有项目时的建议
                 followups.push(
-                    { label: '📊 查看项目状态', prompt: '/status' },
-                    { label: '✏️ 编辑项目', prompt: '/edit' },
-                    { label: '🆕 归档并创建新项目', prompt: '/new' },
-                    { label: '💡 获取帮助', prompt: '/help' }
+                    { label: vscode.l10n.t('📊 View project status'), prompt: '/status' },
+                    { label: vscode.l10n.t('✏️ Edit project'), prompt: '/edit' },
+                    { label: vscode.l10n.t('🆕 Archive and create new project'), prompt: '/new' },
+                    { label: vscode.l10n.t('💡 Get help'), prompt: '/help' }
                 );
             } else {
                 // 无项目时的建议
                 followups.push(
-                    { label: '🆕 创建新项目', prompt: '/new' },
-                    { label: '💡 获取帮助', prompt: '/help' },
-                    { label: '📊 查看项目状态', prompt: '/status' }
+                    { label: vscode.l10n.t('🆕 Create new project'), prompt: '/new' },
+                    { label: vscode.l10n.t('💡 Get help'), prompt: '/help' },
+                    { label: vscode.l10n.t('📊 View project status'), prompt: '/status' }
                 );
             }
 
@@ -335,7 +334,7 @@ export class SRSChatParticipant implements ISessionObserver {
         } catch (error) {
             this.logger.error('Error providing followups', error as Error);
             return [
-                { label: '💡 获取帮助', prompt: '/help' }
+                { label: vscode.l10n.t('💡 Get help'), prompt: '/help' }
             ];
         }
     }
@@ -406,10 +405,10 @@ export class SRSChatParticipant implements ISessionObserver {
         
         const state = SRSChatParticipant.globalEngine.getState();
         if (state.currentTask) {
-            return `正在执行任务: "${state.currentTask}" (阶段: ${state.stage})`;
+            return vscode.l10n.t('Executing task: "{0}" (stage: {1})', state.currentTask, state.stage);
         }
-        
-        return `引擎正在执行 (阶段: ${state.stage})`;
+
+        return vscode.l10n.t('Engine is executing (stage: {0})', state.stage);
     }
 
     /**

@@ -73,12 +73,13 @@ export const LOG_LEVELS = {
 
 /**
  * 错误消息常量
+ * Note: These are English base strings. Use vscode.l10n.t() when displaying to users.
  */
 export const ERROR_MESSAGES = {
-    API_KEY_MISSING: 'API密钥未配置',
-    INVALID_FILE_FORMAT: '不支持的文件格式',
-    PARSE_ERROR: '解析错误',
-    NETWORK_ERROR: '网络连接错误',
-    FILE_NOT_FOUND: '文件不存在',
-    PERMISSION_DENIED: '权限不足',
+    API_KEY_MISSING: 'API key not configured',
+    INVALID_FILE_FORMAT: 'Unsupported file format',
+    PARSE_ERROR: 'Parse error',
+    NETWORK_ERROR: 'Network connection error',
+    FILE_NOT_FOUND: 'File not found',
+    PERMISSION_DENIED: 'Permission denied',
 } as const; 

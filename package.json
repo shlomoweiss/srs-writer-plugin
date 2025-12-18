@@ -1,8 +1,8 @@
 {
   "name": "srs-writer-plugin",
-  "displayName": "SRS Writer",
-  "description": "AI-powered Software Requirements Specification writer for VSCode.",
-  "version": "0.8.2",
+  "displayName": "%ext.displayName%",
+  "description": "%ext.description%",
+  "version": "0.8.3",
   "publisher": "Testany",
   "repository": {
     "type": "git",
@@ -23,11 +23,13 @@
     "onStartupFinished"
   ],
   "main": "./dist/extension.js",
+  "l10n": "./l10n",
   "icon": "media/logo.png",
   "files": [
     "dist",
     "rules",
     "media",
+    "l10n",
     ".templates",
     ".vscode-template",
     "LICENSE",
@@ -39,43 +41,43 @@
       {
         "id": "srs-writer",
         "name": "srs-writer",
-        "description": "Intelligent SRS document generator with natural language understanding",
+        "description": "%chatParticipant.description%",
         "isSticky": true
       }
     ],
     "commands": [
       {
         "command": "srs-writer.status",
-        "title": "SRS Writer: Control Panel"
+        "title": "%command.status.title%"
       },
       {
         "command": "srs-writer.toggleAIMode",
-        "title": "SRS Writer: Toggle AI/Fallback Mode"
+        "title": "%command.toggleAIMode.title%"
       },
       {
         "command": "srs-writer.forceSyncContext",
-        "title": "SRS Writer: Force Sync Context"
+        "title": "%command.forceSyncContext.title%"
       },
       {
         "command": "srs-writer.listModels",
-        "title": "SRS Writer: List Available Models"
+        "title": "%command.listModels.title%"
       },
       {
         "command": "srs-writer.selectBranchForFolders",
-        "title": "Select Git Branch for Folders View",
+        "title": "%command.selectBranchForFolders.title%",
         "icon": "$(git-branch)"
       },
       {
         "command": "srs-writer.projectManagement",
-        "title": "SRS Writer: Project Management"
+        "title": "%command.projectManagement.title%"
       },
       {
         "command": "srs-writer.renameProject",
-        "title": "SRS Writer: Rename Project"
+        "title": "%command.renameProject.title%"
       },
       {
         "command": "srs-writer.deleteProject",
-        "title": "SRS Writer: Delete Project"
+        "title": "%command.deleteProject.title%"
       }
     ],
     "_menus_note": "🚀 分支切换按钮功能已暂时隐藏 - 详细信息见下方注释块",
@@ -112,7 +114,7 @@
         "srs-writer.useAIOrchestrator": {
           "type": "boolean",
           "default": true,
-          "description": "启用AI智能工具代理（新架构）"
+          "description": "%config.useAIOrchestrator.description%"
         },
         "srs-writer.fallbackModels": {
           "type": "array",
@@ -120,31 +122,31 @@
             "type": "string"
           },
           "default": [],
-          "description": "语言模型回退优先级列表（从上到下）。当用户选择的模型不可用时按顺序尝试这些模型；为空则按 VS Code provider 返回的模型列表顺序选择。"
+          "description": "%config.fallbackModels.description%"
         },
         "srs-writer.internetSearch.tavilyApiKey": {
           "type": "string",
           "default": "",
-          "description": "[已废弃] Tavily Search API密钥",
-          "markdownDescription": "[已废弃] Tavily AI Search API密钥（推荐国际用户使用）。\n\n**获取方式**：\n1. 访问 https://tavily.com\n2. 注册账号并获取免费API密钥\n3. 将密钥填写到此处\n\n**注意**: 配置后立即生效，无需重启。"
+          "description": "%config.tavilyApiKey.description%",
+          "markdownDescription": "%config.tavilyApiKey.markdownDescription%"
         },
         "srs-writer.internetSearch.bingApiKey": {
           "type": "string",
           "default": "",
-          "description": "[已废弃] Bing Search API密钥（需要Azure账号）",
-          "markdownDescription": "[已废弃] Microsoft Bing Search API密钥（Azure Cognitive Services）。\n\n**获取方式**：\n1. 访问 https://azure.microsoft.com/services/cognitive-services/bing-web-search-api/\n2. 创建Azure账号并订阅Bing Search API\n3. 获取订阅密钥（Subscription Key）\n4. 将密钥填写到此处\n\n**注意**: 需要有效的Azure订阅。"
+          "description": "%config.bingApiKey.description%",
+          "markdownDescription": "%config.bingApiKey.markdownDescription%"
         },
         "srs-writer.internetSearch.baiduApiKey": {
           "type": "string",
           "default": "",
-          "description": "[已废弃] 百度搜索API密钥（API Key）",
-          "markdownDescription": "[已废弃] 百度AI搜索服务API密钥（推荐中国大陆用户使用）。\n\n**获取方式**：\n1. 访问 https://ai.baidu.com/ai-doc/SEARCH/\n2. 注册百度账号并创建应用\n3. 获取API Key和Secret Key\n4. 将API Key填写到此处，Secret Key填写到下方配置项\n\n**注意**: 需要同时配置API Key和Secret Key才能使用。"
+          "description": "%config.baiduApiKey.description%",
+          "markdownDescription": "%config.baiduApiKey.markdownDescription%"
         },
         "srs-writer.internetSearch.baiduSecretKey": {
           "type": "string",
           "default": "",
-          "description": "[已废弃] 百度搜索API密钥（Secret Key）",
-          "markdownDescription": "百度AI搜索服务Secret Key。\n\n**安全提示**：\n- 此为敏感信息，请妥善保管\n- 不要在公开场所分享此密钥\n- 需要与API Key配合使用"
+          "description": "%config.baiduSecretKey.description%",
+          "markdownDescription": "%config.baiduSecretKey.markdownDescription%"
         },
         "srs-writer.knowledge.localPaths": {
           "type": "array",
@@ -152,18 +154,18 @@
             "type": "string"
           },
           "default": [],
-          "description": "本地知识库路径列表"
+          "description": "%config.localPaths.description%"
         },
         "srs-writer.requirementScaffold.schemaPath": {
           "type": "object",
           "default": {
             "SCHEMA_PATH": "config/schemas/requirement-entity-schemas.yaml"
           },
-          "description": "需求实体Schema文件路径配置",
+          "description": "%config.schemaPath.description%",
           "properties": {
             "SCHEMA_PATH": {
               "type": "string",
-              "description": "需求实体Schema文件路径"
+              "description": "%config.schemaPath.SCHEMA_PATH.description%"
             }
           }
         },
@@ -182,34 +184,34 @@
             "dist",
             "build"
           ],
-          "description": "切换项目时要排除的目录列表",
-          "markdownDescription": "在切换项目功能中要排除的目录名称列表。这些目录不会出现在项目选择列表中。\n\n**默认排除**：\n- `templates` - 用户模板目录\n- `knowledge` - 知识库目录\n- `node_modules` - Node.js依赖\n- `.git` - Git仓库\n- `.vscode` - VSCode配置\n- `coverage` - 测试覆盖率报告\n- `dist` - 构建产物\n- `build` - 构建产物"
+          "description": "%config.excludeDirectories.description%",
+          "markdownDescription": "%config.excludeDirectories.markdownDescription%"
         },
         "srs-writer.rag.enterprise.enabled": {
           "type": "boolean",
           "default": false,
-          "description": "启用企业RAG知识库检索功能",
-          "markdownDescription": "启用企业RAG知识库检索功能。\n\n启用后，AI可以通过 `customRAGRetrieval` 工具访问您的企业知识库。\n\n**注意**：需要同时配置服务器地址和认证信息。"
+          "description": "%config.rag.enabled.description%",
+          "markdownDescription": "%config.rag.enabled.markdownDescription%"
         },
         "srs-writer.rag.enterprise.baseUrl": {
           "type": "string",
-          "description": "企业RAG服务器基础URL",
-          "markdownDescription": "企业RAG服务器的基础URL地址。\n\n**示例**：\n- `http://192.168.1.100:8080`\n- `https://rag.company.com`\n\n**注意**：请确保URL可以从VS Code所在网络环境访问。"
+          "description": "%config.rag.baseUrl.description%",
+          "markdownDescription": "%config.rag.baseUrl.markdownDescription%"
         },
         "srs-writer.rag.enterprise.appKey": {
           "type": "string",
-          "description": "企业RAG应用密钥（App Key）",
-          "markdownDescription": "企业RAG系统的应用密钥。\n\n**安全提示**：\n- 请确保密钥的安全性\n- 不要在公开场所分享此密钥\n- 建议定期更换密钥"
+          "description": "%config.rag.appKey.description%",
+          "markdownDescription": "%config.rag.appKey.markdownDescription%"
         },
         "srs-writer.rag.enterprise.appSecret": {
           "type": "string",
-          "description": "企业RAG应用秘钥（App Secret）",
-          "markdownDescription": "企业RAG系统的应用秘钥。\n\n**安全提示**：\n- 此为敏感信息，请妥善保管\n- 不要在版本控制中提交此配置\n- 建议定期更换秘钥"
+          "description": "%config.rag.appSecret.description%",
+          "markdownDescription": "%config.rag.appSecret.markdownDescription%"
         },
         "srs-writer.rag.enterprise.defaultDatasetId": {
           "type": "string",
-          "description": "默认数据集ID",
-          "markdownDescription": "企业RAG系统的默认数据集ID。\n\n**说明**：\n- 当AI调用RAG检索时，如果未指定数据集ID，将使用此默认值\n- 可以在具体调用时通过参数覆盖此设置\n- 请确保此数据集ID在您的RAG系统中存在"
+          "description": "%config.rag.defaultDatasetId.description%",
+          "markdownDescription": "%config.rag.defaultDatasetId.markdownDescription%"
         },
         "srs-writer.mcp.excludeKeywords": {
           "type": "array",
@@ -217,19 +219,19 @@
             "type": "string"
           },
           "default": [],
-          "description": "排除包含这些关键字的 MCP 工具",
-          "markdownDescription": "排除包含这些关键字的 MCP 工具（不区分大小写）。\n\n**使用方法**：\n1. 在 Control Panel 中查看所有注册的 MCP 工具\n2. 添加关键字（如：`java_app_mode`, `appmod`）以排除相关工具\n3. 工具名称包含这些关键字的将不会被注册\n\n**示例**：\n- 添加 `java_app_mode` 可以排除所有 GitHub Copilot Java 相关工具\n- 添加 `appmod` 可以排除应用现代化相关工具\n\n**注意**：配置修改后，需要重新加载窗口才能生效。"
+          "description": "%config.mcp.excludeKeywords.description%",
+          "markdownDescription": "%config.mcp.excludeKeywords.markdownDescription%"
         },
         "srs-writer.syntaxChecker.enabled": {
           "type": "boolean",
           "default": true,
-          "description": "启用语法检查工具",
-          "markdownDescription": "启用 syntax-checker 工具对 Markdown 和 YAML 文件进行语法检查。"
+          "description": "%config.syntaxChecker.enabled.description%",
+          "markdownDescription": "%config.syntaxChecker.enabled.markdownDescription%"
         },
         "srs-writer.syntaxChecker.markdown.aEnabled": {
           "type": "boolean",
           "default": true,
-          "description": "启用 Markdown 语法检查"
+          "description": "%config.syntaxChecker.markdown.enabled.description%"
         },
         "srs-writer.syntaxChecker.markdown.bMode": {
           "type": "string",
@@ -240,19 +242,19 @@
             "custom"
           ],
           "default": "standard",
-          "description": "Markdown 检查模式",
-          "markdownDescription": "选择 Markdown 检查模式：\n\n- **all**: 执行所有 markdownlint 检查项\n- **standard**: 执行必要的检查项（推荐）\n- **no**: 关闭所有 markdownlint 检查\n- **custom**: 自定义模式，使用下方的自定义规则配置"
+          "description": "%config.syntaxChecker.markdown.mode.description%",
+          "markdownDescription": "%config.syntaxChecker.markdown.mode.markdownDescription%"
         },
         "srs-writer.syntaxChecker.markdown.zCustomRules": {
           "type": "object",
           "default": {},
-          "description": "自定义规则配置（仅在 Custom 模式下使用）",
-          "markdownDescription": "当选择 Custom 模式时，可以配置具体的 markdownlint 规则。\n\n**使用方法**：\n1. 将上方 Mode 设置为 'custom'\n2. 在此处配置具体规则\n\n**示例配置**：\n```json\n{\n  \"MD001\": true,\n  \"MD007\": { \"indent\": 4 },\n  \"MD033\": { \"allowed_elements\": [\"br\", \"details\", \"summary\"] },\n  \n**规则编号及释义**：\n[查看完整的 markdownlint 规则文档](https://github.com/DavidAnson/markdownlint/blob/main/doc/Rules.md) "
+          "description": "%config.syntaxChecker.markdown.customRules.description%",
+          "markdownDescription": "%config.syntaxChecker.markdown.customRules.markdownDescription%"
         },
         "srs-writer.syntaxChecker.yaml.enabled": {
           "type": "boolean",
           "default": true,
-          "description": "启用 YAML 语法检查"
+          "description": "%config.syntaxChecker.yaml.enabled.description%"
         },
         "srs-writer.syntaxChecker.yaml.level": {
           "type": "string",
@@ -262,8 +264,8 @@
             "strict"
           ],
           "default": "standard",
-          "description": "YAML 检查级别",
-          "markdownDescription": "选择 YAML 检查级别：\n\n- **basic**: 只检查基础语法错误\n- **standard**: 检查语法 + 基本结构问题（推荐）\n- **strict**: 检查语法 + 结构 + requirements.yaml 特定规则"
+          "description": "%config.syntaxChecker.yaml.level.description%",
+          "markdownDescription": "%config.syntaxChecker.yaml.level.markdownDescription%"
         },
         "srs-writer.templates.adcWriter": {
           "type": "object",
@@ -458,7 +460,8 @@
     "test:golden": "node scripts/run-golden-tests.js",
     "validate:prompts": "node scripts/validate-prompt-templates.js",
     "migration:test": "node scripts/test-migration.js",
-    "quality:check": "node scripts/quality-check.js"
+    "quality:check": "node scripts/quality-check.js",
+    "l10n:extract": "npx @vscode/l10n-dev export --outDir ./l10n ./out"
   },
   "devDependencies": {
     "@cs-au-dk/jelly": "^0.10.0",
@@ -470,6 +473,7 @@
     "@types/vscode": "^1.85.0",
     "@typescript-eslint/eslint-plugin": "^6.x",
     "@typescript-eslint/parser": "^6.x",
+    "@vscode/l10n-dev": "^0.0.35",
     "copy-webpack-plugin": "^11.x",
     "dependency-cruiser": "^16.10.3",
     "eslint": "^8.x",
