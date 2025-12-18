@@ -50,6 +50,10 @@ module.exports = {
         {
           from: 'media',
           to: 'media'
+        },
+        {
+          from: 'l10n',
+          to: 'l10n'
         }
       ]
     })
