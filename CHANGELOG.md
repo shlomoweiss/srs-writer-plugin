@@ -7,15 +7,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.8.3] - 2025-12-18
 
-### Added
-
-- **Internationalization (i18n)**: Full internationalization support for UI strings
-    - Wrapped all user-facing strings with `vscode.l10n.t()` API
-    - Added Chinese (Simplified) translations for all UI elements
-    - Created translation files: `l10n/bundle.l10n.json` and `l10n/bundle.l10n.zh-cn.json`
-    - Added NLS support for package.json contributions (commands, chat participant)
-    - Supports dynamic locale switching via VSCode language settings
-
 ### Fixed
 
 - **Model Availability**: Enhanced language model validation with fallback mechanism
