@@ -282,6 +282,31 @@ export const extensions = {
     })
 };
 
+// Mock l10n (localization)
+export const l10n = {
+    /**
+     * Mock implementation of vscode.l10n.t
+     * Returns the message with placeholders replaced by the provided arguments
+     */
+    t: (message: string, ...args: (string | number | boolean)[]): string => {
+        if (args.length === 0) {
+            return message;
+        }
+        // If args is a single object (named parameters), use it for replacement
+        if (args.length === 1 && typeof args[0] === 'object' && args[0] !== null) {
+            const params = args[0] as Record<string, any>;
+            return message.replace(/\{(\w+)\}/g, (_, key) => {
+                return params[key] !== undefined ? String(params[key]) : `{${key}}`;
+            });
+        }
+        // Handle positional parameters {0}, {1}, etc.
+        return message.replace(/\{(\d+)\}/g, (_, index) => {
+            const idx = parseInt(index, 10);
+            return args[idx] !== undefined ? String(args[idx]) : `{${index}}`;
+        });
+    }
+};
+
 // Export all mocks
 export default {
     Uri,
@@ -293,5 +318,6 @@ export default {
     workspace,
     commands,
     window,
-    extensions
+    extensions,
+    l10n
 }; 

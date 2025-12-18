@@ -249,35 +249,35 @@ export const suggestNextActionToolDefinition = {
     requiresConfirmation: false
 };
 
-export async function suggestNextAction(args: { 
+export async function suggestNextAction(args: {
     situation: string;
     recommendation: string;
     reasoning: string;
     alternatives?: string[];
-}): Promise<{ 
-    success: boolean; 
+}): Promise<{
+    success: boolean;
     suggestion: string;
 }> {
     try {
         // 构建智能建议响应
-        let suggestion = `**当前情况：** ${args.situation}\n\n`;
-        suggestion += `**我的建议：** ${args.recommendation}\n\n`;
-        suggestion += `**原因：** ${args.reasoning}`;
-        
+        let suggestion = `**${vscode.l10n.t('Current Situation:')}** ${args.situation}\n\n`;
+        suggestion += `**${vscode.l10n.t('My Recommendation:')}** ${args.recommendation}\n\n`;
+        suggestion += `**${vscode.l10n.t('Reasoning:')}** ${args.reasoning}`;
+
         if (args.alternatives && args.alternatives.length > 0) {
-            suggestion += '\n\n**其他选项：**\n';
+            suggestion += `\n\n**${vscode.l10n.t('Other Options:')}**\n`;
             args.alternatives.forEach((alt, index) => {
                 suggestion += `${index + 1}. ${alt}\n`;
             });
-            suggestion += '\n如果你希望尝试其他方案，请告诉我你的想法。';
+            suggestion += `\n${vscode.l10n.t('If you would like to try a different approach, please let me know.')}`;
         }
-        
+
         logger.info(`✅ AI provided intelligent suggestion: ${args.recommendation}`);
         return { success: true, suggestion };
     } catch (error) {
         const errorMsg = `Failed to provide suggestion: ${(error as Error).message}`;
         logger.error(errorMsg);
-        return { success: false, suggestion: '抱歉，无法提供建议。' };
+        return { success: false, suggestion: vscode.l10n.t('Sorry, unable to provide suggestion.') };
     }
 }
 

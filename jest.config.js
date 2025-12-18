@@ -59,8 +59,8 @@ module.exports = {
     '!src/test/**/*'
   ],
   
-  // Jest setup
-  setupFilesAfterEnv: [],
+  // Jest setup - ensures vscode.l10n mock is available for all tests
+  setupFilesAfterEnv: ['<rootDir>/src/test/setup/jest.setup.ts'],
   
   // 忽略的目录
   testPathIgnorePatterns: [

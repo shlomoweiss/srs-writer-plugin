@@ -121,10 +121,10 @@ export async function activate(context: vscode.ExtensionContext) {
         
         // 显示激活成功消息
         vscode.window.showInformationMessage(
-            '🚀 SRS Writer is at your service',
-            'Open Control Panel'
+            vscode.l10n.t('🚀 SRS Writer is at your service'),
+            vscode.l10n.t('Open Control Panel')
         ).then(selection => {
-            if (selection === 'Open Control Panel') {
+            if (selection === vscode.l10n.t('Open Control Panel')) {
                 vscode.commands.executeCommand('srs-writer.status');
             }
         });
@@ -134,7 +134,7 @@ export async function activate(context: vscode.ExtensionContext) {
         logger.error('Failed to activate SRS Writer Plugin v1.2', error as Error);
         
         vscode.window.showErrorMessage(
-            'SRS Writer plugin activation failed, please check the configuration and restart VSCode.'
+            vscode.l10n.t('SRS Writer plugin activation failed, please check the configuration and restart VSCode.')
         );
     }
 }
@@ -161,7 +161,7 @@ function registerCoreCommands(context: vscode.ExtensionContext): void {
         
         // 新架构：模式通过智能分诊自动确定，无需手动切换
         vscode.window.showInformationMessage(
-            `🚀 ${currentStatus.architecture} AI mode is enabled\n\nPlugin version: ${currentStatus.version}\n\nModes will be automatically switched based on user intent:\n• 🚀 Plan Execution mode: Complex multi-step tasks\n• 🛠️ Tool Execution mode: Tasks that require file operations\n• 🧠 Knowledge Question mode: Consultation and dialogue`
+            vscode.l10n.t('🚀 {0} AI mode is enabled\n\nPlugin version: {1}\n\nModes will be automatically switched based on user intent:\n• 🚀 Plan Execution mode: Complex multi-step tasks\n• 🛠️ Tool Execution mode: Tasks that require file operations\n• 🧠 Knowledge Question mode: Consultation and dialogue', currentStatus.architecture, currentStatus.version)
         );
     });
     
@@ -172,13 +172,19 @@ function registerCoreCommands(context: vscode.ExtensionContext): void {
         await performForcedSync();
     });
 
+    // 🔧 调试命令：列出可用的 Language Models
+    const listModelsCommand = vscode.commands.registerCommand('srs-writer.listModels', async () => {
+        await listAvailableModels();
+    });
+
     // 注册所有命令
     context.subscriptions.push(
         statusCommand,
         // 🚀 v6.0清理：移除 startNewProjectCmd
         // 🚀 阶段4清理：移除 viewArchiveHistoryCmd
         toggleAIModeCommand,
-        forceSyncCommand  // 🚀 新增强制同步命令
+        forceSyncCommand,  // 🚀 新增强制同步命令
+        listModelsCommand  // 🔧 调试：列出模型
     );
     
     logger.info('Core commands registered successfully');
@@ -209,17 +215,17 @@ function registerProjectManagementCommands(context: vscode.ExtensionContext): vo
     const projectManagementCmd = vscode.commands.registerCommand('srs-writer.projectManagement', async () => {
         const action = await vscode.window.showQuickPick([
             {
-                label: '$(edit) Rename Project',
-                description: 'Rename project (updates projectName, directory, and baseDir atomically)',
+                label: vscode.l10n.t('$(edit) Rename Project'),
+                description: vscode.l10n.t('Rename project (updates projectName, directory, and baseDir atomically)'),
                 action: 'rename'
             },
             {
-                label: '$(trash) Delete Project',
-                description: 'Delete project session and directory',
+                label: vscode.l10n.t('$(trash) Delete Project'),
+                description: vscode.l10n.t('Delete project session and directory'),
                 action: 'delete'
             }
         ], {
-            placeHolder: 'Select a project management action'
+            placeHolder: vscode.l10n.t('Select a project management action')
         });
 
         if (!action) return;
@@ -240,19 +246,19 @@ function registerProjectManagementCommands(context: vscode.ExtensionContext): vo
         const currentProjectName = currentSession?.projectName;
 
         if (!currentProjectName) {
-            vscode.window.showErrorMessage('No active project to rename.');
+            vscode.window.showErrorMessage(vscode.l10n.t('No active project to rename.'));
             return;
         }
 
         const newName = await vscode.window.showInputBox({
-            prompt: 'Enter new project name',
+            prompt: vscode.l10n.t('Enter new project name'),
             value: currentProjectName,
             validateInput: (value) => {
                 if (!value || value.trim() === '') {
-                    return 'Project name cannot be empty';
+                    return vscode.l10n.t('Project name cannot be empty');
                 }
                 if (value === currentProjectName) {
-                    return 'New name is the same as current name';
+                    return vscode.l10n.t('New name is the same as current name');
                 }
                 return null;
             }
@@ -263,12 +269,11 @@ function registerProjectManagementCommands(context: vscode.ExtensionContext): vo
         try {
             await sessionManager.renameProject(currentProjectName, newName);
             vscode.window.showInformationMessage(
-                `✅ Project renamed: ${currentProjectName} → ${newName}\n` +
-                `(directory and baseDir updated)`
+                vscode.l10n.t('✅ Project renamed: {0} → {1}\n(directory and baseDir updated)', currentProjectName, newName)
             );
         } catch (error) {
             vscode.window.showErrorMessage(
-                `Failed to rename project: ${(error as Error).message}`
+                vscode.l10n.t('Failed to rename project: {0}', (error as Error).message)
             );
         }
     });
@@ -277,36 +282,33 @@ function registerProjectManagementCommands(context: vscode.ExtensionContext): vo
     const deleteProjectCmd = vscode.commands.registerCommand('srs-writer.deleteProject', async () => {
         const currentSession = await sessionManager.getCurrentSession();
         if (!currentSession || !currentSession.projectName) {
-            vscode.window.showErrorMessage('No active project to delete.');
+            vscode.window.showErrorMessage(vscode.l10n.t('No active project to delete.'));
             return;
         }
 
-        const projectName = currentSession.projectName;
-        const baseDir = currentSession.baseDir;
+        const projectName = currentSession.projectName!;  // Non-null assertion - checked above
+        const baseDir = currentSession.baseDir || '';  // Use empty string if null
 
         // Confirmation dialog
+        const yesDeleteBtn = vscode.l10n.t('Yes, Delete Session and Directory');
+        const noCancelBtn = vscode.l10n.t('No, Cancel');
         const confirmChoice = await vscode.window.showWarningMessage(
-            `Are you sure you want to delete project "${projectName}"?\n\n` +
-            `This will delete:\n` +
-            `  - Session file\n` +
-            `  - Project directory: ${baseDir}\n` +
-            `  - All files and folders in the directory\n\n` +
-            `⚠️ Files will be moved to Trash/Recycle Bin (recoverable).`,
+            vscode.l10n.t('Are you sure you want to delete project "{0}"?\n\nThis will delete:\n  - Session file\n  - Project directory: {1}\n  - All files and folders in the directory\n\n⚠️ Files will be moved to Trash/Recycle Bin (recoverable).', projectName, baseDir),
             { modal: true },
-            'Yes, Delete Session and Directory',
-            'No, Cancel'
+            yesDeleteBtn,
+            noCancelBtn
         );
 
-        if (confirmChoice !== 'Yes, Delete Session and Directory') return;
+        if (confirmChoice !== yesDeleteBtn) return;
 
         try {
             await sessionManager.deleteProject(projectName);
             vscode.window.showInformationMessage(
-                `✅ Project "${projectName}" deleted`
+                vscode.l10n.t('✅ Project "{0}" deleted', projectName)
             );
         } catch (error) {
             vscode.window.showErrorMessage(
-                `Failed to delete project: ${(error as Error).message}`
+                vscode.l10n.t('Failed to delete project: {0}', (error as Error).message)
             );
         }
     });
@@ -366,16 +368,15 @@ function setupSessionFileProtection(context: vscode.ExtensionContext): void {
         if (extensionWriteCount > 0) return;
 
         // User manually edited session file
+        const openProjMgmtBtn = vscode.l10n.t('Open Project Management');
+        const keepChangesBtn = vscode.l10n.t('Keep My Changes');
         const choice = await vscode.window.showWarningMessage(
-            '⚠️ Session File Edited Manually\n\n' +
-            'Session files are managed by SRS Writer extension. ' +
-            'Manual edits may cause data inconsistency or be overwritten.\n\n' +
-            'Please use "Project Management" commands to make changes safely.',
-            'Open Project Management',
-            'Keep My Changes'
+            vscode.l10n.t('⚠️ Session File Edited Manually\n\nSession files are managed by SRS Writer extension. Manual edits may cause data inconsistency or be overwritten.\n\nPlease use "Project Management" commands to make changes safely.'),
+            openProjMgmtBtn,
+            keepChangesBtn
         );
 
-        if (choice === 'Open Project Management') {
+        if (choice === openProjMgmtBtn) {
             vscode.commands.executeCommand('srs-writer.projectManagement');
         }
         // 'Keep My Changes' - do nothing, but user has been warned
@@ -386,10 +387,8 @@ function setupSessionFileProtection(context: vscode.ExtensionContext): void {
         if (extensionWriteCount > 0) return;
 
         vscode.window.showWarningMessage(
-            '⚠️ New Session File Detected\n\n' +
-            'A new session file was created manually. This may cause conflicts. ' +
-            'Please use "Project Management" commands to create projects.',
-            'Okay'
+            vscode.l10n.t('⚠️ New Session File Detected\n\nA new session file was created manually. This may cause conflicts. Please use "Project Management" commands to create projects.'),
+            vscode.l10n.t('Okay')
         );
     });
 
@@ -485,65 +484,65 @@ async function showEnhancedStatus(): Promise<void> {
     try {
         const options = await vscode.window.showQuickPick([
             {
-                label: '$(folder-library) Create Workspace & Initialize',
-                description: 'Create a complete workspace environment for first-time use',
-                detail: 'Select parent directory, create workspace, copy template files'
+                label: vscode.l10n.t('$(folder-library) Create Workspace & Initialize'),
+                description: vscode.l10n.t('Create a complete workspace environment for first-time use'),
+                detail: vscode.l10n.t('Select parent directory, create workspace, copy template files')
             },
             {
-                label: '$(arrow-swap) Switch Project',
-                description: 'Switch to existing project',
-                detail: 'Switch to existing project in workspace'
+                label: vscode.l10n.t('$(arrow-swap) Switch Project'),
+                description: vscode.l10n.t('Switch to existing project'),
+                detail: vscode.l10n.t('Switch to existing project in workspace')
             },
             {
-                label: '$(folder-opened) Project Management',
-                description: 'Manage current project',
-                detail: 'Rename project or delete project'
+                label: vscode.l10n.t('$(folder-opened) Project Management'),
+                description: vscode.l10n.t('Manage current project'),
+                detail: vscode.l10n.t('Rename project or delete project')
             },
             {
-                label: '$(sync) Sync Status Check',
-                description: 'Check data consistency',
-                detail: 'File vs memory sync status'
+                label: vscode.l10n.t('$(sync) Sync Status Check'),
+                description: vscode.l10n.t('Check data consistency'),
+                detail: vscode.l10n.t('File vs memory sync status')
             },
             {
-                label: '$(tools) MCP Tools Management',
-                description: 'Manage MCP tools',
-                detail: 'View registered MCP tools, add or remove keywords to exclude tools'
+                label: vscode.l10n.t('$(tools) MCP Tools Management'),
+                description: vscode.l10n.t('Manage MCP tools'),
+                detail: vscode.l10n.t('View registered MCP tools, add or remove keywords to exclude tools')
             },
             {
-                label: '$(gear) Plugin Settings',
-                description: 'Open SRS Writer plugin settings',
-                detail: 'Configure knowledge paths, project exclusions, and other preferences'
+                label: vscode.l10n.t('$(gear) Plugin Settings'),
+                description: vscode.l10n.t('Open SRS Writer plugin settings'),
+                detail: vscode.l10n.t('Configure knowledge paths, project exclusions, and other preferences')
             }
         ], {
-            placeHolder: 'Select an action from the control panel',
-            title: 'SRS Writer Control Panel'
+            placeHolder: vscode.l10n.t('Select an action from the control panel'),
+            title: vscode.l10n.t('SRS Writer Control Panel')
         });
 
         if (!options) return;
 
         switch (options.label) {
-            case '$(folder-library) Create Workspace & Initialize':
+            case vscode.l10n.t('$(folder-library) Create Workspace & Initialize'):
                 await createWorkspaceAndInitialize();
                 break;
-            case '$(arrow-swap) Switch Project':
+            case vscode.l10n.t('$(arrow-swap) Switch Project'):
                 await switchProject();
                 break;
-            case '$(folder-opened) Project Management':
+            case vscode.l10n.t('$(folder-opened) Project Management'):
                 await vscode.commands.executeCommand('srs-writer.projectManagement');
                 break;
-            case '$(sync) Sync Status Check':
+            case vscode.l10n.t('$(sync) Sync Status Check'):
                 await showSyncStatus();
                 break;
-            case '$(tools) MCP Tools Management':
+            case vscode.l10n.t('$(tools) MCP Tools Management'):
                 await showVSCodeToolsStatus();
                 break;
-            case '$(gear) Plugin Settings':
+            case vscode.l10n.t('$(gear) Plugin Settings'):
                 await openPluginSettings();
                 break;
         }
     } catch (error) {
         logger.error('Failed to show enhanced status', error as Error);
-        vscode.window.showErrorMessage(`Failed to view status: ${(error as Error).message}`);
+        vscode.window.showErrorMessage(vscode.l10n.t('Failed to view status: {0}', (error as Error).message));
     }
 }
 
@@ -553,49 +552,106 @@ async function showEnhancedStatus(): Promise<void> {
 async function showVSCodeToolsStatus(): Promise<void> {
     try {
         if (!vsCodeToolsAdapter) {
-            vscode.window.showInformationMessage('VSCode Tools Adapter is not initialized');
+            vscode.window.showInformationMessage(vscode.l10n.t('VSCode Tools Adapter is not initialized'));
             return;
         }
 
         // 第一级菜单：选择操作
+        const viewToolsLabel = vscode.l10n.t('$(eye) View Tools Status');
+        const manageKeywordsLabel = vscode.l10n.t('$(filter) Manage Excluded Keywords');
+        const reloadToolsLabel = vscode.l10n.t('$(refresh) Reload Tools');
+
         const action = await vscode.window.showQuickPick([
             {
-                label: '$(eye) View Tools Status',
-                description: 'View registered VSCode and MCP tools',
-                detail: 'Shows all tools discovered from vscode.lm.tools API'
+                label: viewToolsLabel,
+                description: vscode.l10n.t('View registered VSCode and MCP tools'),
+                detail: vscode.l10n.t('Shows all tools discovered from vscode.lm.tools API')
             },
             {
-                label: '$(filter) Manage Excluded Keywords',
-                description: 'Add or remove keywords to exclude MCP tools',
-                detail: 'Exclude tools by adding keywords (e.g., java_app_mode, appmod)'
+                label: manageKeywordsLabel,
+                description: vscode.l10n.t('Add or remove keywords to exclude MCP tools'),
+                detail: vscode.l10n.t('Exclude tools by adding keywords (e.g., java_app_mode, appmod)')
             },
             {
-                label: '$(refresh) Reload Tools',
-                description: 'Reload all MCP tools after configuration changes',
-                detail: 'Unregister and re-register all tools with current settings'
+                label: reloadToolsLabel,
+                description: vscode.l10n.t('Reload all MCP tools after configuration changes'),
+                detail: vscode.l10n.t('Unregister and re-register all tools with current settings')
             }
         ], {
-            placeHolder: 'Select an action',
-            title: 'MCP Tools Management'
+            placeHolder: vscode.l10n.t('Select an action'),
+            title: vscode.l10n.t('MCP Tools Management')
         });
 
         if (!action) return;
 
         switch (action.label) {
-            case '$(eye) View Tools Status':
+            case viewToolsLabel:
                 await viewToolsStatus();
                 break;
-            case '$(filter) Manage Excluded Keywords':
+            case manageKeywordsLabel:
                 await manageExcludedKeywords();
                 break;
-            case '$(refresh) Reload Tools':
+            case reloadToolsLabel:
                 await reloadMCPTools();
                 break;
         }
 
     } catch (error) {
         logger.error('Failed to show VSCode tools status', error as Error);
-        vscode.window.showErrorMessage(`Failed to show tools status: ${(error as Error).message}`);
+        vscode.window.showErrorMessage(vscode.l10n.t('Failed to show tools status: {0}', (error as Error).message));
+    }
+}
+
+/**
+ * 🔧 调试：列出可用的 Language Models
+ */
+async function listAvailableModels(): Promise<void> {
+    try {
+        logger.info('🔍 Fetching available Language Models...');
+
+        const models = await vscode.lm.selectChatModels();
+
+        if (models.length === 0) {
+            vscode.window.showWarningMessage(vscode.l10n.t('No Language Models available. Please ensure GitHub Copilot is configured.'));
+            logger.warn('No Language Models found');
+            return;
+        }
+
+        // 构建模型信息
+        const modelDetails = models.map((model, index) => {
+            return [
+                `[${index + 1}] ${model.name}`,
+                `    ID: ${model.id}`,
+                `    Vendor: ${model.vendor}`,
+                `    Family: ${model.family}`,
+                `    Version: ${model.version}`,
+                `    Max Input Tokens: ${model.maxInputTokens}`,
+            ].join('\n');
+        });
+
+        const statusMessage = [
+            '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
+            '🤖 Available Language Models',
+            '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
+            `Total: ${models.length} models`,
+            '',
+            ...modelDetails,
+            '',
+            '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
+        ].join('\n');
+
+        logger.info('\n' + statusMessage);
+        logger.show();
+
+        // 显示简洁通知
+        const modelNames = models.map(m => m.name).join(', ');
+        vscode.window.showInformationMessage(
+            vscode.l10n.t('Found {0} models: {1}. See Output for details.', models.length, modelNames)
+        );
+
+    } catch (error) {
+        logger.error('Failed to list Language Models', error as Error);
+        vscode.window.showErrorMessage(vscode.l10n.t('Failed to list models: {0}', (error as Error).message));
     }
 }
 
@@ -663,13 +719,15 @@ async function viewToolsStatus(): Promise<void> {
     logger.show();
 
     // 同时显示一个简洁的通知
+    const viewDetailsBtn = vscode.l10n.t('View Details');
+    const openConfigBtn = vscode.l10n.t('Open MCP Config');
     const action = await vscode.window.showInformationMessage(
-        `MCP Tools: ${registeredCount} registered (${vscodeToolsCount} available, ${excludeKeywords.length} keywords)`,
-        'View Details',
-        'Open MCP Config'
+        vscode.l10n.t('MCP Tools: {0} registered ({1} available, {2} keywords)', registeredCount, vscodeToolsCount, excludeKeywords.length),
+        viewDetailsBtn,
+        openConfigBtn
     );
 
-    if (action === 'Open MCP Config') {
+    if (action === openConfigBtn) {
         const mcpConfigPath = vscode.Uri.file(
             `${process.env.HOME}/Library/Application Support/Code/User/mcp.json`
         );
@@ -684,37 +742,41 @@ async function manageExcludedKeywords(): Promise<void> {
     const config = vscode.workspace.getConfiguration('srs-writer.mcp');
     const excludeKeywords = config.get<string[]>('excludeKeywords', []);
 
+    const addKeywordLabel = vscode.l10n.t('$(add) Add Keyword');
+    const removeKeywordLabel = vscode.l10n.t('$(remove) Remove Keyword');
+    const viewKeywordsLabel = vscode.l10n.t('$(list-unordered) View Current Keywords');
+
     const action = await vscode.window.showQuickPick([
         {
-            label: '$(add) Add Keyword',
-            description: 'Add a new keyword to exclude tools',
-            detail: 'Tools containing this keyword will not be registered'
+            label: addKeywordLabel,
+            description: vscode.l10n.t('Add a new keyword to exclude tools'),
+            detail: vscode.l10n.t('Tools containing this keyword will not be registered')
         },
         {
-            label: '$(remove) Remove Keyword',
-            description: 'Remove an existing keyword',
-            detail: `Current keywords: ${excludeKeywords.length > 0 ? excludeKeywords.join(', ') : '(none)'}`
+            label: removeKeywordLabel,
+            description: vscode.l10n.t('Remove an existing keyword'),
+            detail: vscode.l10n.t('Current keywords: {0}', excludeKeywords.length > 0 ? excludeKeywords.join(', ') : vscode.l10n.t('(none)'))
         },
         {
-            label: '$(list-unordered) View Current Keywords',
-            description: 'View all configured exclude keywords',
-            detail: `${excludeKeywords.length} keyword(s) configured`
+            label: viewKeywordsLabel,
+            description: vscode.l10n.t('View all configured exclude keywords'),
+            detail: vscode.l10n.t('{0} keyword(s) configured', excludeKeywords.length)
         }
     ], {
-        placeHolder: 'Select an action',
-        title: 'Manage Excluded Keywords'
+        placeHolder: vscode.l10n.t('Select an action'),
+        title: vscode.l10n.t('Manage Excluded Keywords')
     });
 
     if (!action) return;
 
     switch (action.label) {
-        case '$(add) Add Keyword':
+        case addKeywordLabel:
             await addExcludeKeyword();
             break;
-        case '$(remove) Remove Keyword':
+        case removeKeywordLabel:
             await removeExcludeKeyword();
             break;
-        case '$(list-unordered) View Current Keywords':
+        case viewKeywordsLabel:
             await viewCurrentKeywords();
             break;
     }
@@ -725,11 +787,11 @@ async function manageExcludedKeywords(): Promise<void> {
  */
 async function addExcludeKeyword(): Promise<void> {
     const keyword = await vscode.window.showInputBox({
-        prompt: 'Enter keyword to exclude MCP tools',
-        placeHolder: 'e.g., java_app_mode, appmod',
+        prompt: vscode.l10n.t('Enter keyword to exclude MCP tools'),
+        placeHolder: vscode.l10n.t('e.g., java_app_mode, appmod'),
         validateInput: (value) => {
             if (!value || value.trim() === '') {
-                return 'Keyword cannot be empty';
+                return vscode.l10n.t('Keyword cannot be empty');
             }
             return null;
         }
@@ -742,7 +804,7 @@ async function addExcludeKeyword(): Promise<void> {
 
     // 检查是否已存在
     if (excludeKeywords.includes(keyword.trim())) {
-        vscode.window.showWarningMessage(`Keyword "${keyword.trim()}" already exists`);
+        vscode.window.showWarningMessage(vscode.l10n.t('Keyword "{0}" already exists', keyword.trim()));
         return;
     }
 
@@ -750,13 +812,15 @@ async function addExcludeKeyword(): Promise<void> {
     excludeKeywords.push(keyword.trim());
     await config.update('excludeKeywords', excludeKeywords, vscode.ConfigurationTarget.Global);
 
+    const reloadNowBtn = vscode.l10n.t('Reload Now');
+    const laterBtn = vscode.l10n.t('Later');
     const shouldReload = await vscode.window.showInformationMessage(
-        `Keyword "${keyword.trim()}" added. Reload tools to apply changes?`,
-        'Reload Now',
-        'Later'
+        vscode.l10n.t('Keyword "{0}" added. Reload tools to apply changes?', keyword.trim()),
+        reloadNowBtn,
+        laterBtn
     );
 
-    if (shouldReload === 'Reload Now') {
+    if (shouldReload === reloadNowBtn) {
         await reloadMCPTools();
     }
 }
@@ -769,13 +833,13 @@ async function removeExcludeKeyword(): Promise<void> {
     const excludeKeywords = config.get<string[]>('excludeKeywords', []);
 
     if (excludeKeywords.length === 0) {
-        vscode.window.showInformationMessage('No keywords configured');
+        vscode.window.showInformationMessage(vscode.l10n.t('No keywords configured'));
         return;
     }
 
     const keyword = await vscode.window.showQuickPick(excludeKeywords, {
-        placeHolder: 'Select keyword to remove',
-        title: 'Remove Exclude Keyword'
+        placeHolder: vscode.l10n.t('Select keyword to remove'),
+        title: vscode.l10n.t('Remove Exclude Keyword')
     });
 
     if (!keyword) return;
@@ -784,13 +848,15 @@ async function removeExcludeKeyword(): Promise<void> {
     const updatedKeywords = excludeKeywords.filter(k => k !== keyword);
     await config.update('excludeKeywords', updatedKeywords, vscode.ConfigurationTarget.Global);
 
+    const reloadNowBtn = vscode.l10n.t('Reload Now');
+    const laterBtn = vscode.l10n.t('Later');
     const shouldReload = await vscode.window.showInformationMessage(
-        `Keyword "${keyword}" removed. Reload tools to apply changes?`,
-        'Reload Now',
-        'Later'
+        vscode.l10n.t('Keyword "{0}" removed. Reload tools to apply changes?', keyword),
+        reloadNowBtn,
+        laterBtn
     );
 
-    if (shouldReload === 'Reload Now') {
+    if (shouldReload === reloadNowBtn) {
         await reloadMCPTools();
     }
 }
@@ -803,7 +869,7 @@ async function viewCurrentKeywords(): Promise<void> {
     const excludeKeywords = config.get<string[]>('excludeKeywords', []);
 
     if (excludeKeywords.length === 0) {
-        vscode.window.showInformationMessage('No exclude keywords configured');
+        vscode.window.showInformationMessage(vscode.l10n.t('No exclude keywords configured'));
         return;
     }
 
@@ -822,7 +888,7 @@ async function viewCurrentKeywords(): Promise<void> {
     logger.info('\n' + message);
     logger.show();
 
-    vscode.window.showInformationMessage(`${excludeKeywords.length} keyword(s) configured. Check Output for details.`);
+    vscode.window.showInformationMessage(vscode.l10n.t('{0} keyword(s) configured. Check Output for details.', excludeKeywords.length));
 }
 
 /**
@@ -830,7 +896,7 @@ async function viewCurrentKeywords(): Promise<void> {
  */
 async function reloadMCPTools(): Promise<void> {
     if (!vsCodeToolsAdapter) {
-        vscode.window.showWarningMessage('VSCode Tools Adapter is not initialized');
+        vscode.window.showWarningMessage(vscode.l10n.t('VSCode Tools Adapter is not initialized'));
         return;
     }
 
@@ -847,11 +913,11 @@ async function reloadMCPTools(): Promise<void> {
         const toolCount = vsCodeToolsAdapter.getRegisteredToolCount();
         logger.info(`[MCP] Reloaded: ${toolCount} tool(s) registered`);
 
-        vscode.window.showInformationMessage(`✅ MCP tools reloaded: ${toolCount} tool(s) registered`);
+        vscode.window.showInformationMessage(vscode.l10n.t('✅ MCP tools reloaded: {0} tool(s) registered', toolCount));
 
     } catch (error) {
         logger.error('Failed to reload MCP tools', error as Error);
-        vscode.window.showErrorMessage(`Failed to reload tools: ${(error as Error).message}`);
+        vscode.window.showErrorMessage(vscode.l10n.t('Failed to reload tools: {0}', (error as Error).message));
     }
 }
 
@@ -872,11 +938,12 @@ async function openPluginSettings(): Promise<void> {
             logger.info('Plugin settings opened via search fallback');
         } catch (fallbackError) {
             // 只在完全失败时才显示错误，并提供手动解决方案
+            const openManuallyBtn = vscode.l10n.t('Open settings manually');
             vscode.window.showErrorMessage(
-                `Failed to open settings page: ${(error as Error).message}`,
-                'Open settings manually'
+                vscode.l10n.t('Failed to open settings page: {0}', (error as Error).message),
+                openManuallyBtn
             ).then(selection => {
-                if (selection === 'Open settings manually') {
+                if (selection === openManuallyBtn) {
                     vscode.commands.executeCommand('workbench.action.openSettings');
                 }
             });
@@ -902,53 +969,54 @@ async function showSyncStatus(): Promise<void> {
         // 构建状态信息消息
         const statusIcon = syncStatus.isConsistent ? '✅' : '⚠️';
         const checkTime = new Date(syncStatus.lastSyncCheck).toLocaleString();
-        
-        const statusMessage = `${statusIcon} **Sync Status Check Results**
 
-📋 **Current Project Information:**
-• Project Name: ${statusInfo.projectName}
-• Base Directory: ${statusInfo.baseDirectory}
-• Active Files: ${statusInfo.activeFiles}
-• Git Branch: ${statusInfo.gitBranch}
-• Session ID: ${statusInfo.sessionId.substring(0, 8)}...
-• File Format: ${statusInfo.fileFormat}
-
-🕐 Check Time: ${checkTime}
-
-${syncStatus.isConsistent 
-    ? '✅ All components are synchronized' 
-    : `❌ Found ${syncStatus.inconsistencies.length} sync issue(s):\n${syncStatus.inconsistencies.map(i => `  • ${i}`).join('\n')}`
-}`;
+        const statusMessage = vscode.l10n.t('{0} **Sync Status Check Results**\n\n📋 **Current Project Information:**\n• Project Name: {1}\n• Base Directory: {2}\n• Active Files: {3}\n• Git Branch: {4}\n• Session ID: {5}...\n• File Format: {6}\n\n🕐 Check Time: {7}\n\n{8}',
+            statusIcon,
+            statusInfo.projectName,
+            statusInfo.baseDirectory,
+            statusInfo.activeFiles,
+            statusInfo.gitBranch,
+            statusInfo.sessionId.substring(0, 8),
+            statusInfo.fileFormat,
+            checkTime,
+            syncStatus.isConsistent
+                ? vscode.l10n.t('✅ All components are synchronized')
+                : vscode.l10n.t('❌ Found {0} sync issue(s):\n{1}', syncStatus.inconsistencies.length, syncStatus.inconsistencies.map((i: string) => `  • ${i}`).join('\n'))
+        );
 
         if (syncStatus.isConsistent) {
             // 状态正常时显示信息消息
+            const okBtn = vscode.l10n.t('OK');
             await vscode.window.showInformationMessage(
                 statusMessage,
                 { modal: true },
-                'OK'
+                okBtn
             );
         } else {
             // 有问题时显示警告消息并提供修复选项
+            const fixNowBtn = vscode.l10n.t('Fix Now');
+            const viewDetailsBtn = vscode.l10n.t('View Details');
+            const laterBtn = vscode.l10n.t('Later');
             const action = await vscode.window.showWarningMessage(
-                statusMessage + '\n\n💡 Suggestion: Use "Force Sync Context" to fix these issues.',
+                statusMessage + '\n\n' + vscode.l10n.t('💡 Suggestion: Use "Force Sync Context" to fix these issues.'),
                 { modal: true },
-                'Fix Now',
-                'View Details',
-                'Later'
+                fixNowBtn,
+                viewDetailsBtn,
+                laterBtn
             );
-            
+
             switch (action) {
-                case 'Fix Now':
+                case fixNowBtn:
                     await vscode.commands.executeCommand('srs-writer.forceSyncContext');
                     break;
-                case 'View Details':
+                case viewDetailsBtn:
                     await showSyncStatusDetails(syncStatus, statusInfo);
                     break;
             }
         }
     } catch (error) {
         logger.error('Failed to show sync status', error as Error);
-        vscode.window.showErrorMessage(`Failed to check sync status: ${(error as Error).message}`);
+        vscode.window.showErrorMessage(vscode.l10n.t('Failed to check sync status: {0}', (error as Error).message));
     }
 }
 
@@ -956,39 +1024,37 @@ ${syncStatus.isConsistent
  * 🚀 v5.0新增：显示同步状态详细信息
  */
 async function showSyncStatusDetails(syncStatus: any, statusInfo: any): Promise<void> {
-    const detailsMessage = `🔍 **Detailed Sync Status Report**
+    const pluginVersion = require('../package.json').version;
+    const pathManagerStatus = statusInfo.pathManager || vscode.l10n.t('Active');
+    const lastCheck = new Date(syncStatus.lastSyncCheck).toLocaleString();
 
-📊 **System Information:**
-• Plugin Version: ${require('../package.json').version}
-• Session Format: v5.0 (UnifiedSessionFile)
-• PathManager Status: ${statusInfo.pathManager || 'Active'}
+    const inconsistencyAnalysis = syncStatus.inconsistencies.length === 0
+        ? vscode.l10n.t('✅ No issues detected')
+        : syncStatus.inconsistencies.map((issue: string, index: number) =>
+            `${index + 1}. ${issue}`
+        ).join('\n');
 
-📁 **Project Details:**
-• Project: ${statusInfo.projectName}
-• Directory: ${statusInfo.baseDirectory}
-• Git Branch: ${statusInfo.gitBranch}
-• Session ID: ${statusInfo.sessionId}
+    const recommendations = syncStatus.isConsistent
+        ? vscode.l10n.t('• System is healthy, no action needed')
+        : vscode.l10n.t('• Run "Force Sync Context" to resolve issues\n• Consider restarting VS Code if problems persist\n• Check Git repository status if branch-related issues exist');
 
-📋 **Inconsistency Analysis:**
-${syncStatus.inconsistencies.length === 0 
-    ? '✅ No issues detected'
-    : syncStatus.inconsistencies.map((issue: string, index: number) => 
-        `${index + 1}. ${issue}`
-    ).join('\n')
-}
+    const detailsMessage = vscode.l10n.t('🔍 **Detailed Sync Status Report**\n\n📊 **System Information:**\n• Plugin Version: {0}\n• Session Format: v5.0 (UnifiedSessionFile)\n• PathManager Status: {1}\n\n📁 **Project Details:**\n• Project: {2}\n• Directory: {3}\n• Git Branch: {4}\n• Session ID: {5}\n\n📋 **Inconsistency Analysis:**\n{6}\n\n🕐 Last Check: {7}\n\n💡 **Recommendations:**\n{8}',
+        pluginVersion,
+        pathManagerStatus,
+        statusInfo.projectName,
+        statusInfo.baseDirectory,
+        statusInfo.gitBranch,
+        statusInfo.sessionId,
+        inconsistencyAnalysis,
+        lastCheck,
+        recommendations
+    );
 
-🕐 Last Check: ${new Date(syncStatus.lastSyncCheck).toLocaleString()}
-
-💡 **Recommendations:**
-${syncStatus.isConsistent 
-    ? '• System is healthy, no action needed'
-    : '• Run "Force Sync Context" to resolve issues\n• Consider restarting VS Code if problems persist\n• Check Git repository status if branch-related issues exist'
-}`;
-
+    const closeBtn = vscode.l10n.t('Close');
     await vscode.window.showInformationMessage(
         detailsMessage,
         { modal: true },
-        'Close'
+        closeBtn
     );
 }
 
@@ -1004,78 +1070,79 @@ async function performForcedSync(): Promise<void> {
     try {
         await vscode.window.withProgress({
             location: vscode.ProgressLocation.Notification,
-            title: "Force syncing session status...",
+            title: vscode.l10n.t('Force syncing session status...'),
             cancellable: false
         }, async (progress) => {
-            
-            progress.report({ increment: 0, message: "🔄 Starting forced sync..." });
-            
+
+            progress.report({ increment: 0, message: vscode.l10n.t('🔄 Starting forced sync...') });
+
             const sessionManager = SessionManager.getInstance();
-            
+
             // 1. 使用智能恢复逻辑重新同步状态
-            progress.report({ increment: 25, message: "🔍 Running smart recovery..." });
+            progress.report({ increment: 25, message: vscode.l10n.t('🔍 Running smart recovery...') });
             await sessionManager.autoInitialize();
             logger.info('✅ Smart recovery completed');
-            
+
             // 2. 强制通知所有观察者
-            progress.report({ increment: 50, message: "📢 Notifying observers..." });
+            progress.report({ increment: 50, message: vscode.l10n.t('📢 Notifying observers...') });
             sessionManager.forceNotifyObservers();
             logger.info('✅ All observers notified');
-            
+
             // 3. 验证同步状态
-            progress.report({ increment: 75, message: "✅ Verifying sync status..." });
+            progress.report({ increment: 75, message: vscode.l10n.t('✅ Verifying sync status...') });
             const syncStatus = await sessionManager.checkSyncStatus();
-            
+
             // 4. 获取状态信息用于显示
-            progress.report({ increment: 90, message: "📋 Gathering status info..." });
+            progress.report({ increment: 90, message: vscode.l10n.t('📋 Gathering status info...') });
             const statusInfo = await sessionManager.getCurrentStatusInfo();
-            
-            progress.report({ increment: 100, message: "✅ Sync completed!" });
-            
+
+            progress.report({ increment: 100, message: vscode.l10n.t('✅ Sync completed!') });
+
             // 显示同步结果
             const resultIcon = syncStatus.isConsistent ? '✅' : '⚠️';
-            const resultMessage = `${resultIcon} **Force Sync Results**
+            const syncResultStatus = syncStatus.isConsistent
+                ? vscode.l10n.t('✅ All components successfully synchronized!')
+                : vscode.l10n.t('⚠️ Sync completed with {0} remaining issue(s):\n{1}', syncStatus.inconsistencies.length, syncStatus.inconsistencies.map((i: string) => `  • ${i}`).join('\n'));
 
-📋 **Updated Project Information:**
-• Project Name: ${statusInfo.projectName}
-• Base Directory: ${statusInfo.baseDirectory}
-• Active Files: ${statusInfo.activeFiles}
-• Git Branch: ${statusInfo.gitBranch}
-• Session ID: ${statusInfo.sessionId.substring(0, 8)}...
-
-${syncStatus.isConsistent 
-    ? '✅ All components successfully synchronized!'
-    : `⚠️ Sync completed with ${syncStatus.inconsistencies.length} remaining issue(s):\n${syncStatus.inconsistencies.map(i => `  • ${i}`).join('\n')}`
-}
-
-🕐 Completed: ${new Date().toLocaleString()}`;
+            const resultMessage = vscode.l10n.t('{0} **Force Sync Results**\n\n📋 **Updated Project Information:**\n• Project Name: {1}\n• Base Directory: {2}\n• Active Files: {3}\n• Git Branch: {4}\n• Session ID: {5}...\n\n{6}\n\n🕐 Completed: {7}',
+                resultIcon,
+                statusInfo.projectName,
+                statusInfo.baseDirectory,
+                statusInfo.activeFiles,
+                statusInfo.gitBranch,
+                statusInfo.sessionId.substring(0, 8),
+                syncResultStatus,
+                new Date().toLocaleString()
+            );
 
             if (syncStatus.isConsistent) {
+                const okBtn = vscode.l10n.t('OK');
                 vscode.window.showInformationMessage(
                     resultMessage,
                     { modal: true },
-                    'OK'
+                    okBtn
                 );
                 logger.info('✅ Forced sync completed successfully');
             } else {
+                const viewDetailsBtn = vscode.l10n.t('View Details');
+                const okBtn = vscode.l10n.t('OK');
                 const action = await vscode.window.showWarningMessage(
-                    resultMessage + '\n\n💡 Some issues may require manual intervention or VS Code restart.',
+                    resultMessage + '\n\n' + vscode.l10n.t('💡 Some issues may require manual intervention or VS Code restart.'),
                     { modal: true },
-                    'View Details',
-                    'OK'
+                    viewDetailsBtn,
+                    okBtn
                 );
-                
-                if (action === 'View Details') {
+
+                if (action === viewDetailsBtn) {
                     await showSyncStatusDetails(syncStatus, statusInfo);
                 }
-                
+
                 logger.warn(`⚠️ Sync completed with issues: ${syncStatus.inconsistencies.join(', ')}`);
             }
         });
-        
+
     } catch (error) {
-        const errorMessage = `❌ Forced sync failed: ${(error as Error).message}`;
-        vscode.window.showErrorMessage(errorMessage);
+        vscode.window.showErrorMessage(vscode.l10n.t('❌ Forced sync failed: {0}', (error as Error).message));
         logger.error('Failed to perform forced sync', error as Error);
     }
 }
@@ -1107,20 +1174,20 @@ ${syncStatus.isConsistent
  * 🚀 阶段3新增：格式化相对时间
  */
 function formatRelativeTime(isoString?: string): string {
-    if (!isoString) return 'Unknown';
-    
+    if (!isoString) return vscode.l10n.t('Unknown');
+
     const date = new Date(isoString);
     const now = new Date();
     const diffMs = now.getTime() - date.getTime();
     const diffMinutes = Math.floor(diffMs / (1000 * 60));
     const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
     const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-    
-    if (diffMinutes < 1) return 'Just now';
-    if (diffMinutes < 60) return `${diffMinutes}m ago`;
-    if (diffHours < 24) return `${diffHours}h ago`;
-    if (diffDays < 7) return `${diffDays}d ago`;
-    
+
+    if (diffMinutes < 1) return vscode.l10n.t('Just now');
+    if (diffMinutes < 60) return vscode.l10n.t('{0}m ago', diffMinutes);
+    if (diffHours < 24) return vscode.l10n.t('{0}h ago', diffHours);
+    if (diffDays < 7) return vscode.l10n.t('{0}d ago', diffDays);
+
     return date.toLocaleDateString();
 }
 
@@ -1130,7 +1197,7 @@ function formatRelativeTime(isoString?: string): string {
 async function switchProject(): Promise<void> {
     try {
         const currentSession = await sessionManager.getCurrentSession();
-        const currentProjectName = currentSession?.projectName || 'No Project';
+        const currentProjectName = currentSession?.projectName || vscode.l10n.t('No Project');
 
         // 🚀 Phase 2.1: 单一数据源 - 只从 session 文件扫描
         const sessionProjects = await sessionManager.listProjectSessions();
@@ -1142,7 +1209,7 @@ async function switchProject(): Promise<void> {
 
             // 状态图标和描述
             const statusIcon = isValid ? '📁' : '⚠️';
-            const statusText = isValid ? 'Directory' : 'Directory Error';
+            const statusText = isValid ? vscode.l10n.t('Directory') : vscode.l10n.t('Directory Error');
 
             // 项目信息行
             const infoLine = [
@@ -1151,12 +1218,12 @@ async function switchProject(): Promise<void> {
             ].join(' • ');
 
             return {
-                label: `${project.projectName}${isCurrentProject ? ' (Current)' : ''}`,
+                label: `${project.projectName}${isCurrentProject ? vscode.l10n.t(' (Current)') : ''}`,
                 description: infoLine,
                 detail: isCurrentProject
-                    ? 'Currently active project'
+                    ? vscode.l10n.t('Currently active project')
                     : isValid
-                        ? 'Ready to switch'
+                        ? vscode.l10n.t('Ready to switch')
                         : `⚠️ ${error}`,
                 project,
                 action: 'switch' as const
@@ -1170,7 +1237,7 @@ async function switchProject(): Promise<void> {
         ];
 
         const selectedOption = await vscode.window.showQuickPick(allOptions, {
-            placeHolder: `Switch to existing project (Current: ${currentProjectName})`,
+            placeHolder: vscode.l10n.t('Switch to existing project (Current: {0})', currentProjectName),
             matchOnDescription: true,
             matchOnDetail: true
         });
@@ -1192,25 +1259,24 @@ async function switchProject(): Promise<void> {
 
         // 如果选择的是当前项目，无需切换
         if (targetProject.isActive) {
-            vscode.window.showInformationMessage(`✅ Already on current project: ${targetProjectName}`);
+            vscode.window.showInformationMessage(vscode.l10n.t('✅ Already on current project: {0}', targetProjectName));
             return;
         }
 
         // 🚀 Phase 2.1: 切换前验证 baseDir
         if (!targetProject.baseDirValidation.isValid) {
-            const errorMessage = targetProject.baseDirValidation.error || 'Unknown error';
+            const errorMessage = targetProject.baseDirValidation.error || vscode.l10n.t('Unknown error');
 
             // 显示错误并提供修复指导
+            const openProjectMgmtBtn = vscode.l10n.t('Open Project Management');
+            const cancelBtn = vscode.l10n.t('Cancel');
             const choice = await vscode.window.showErrorMessage(
-                `❌ Project Folder Path Error\n\n` +
-                `Project: ${targetProjectName}\n` +
-                `Error: ${errorMessage}\n\n` +
-                `Please use "Project Management → Rename Project" to fix the path before switching.`,
-                'Open Project Management',
-                'Cancel'
+                vscode.l10n.t('❌ Project Folder Path Error\n\nProject: {0}\nError: {1}\n\nPlease use "Project Management → Rename Project" to fix the path before switching.', targetProjectName, errorMessage),
+                openProjectMgmtBtn,
+                cancelBtn
             );
 
-            if (choice === 'Open Project Management') {
+            if (choice === openProjectMgmtBtn) {
                 await vscode.commands.executeCommand('srs-writer.projectManagement');
             }
 
@@ -1218,15 +1284,14 @@ async function switchProject(): Promise<void> {
         }
 
         // BaseDir 有效，显示确认信息
-        const confirmMessage = `🔄 Switch to project "${targetProjectName}"?\n\nCurrent session will be saved, then load that project's session.`;
-
+        const continueBtn = vscode.l10n.t('Continue');
         const confirmed = await vscode.window.showInformationMessage(
-            confirmMessage,
+            vscode.l10n.t('🔄 Switch to project "{0}"?\n\nCurrent session will be saved, then load that project\'s session.', targetProjectName),
             { modal: true },
-            'Continue'
+            continueBtn
         );
 
-        if (confirmed !== 'Continue') {
+        if (confirmed !== continueBtn) {
             return;
         }
 
@@ -1234,20 +1299,20 @@ async function switchProject(): Promise<void> {
         // 🚀 v6.0新增：检查是否有Plan正在执行
         let hasPlanExecution = false;
         let planDescription = '';
-        
+
         if (chatParticipant && chatParticipant.isPlanExecuting()) {
             hasPlanExecution = true;
-            planDescription = chatParticipant.getCurrentPlanDescription() || 'Current task is being executed';
-            
-            const planConfirmMessage = `⚠️ Detected executing plan:\n\n${planDescription}\n\nIf you switch project now, the current plan will be safely stopped. Do you want to continue switching?`;
+            planDescription = chatParticipant.getCurrentPlanDescription() || vscode.l10n.t('Current task is being executed');
+
+            const confirmSwitchBtn = vscode.l10n.t('Confirm switch (stop plan)');
             const planConfirmed = await vscode.window.showWarningMessage(
-                planConfirmMessage,
+                vscode.l10n.t('⚠️ Detected executing plan:\n\n{0}\n\nIf you switch project now, the current plan will be safely stopped. Do you want to continue switching?', planDescription),
                 { modal: true },
-                'Confirm switch (stop plan)'
+                confirmSwitchBtn
             );
 
-            if (planConfirmed !== 'Confirm switch (stop plan)') {
-                vscode.window.showInformationMessage('Project switch cancelled, plan continues execution');
+            if (planConfirmed !== confirmSwitchBtn) {
+                vscode.window.showInformationMessage(vscode.l10n.t('Project switch cancelled, plan continues execution'));
                 return;
             }
         }
@@ -1256,62 +1321,62 @@ async function switchProject(): Promise<void> {
         // 🚀 阶段3新增：使用会话切换而不是归档
         const result = await vscode.window.withProgress({
             location: vscode.ProgressLocation.Notification,
-            title: `Switching to project "${targetProjectName}"...`,
+            title: vscode.l10n.t('Switching to project "{0}"...', targetProjectName),
             cancellable: false
         }, async (progress, token) => {
             try {
                 let currentProgress = 0;
-                
+
                 // 阶段1：中止当前计划（如果需要）
                 if (hasPlanExecution) {
-                    progress.report({ 
-                        increment: 0, 
-                        message: '🛑 Stopping current plan...' 
+                    progress.report({
+                        increment: 0,
+                        message: vscode.l10n.t('🛑 Stopping current plan...')
                     });
-                    
-                    progress.report({ 
-                        increment: 10, 
-                        message: '⏳ Waiting for specialist to stop safely...' 
+
+                    progress.report({
+                        increment: 10,
+                        message: vscode.l10n.t('⏳ Waiting for specialist to stop safely...')
                     });
-                    
+
                     logger.info('🛑 User confirmed to cancel plan for project switch');
                     await chatParticipant.cancelCurrentPlan();
                     currentProgress = 40;
-                    
-                    progress.report({ 
-                        increment: 30, 
-                        message: '✅ Plan stopped completely' 
+
+                    progress.report({
+                        increment: 30,
+                        message: vscode.l10n.t('✅ Plan stopped completely')
                     });
                 } else {
                     currentProgress = 40;
-                    progress.report({ 
-                        increment: 40, 
-                        message: '✅ No plan to stop, continuing...' 
+                    progress.report({
+                        increment: 40,
+                        message: vscode.l10n.t('✅ No plan to stop, continuing...')
                     });
                 }
 
                 // 🚀 Phase 2.1: 加载项目会话（所有项目都有会话文件）
                 progress.report({
                     increment: 0,
-                    message: '💾 Loading project session...'
+                    message: vscode.l10n.t('💾 Loading project session...')
                 });
 
                 await sessionManager.switchToProjectSession(targetProjectName);
-                
+
                 // 🚀 确保会话中记录正确的Git分支信息
                 await sessionManager.updateSession({
                     gitBranch: 'wip'
                 });
-                
-                progress.report({ 
-                    increment: 35, 
-                    message: '✅ Session switch completed' 
+
+                progress.report({
+                    increment: 35,
+                    message: vscode.l10n.t('✅ Session switch completed')
                 });
 
                 // 🚀 重构：简化的wip分支检查
-                progress.report({ 
-                    increment: 0, 
-                    message: '🌿 Ensuring on wip branch...' 
+                progress.report({
+                    increment: 0,
+                    message: vscode.l10n.t('🌿 Ensuring on wip branch...')
                 });
                 
                 try {
@@ -1325,11 +1390,11 @@ async function switchProject(): Promise<void> {
                         if (wipSwitchResult.success) {
                             if (wipSwitchResult.branchSwitched) {
                                 logger.info(`🌿 [switchProject] ${wipSwitchResult.message}`);
-                                progress.report({ 
-                                    increment: 15, 
-                                    message: `✅ Switched to wip branch` 
+                                progress.report({
+                                    increment: 15,
+                                    message: vscode.l10n.t('✅ Switched to wip branch')
                                 });
-                                
+
                                 // 记录分支切换到会话日志
                                 await sessionManager.updateSessionWithLog({
                                     logEntry: {
@@ -1349,51 +1414,51 @@ async function switchProject(): Promise<void> {
                                 });
                             } else {
                                 logger.info(`✅ [switchProject] Already on wip branch`);
-                                progress.report({ 
-                                    increment: 15, 
-                                    message: '✅ Already on wip branch' 
+                                progress.report({
+                                    increment: 15,
+                                    message: vscode.l10n.t('✅ Already on wip branch')
                                 });
                             }
                         } else {
                             logger.warn(`⚠️ [switchProject] WIP branch check failed: ${wipSwitchResult.error}`);
-                            progress.report({ 
-                                increment: 15, 
-                                message: `⚠️ WIP branch check failed: ${wipSwitchResult.error}` 
+                            progress.report({
+                                increment: 15,
+                                message: vscode.l10n.t('⚠️ WIP branch check failed: {0}', wipSwitchResult.error || '')
                             });
                         }
                     } else {
-                        progress.report({ 
-                            increment: 15, 
-                            message: '⚠️ No workspace folder, skipping Git check' 
+                        progress.report({
+                            increment: 15,
+                            message: vscode.l10n.t('⚠️ No workspace folder, skipping Git check')
                         });
                     }
                 } catch (gitError) {
                     logger.warn(`⚠️ [switchProject] Exception during WIP branch check: ${(gitError as Error).message}`);
-                    progress.report({ 
-                        increment: 15, 
-                        message: `⚠️ Git check error: ${(gitError as Error).message}` 
+                    progress.report({
+                        increment: 15,
+                        message: vscode.l10n.t('⚠️ Git check error: {0}', (gitError as Error).message)
                     });
                 }
 
                 // 清理项目上下文
-                progress.report({ 
-                    increment: 0, 
-                    message: '🧹 Cleaning project context...' 
+                progress.report({
+                    increment: 0,
+                    message: vscode.l10n.t('🧹 Cleaning project context...')
                 });
 
                 if (chatParticipant) {
                     chatParticipant.clearProjectContext();
                 }
-                
-                progress.report({ 
-                    increment: 20, 
-                    message: '✅ Context cleaned' 
+
+                progress.report({
+                    increment: 20,
+                    message: vscode.l10n.t('✅ Context cleaned')
                 });
 
                 // 最终完成
-                progress.report({ 
-                    increment: 5, 
-                    message: '🚀 Project switch completed!' 
+                progress.report({
+                    increment: 5,
+                    message: vscode.l10n.t('🚀 Project switch completed!')
                 });
 
                 // 返回成功结果
@@ -1411,15 +1476,15 @@ async function switchProject(): Promise<void> {
 
         if (result.success) {
             // 🚀 重构：简化的成功消息，专注于项目和会话状态
-            const sessionInfo = result.sessionCreated ? ' (New session created)' : ' (Existing session loaded)';
-            
-            const successMessage = `✅ Project switch completed!\n\n📁 Current project: ${targetProjectName}${sessionInfo}\n🌿 Working on wip branch\n\n🚀 Ready to start working!`;
+            const sessionInfo = result.sessionCreated ? vscode.l10n.t(' (New session created)') : vscode.l10n.t(' (Existing session loaded)');
+
+            const okBtn = vscode.l10n.t('OK');
             await vscode.window.showInformationMessage(
-                successMessage,
+                vscode.l10n.t('✅ Project switch completed!\n\n📁 Current project: {0}{1}\n🌿 Working on wip branch\n\n🚀 Ready to start working!', targetProjectName, sessionInfo),
                 { modal: false },
-                'OK'
+                okBtn
             );
-            
+
             logger.info(`✅ Project switched successfully to ${targetProjectName}.`);
         } else {
             throw new Error('Project switch failed');
@@ -1427,19 +1492,21 @@ async function switchProject(): Promise<void> {
 
     } catch (error) {
         logger.error('Failed to switch project', error as Error);
-        
+
         // 🚀 阶段3更新：英文错误处理
-        const errorMessage = `❌ Project switch failed\n\nError details: ${(error as Error).message}\n\nPlease check logs for more information.`;
+        const viewLogsBtn = vscode.l10n.t('View Logs');
+        const retryBtn = vscode.l10n.t('Retry');
+        const cancelBtn = vscode.l10n.t('Cancel');
         const action = await vscode.window.showErrorMessage(
-            errorMessage,
-            'View Logs',
-            'Retry',
-            'Cancel'
+            vscode.l10n.t('❌ Project switch failed\n\nError details: {0}\n\nPlease check logs for more information.', (error as Error).message),
+            viewLogsBtn,
+            retryBtn,
+            cancelBtn
         );
-        
-        if (action === 'View Logs') {
+
+        if (action === viewLogsBtn) {
             vscode.commands.executeCommand('workbench.action.toggleDevTools');
-        } else if (action === 'Retry') {
+        } else if (action === retryBtn) {
             // 重新执行切换项目命令
             setTimeout(() => {
                 vscode.commands.executeCommand('srs-writer.switchProject');
@@ -1466,8 +1533,8 @@ async function createWorkspaceAndInitialize(): Promise<void> {
             canSelectFiles: false,
             canSelectFolders: true,
             canSelectMany: false,
-            openLabel: 'Select workspace parent directory',
-            title: 'Select the location of the parent directory for creating the workspace'
+            openLabel: vscode.l10n.t('Select workspace parent directory'),
+            title: vscode.l10n.t('Select the location of the parent directory for creating the workspace')
         });
 
         if (!parentDirResult || parentDirResult.length === 0) {
@@ -1480,14 +1547,14 @@ async function createWorkspaceAndInitialize(): Promise<void> {
 
         // Step 2: 让用户输入工作区文件夹名称
         const workspaceName = await vscode.window.showInputBox({
-            prompt: 'Enter the workspace folder name',
-            placeHolder: 'e.g. my-srs-workspace',
+            prompt: vscode.l10n.t('Enter the workspace folder name'),
+            placeHolder: vscode.l10n.t('e.g. my-srs-workspace'),
             validateInput: (value) => {
                 if (!value || value.trim().length === 0) {
-                    return 'Workspace name cannot be empty';
+                    return vscode.l10n.t('Workspace name cannot be empty');
                 }
                 if (!/^[a-zA-Z0-9_-]+$/.test(value.trim())) {
-                    return 'Workspace name can only contain letters, numbers, underscores, and hyphens';
+                    return vscode.l10n.t('Workspace name can only contain letters, numbers, underscores, and hyphens');
                 }
                 return undefined;
             }
@@ -1507,13 +1574,14 @@ async function createWorkspaceAndInitialize(): Promise<void> {
         // 检查目录是否已存在
         try {
             await vscode.workspace.fs.stat(vscode.Uri.file(workspacePath));
+            const continueBtn = vscode.l10n.t('Continue');
             const overwrite = await vscode.window.showWarningMessage(
-                `Directory "${trimmedWorkspaceName}" already exists, do you want to continue?`,
+                vscode.l10n.t('Directory "{0}" already exists, do you want to continue?', trimmedWorkspaceName),
                 { modal: true },
-                'Continue'
+                continueBtn
             );
-            
-            if (overwrite !== 'Continue') {
+
+            if (overwrite !== continueBtn) {
                 logger.info('User cancelled overwriting existing directory');
                 return;
             }
@@ -1525,20 +1593,20 @@ async function createWorkspaceAndInitialize(): Promise<void> {
         let gitInitResult: any = null;
         let gitIgnoreResult: any = null;
         let initialCommitResult: any = null;
-        
+
         // 显示进度指示器
         await vscode.window.withProgress({
             location: vscode.ProgressLocation.Notification,
-            title: 'Creating workspace...',
+            title: vscode.l10n.t('Creating workspace...'),
             cancellable: false
         }, async (progress) => {
-            progress.report({ increment: 0, message: 'Creating workspace directory...' });
-            
+            progress.report({ increment: 0, message: vscode.l10n.t('Creating workspace directory...') });
+
             // 创建工作区目录
             await vscode.workspace.fs.createDirectory(vscode.Uri.file(workspacePath));
             logger.info(`✅ Workspace directory created successfully: ${workspacePath}`);
 
-            progress.report({ increment: 30, message: 'Copying template files...' });
+            progress.report({ increment: 30, message: vscode.l10n.t('Copying template files...') });
 
             // Step 4: 复制 .templates 目录
             const extensionContext = getExtensionContext();
@@ -1550,7 +1618,7 @@ async function createWorkspaceAndInitialize(): Promise<void> {
                 logger.info(`✅ Templates directory copied successfully: ${templatesTargetPath}`);
 
                 // 🚀 Step 4.1: 创建 .vscode/settings.json 以确保一致的用户体验
-                progress.report({ increment: 35, message: 'Creating workspace settings...' });
+                progress.report({ increment: 35, message: vscode.l10n.t('Creating workspace settings...') });
 
                 try {
                     const vscodeDir = path.join(workspacePath, '.vscode');
@@ -1580,7 +1648,7 @@ async function createWorkspaceAndInitialize(): Promise<void> {
             }
 
             // Step 4.5: 🌿 Git 仓库初始化
-            progress.report({ increment: 60, message: '🌿 Initializing Git repository...' });
+            progress.report({ increment: 60, message: vscode.l10n.t('🌿 Initializing Git repository...') });
             
             try {
                 const { initializeGitRepository, createGitIgnoreFile, createInitialCommit } = 
@@ -1592,14 +1660,14 @@ async function createWorkspaceAndInitialize(): Promise<void> {
                     logger.info(`🌿 [Workspace Init] ${gitInitResult.message}`);
                     
                     // Step 4.6: 创建 .gitignore 文件
-                    progress.report({ increment: 70, message: '🌿 Creating .gitignore file...' });
+                    progress.report({ increment: 70, message: vscode.l10n.t('🌿 Creating .gitignore file...') });
                     gitIgnoreResult = await createGitIgnoreFile(workspacePath);
                     
                     if (gitIgnoreResult.success) {
                         logger.info(`🌿 [Workspace Init] ${gitIgnoreResult.message}`);
                         
                         // Step 4.7: 创建初始提交
-                        progress.report({ increment: 80, message: '🌿 Creating initial commit...' });
+                        progress.report({ increment: 80, message: vscode.l10n.t('🌿 Creating initial commit...') });
                         initialCommitResult = await createInitialCommit(workspacePath, 'init commit');
                         
                         if (initialCommitResult.success) {
@@ -1609,7 +1677,7 @@ async function createWorkspaceAndInitialize(): Promise<void> {
                         }
 
                         // 🚀 阶段1新增：Step 4.8: 创建 .session-log 目录
-                        progress.report({ increment: 3, message: '📁 Creating session management directory...' });
+                        progress.report({ increment: 3, message: vscode.l10n.t('📁 Creating session management directory...') });
                         
                         try {
                             const sessionLogDir = path.join(workspacePath, '.session-log');
@@ -1617,7 +1685,7 @@ async function createWorkspaceAndInitialize(): Promise<void> {
                             logger.info(`✅ Session log directory created: ${sessionLogDir}`);
                             
                             // Step 4.9: 创建主会话文件（如果不存在）
-                            progress.report({ increment: 5, message: '📝 Initializing session file...' });
+                            progress.report({ increment: 5, message: vscode.l10n.t('📝 Initializing session file...') });
                             
                             const mainSessionPath = path.join(sessionLogDir, 'srs-writer-session_main.json');
                             const mainSessionUri = vscode.Uri.file(mainSessionPath);
@@ -1691,7 +1759,7 @@ async function createWorkspaceAndInitialize(): Promise<void> {
                     
                     // 🚀 新增：Step 4.8: 创建wip工作分支（在Git初始化成功后）
                     if (gitInitResult?.success && initialCommitResult?.success) {
-                        progress.report({ increment: 2, message: '🌿 Creating wip working branch...' });
+                        progress.report({ increment: 2, message: vscode.l10n.t('🌿 Creating wip working branch...') });
                         
                         try {
                             const { execSync } = await import('child_process');
@@ -1718,39 +1786,33 @@ async function createWorkspaceAndInitialize(): Promise<void> {
                 };
             }
 
-            progress.report({ increment: 8, message: 'Opening new workspace...' });
+            progress.report({ increment: 8, message: vscode.l10n.t('Opening new workspace...') });
 
             // Step 5: 在VSCode中打开新的工作区
             const workspaceUri = vscode.Uri.file(workspacePath);
             await vscode.commands.executeCommand('vscode.openFolder', workspaceUri, false);
-            
-            progress.report({ increment: 100, message: 'Done!' });
+
+            progress.report({ increment: 100, message: vscode.l10n.t('Done!') });
         });
 
         // 🌿 成功消息和 Git 状态反馈
-        const gitInfo = gitInitResult?.success 
-            ? `\n🌿 Git repository initialized (main branch)`
+        const gitInfo = gitInitResult?.success
+            ? '\n' + vscode.l10n.t('🌿 Git repository initialized (main branch)')
             : '';
-        
-        const successMessage = `🎉 Workspace created successfully!\n\n` +
-            `📁 Location: ${workspacePath}\n` +
-            `📋 Template files copied to .templates directory in the workspace${gitInfo}\n` +
-            `🚀 Now you can start creating documents using @srs-writer!`;
-        
-        vscode.window.showInformationMessage(successMessage);
-        
+
+        vscode.window.showInformationMessage(
+            vscode.l10n.t('🎉 Workspace created successfully!\n\n📁 Location: {0}\n📋 Template files copied to .templates directory in the workspace{1}\n🚀 Now you can start creating documents using @srs-writer!', workspacePath, gitInfo)
+        );
+
         // 🌿 Git 初始化失败时的友好提示
         if (gitInitResult && !gitInitResult.success) {
             setTimeout(() => {
+                const openSourceControlBtn = vscode.l10n.t('Open Source Control');
                 vscode.window.showWarningMessage(
-                    `⚠️ Git initialization failed\n\n` +
-                    `Please manually initialize the Git repository:\n` +
-                    `1. Click the Source Control icon on the left side of VS Code\n` +
-                    `2. Click the "Initialize Repository" button\n\n` +
-                    `Error message: ${gitInitResult.error}`,
-                    'Open Source Control'
+                    vscode.l10n.t('⚠️ Git initialization failed\n\nPlease manually initialize the Git repository:\n1. Click the Source Control icon on the left side of VS Code\n2. Click the "Initialize Repository" button\n\nError message: {0}', gitInitResult.error || ''),
+                    openSourceControlBtn
                 ).then(selection => {
-                    if (selection === 'Open Source Control') {
+                    if (selection === openSourceControlBtn) {
                         vscode.commands.executeCommand('workbench.view.scm');
                     }
                 });
@@ -1758,11 +1820,10 @@ async function createWorkspaceAndInitialize(): Promise<void> {
         }
 
         logger.info('✅ Workspace created and initialized successfully');
-        
+
     } catch (error) {
-        const errorMessage = `Failed to create workspace and initialize: ${(error as Error).message}`;
         logger.error('Failed to create workspace and initialize', error as Error);
-        vscode.window.showErrorMessage(errorMessage);
+        vscode.window.showErrorMessage(vscode.l10n.t('Failed to create workspace and initialize: {0}', (error as Error).message));
     }
 }
 
@@ -1832,29 +1893,30 @@ async function restartPlugin(): Promise<void> {
         const hasCurrentProject = currentSession?.projectName;
 
         // 显示确认对话框
-        const confirmMessage = hasCurrentProject 
-            ? `🔄 Exiting current project will clear all status and start over\n\n📦 Current project "${currentSession.projectName}" will be automatically archived and saved\n⚠️ All open files will be reloaded\n\nAre you sure you want to exit the current project?`
-            : `🔄 Restarting plugin will clear all status and start over\n\n⚠️ All open files will be reloaded\n\nAre you sure you want to restart the plugin?`;
+        const confirmMessage = hasCurrentProject
+            ? vscode.l10n.t('🔄 Exiting current project will clear all status and start over\n\n📦 Current project "{0}" will be automatically archived and saved\n⚠️ All open files will be reloaded\n\nAre you sure you want to exit the current project?', currentSession.projectName || '')
+            : vscode.l10n.t('🔄 Restarting plugin will clear all status and start over\n\n⚠️ All open files will be reloaded\n\nAre you sure you want to restart the plugin?');
 
+        const exitProjectBtn = vscode.l10n.t('Exit project');
         const confirmed = await vscode.window.showWarningMessage(
             confirmMessage,
             { modal: true },
-            'Exit project'
+            exitProjectBtn
         );
 
-        if (confirmed !== 'Exit project') {
+        if (confirmed !== exitProjectBtn) {
             return;
         }
 
         // 使用进度提示执行重启操作
         await vscode.window.withProgress({
             location: vscode.ProgressLocation.Notification,
-            title: "Exiting current project...",
+            title: vscode.l10n.t('Exiting current project...'),
             cancellable: false
         }, async (progress) => {
-            
+
             // 0. 🚩 设置退出意图标记
-            progress.report({ increment: 10, message: "Setting exit intention flag..." });
+            progress.report({ increment: 10, message: vscode.l10n.t('Setting exit intention flag...') });
             try {
                 await extensionContext?.globalState.update('srs-writer.intentional-exit-flag', {
                     timestamp: Date.now(),
@@ -1865,34 +1927,34 @@ async function restartPlugin(): Promise<void> {
                 logger.warn(`Failed to set exit flag: ${(error as Error).message}`);
                 // 不阻止退出流程
             }
-            
+
             // 1. 归档当前状态
-            progress.report({ increment: 20, message: "Archiving current project..." });
+            progress.report({ increment: 20, message: vscode.l10n.t('Archiving current project...') });
             if (hasCurrentProject) {
                 await sessionManager.startNewSession();
                 logger.info('✅ Current project session cleared successfully');
             }
-            
+
             // 2. 全局引擎会自动清理状态
-            progress.report({ increment: 25, message: "Cleaning cache..." });
+            progress.report({ increment: 25, message: vscode.l10n.t('Cleaning cache...') });
             try {
                 // v6.0: 全局引擎会自动适应新的会话上下文
                 logger.info('✅ Global engine will adapt to new session context');
             } catch (error) {
                 logger.warn(`Warning during cache cleanup: ${(error as Error).message}`);
             }
-            
+
             // 3. 清理会话状态
-            progress.report({ increment: 15, message: "Cleaning session state..." });
+            progress.report({ increment: 15, message: vscode.l10n.t('Cleaning session state...') });
             try {
                 await sessionManager.clearSession();
                 logger.info('✅ Session cleared successfully');
             } catch (error) {
                 logger.warn(`Warning during session cleanup: ${(error as Error).message}`);
             }
-            
+
             // 3.5. 🌿 强制切换到主分支
-            progress.report({ increment: 0, message: "🌿 Switching to main branch..." });
+            progress.report({ increment: 0, message: vscode.l10n.t('🌿 Switching to main branch...') });
             try {
                 const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
                 if (workspaceFolder) {
@@ -1933,7 +1995,7 @@ async function restartPlugin(): Promise<void> {
             }
             
             // 4. 重新加载窗口
-            progress.report({ increment: 30, message: "Reloading window..." });
+            progress.report({ increment: 30, message: vscode.l10n.t('Reloading window...') });
             logger.info('🔄 Initiating window reload for soft restart');
             
             // 短暂延迟确保日志写入
@@ -1945,7 +2007,7 @@ async function restartPlugin(): Promise<void> {
         
     } catch (error) {
         logger.error('Failed to restart plugin', error as Error);
-        vscode.window.showErrorMessage(`Failed to exit project: ${(error as Error).message}`);
+        vscode.window.showErrorMessage(vscode.l10n.t('Failed to exit project: {0}', (error as Error).message));
     }
 }
 

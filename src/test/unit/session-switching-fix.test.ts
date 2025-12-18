@@ -25,7 +25,16 @@ jest.mock('vscode', () => ({
     Uri: {
         file: jest.fn((path: string) => ({ fsPath: path }))
     },
-    ExtensionContext: {}
+    ExtensionContext: {},
+    l10n: {
+        t: (message: string, ...args: (string | number | boolean)[]) => {
+            if (args.length === 0) return message;
+            return message.replace(/\{(\d+)\}/g, (_: string, index: string) => {
+                const idx = parseInt(index, 10);
+                return args[idx] !== undefined ? String(args[idx]) : `{${index}}`;
+            });
+        }
+    }
 }));
 
 // Mock fs

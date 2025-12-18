@@ -24,21 +24,21 @@ export class FoldersViewEnhancer {
         try {
             const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
             if (!workspaceFolder) {
-                vscode.window.showWarningMessage('No workspace folder available');
+                vscode.window.showWarningMessage(vscode.l10n.t('No workspace folder available'));
                 return;
             }
 
             // 检查是否为Git仓库
             const { checkGitRepository } = await import('../tools/atomic/git-operations');
             if (!await checkGitRepository(workspaceFolder.uri.fsPath)) {
-                vscode.window.showInformationMessage('Current workspace is not a Git repository');
+                vscode.window.showInformationMessage(vscode.l10n.t('Current workspace is not a Git repository'));
                 return;
             }
 
             // 获取所有Git分支
             const branches = await this.getAllGitBranches(workspaceFolder.uri.fsPath);
             if (branches.length === 0) {
-                vscode.window.showInformationMessage('No Git branches found');
+                vscode.window.showInformationMessage(vscode.l10n.t('No Git branches found'));
                 return;
             }
 
@@ -49,16 +49,16 @@ export class FoldersViewEnhancer {
             // 构建QuickPick选项
             const quickPickItems = branches.map(branch => ({
                 label: `🌿 ${branch}`,
-                description: branch === currentBranch ? '(current)' : '',
-                detail: branch === currentBranch 
-                    ? 'Currently checked out - Folders view is showing this branch' 
-                    : 'Click to switch Folders view to this branch',
+                description: branch === currentBranch ? vscode.l10n.t('(current)') : '',
+                detail: branch === currentBranch
+                    ? vscode.l10n.t('Currently checked out - Folders view is showing this branch')
+                    : vscode.l10n.t('Click to switch Folders view to this branch'),
                 branchName: branch,
                 isCurrent: branch === currentBranch
             }));
 
             const selected = await vscode.window.showQuickPick(quickPickItems, {
-                placeHolder: 'Select Git branch to display in Folders view',
+                placeHolder: vscode.l10n.t('Select Git branch to display in Folders view'),
                 matchOnDescription: true,
                 matchOnDetail: true
             });
@@ -70,33 +70,36 @@ export class FoldersViewEnhancer {
             // 如果选择的是当前分支，无需切换
             if (selected.isCurrent) {
                 vscode.window.showInformationMessage(
-                    `📂 Folders view is already showing branch: ${selected.branchName}`
+                    vscode.l10n.t('📂 Folders view is already showing branch: {0}', selected.branchName)
                 );
                 return;
             }
 
             // 检查是否有未提交的更改
             const hasChanges = await this.checkForUncommittedChanges(workspaceFolder.uri.fsPath);
-            
+
             if (hasChanges) {
+                const commitAndSwitchBtn = vscode.l10n.t('Commit and Switch');
+                const discardAndSwitchBtn = vscode.l10n.t('Discard and Switch');
+                const cancelBtn = vscode.l10n.t('Cancel');
                 const action = await vscode.window.showWarningMessage(
-                    `⚠️ You have uncommitted changes in the current branch.\n\nSwitching branches will affect your working directory.`,
+                    vscode.l10n.t('⚠️ You have uncommitted changes in the current branch.\n\nSwitching branches will affect your working directory.'),
                     { modal: true },
-                    'Commit and Switch',
-                    'Discard and Switch', 
-                    'Cancel'
+                    commitAndSwitchBtn,
+                    discardAndSwitchBtn,
+                    cancelBtn
                 );
 
-                if (action === 'Cancel' || !action) {
+                if (action === cancelBtn || !action) {
                     return;
                 }
 
-                if (action === 'Commit and Switch') {
+                if (action === commitAndSwitchBtn) {
                     const success = await this.commitCurrentChanges(workspaceFolder.uri.fsPath);
                     if (!success) {
                         return; // 提交失败，取消切换
                     }
-                } else if (action === 'Discard and Switch') {
+                } else if (action === discardAndSwitchBtn) {
                     const success = await this.discardCurrentChanges(workspaceFolder.uri.fsPath);
                     if (!success) {
                         return; // 丢弃失败，取消切换
@@ -112,7 +115,7 @@ export class FoldersViewEnhancer {
 
         } catch (error) {
             logger.error('Failed to select branch for Folders view', error as Error);
-            vscode.window.showErrorMessage(`Failed to switch branch: ${(error as Error).message}`);
+            vscode.window.showErrorMessage(vscode.l10n.t('Failed to switch branch: {0}', (error as Error).message));
         }
     }
 
@@ -164,15 +167,15 @@ export class FoldersViewEnhancer {
             
             if (result.success) {
                 vscode.window.showInformationMessage(
-                    `✅ Changes committed${result.commitHash ? `: ${result.commitHash.substring(0, 7)}` : ''}`
+                    vscode.l10n.t('✅ Changes committed{0}', result.commitHash ? `: ${result.commitHash.substring(0, 7)}` : '')
                 );
                 return true;
             } else {
-                vscode.window.showErrorMessage(`Failed to commit changes: ${result.error}`);
+                vscode.window.showErrorMessage(vscode.l10n.t('Failed to commit changes: {0}', result.error || ''));
                 return false;
             }
         } catch (error) {
-            vscode.window.showErrorMessage(`Commit failed: ${(error as Error).message}`);
+            vscode.window.showErrorMessage(vscode.l10n.t('Commit failed: {0}', (error as Error).message));
             return false;
         }
     }
@@ -186,14 +189,14 @@ export class FoldersViewEnhancer {
             const result = await discardAllChanges(workspaceRoot);
             
             if (result.success) {
-                vscode.window.showInformationMessage('✅ All changes discarded');
+                vscode.window.showInformationMessage(vscode.l10n.t('✅ All changes discarded'));
                 return true;
             } else {
-                vscode.window.showErrorMessage(`Failed to discard changes: ${result.error}`);
+                vscode.window.showErrorMessage(vscode.l10n.t('Failed to discard changes: {0}', result.error || ''));
                 return false;
             }
         } catch (error) {
-            vscode.window.showErrorMessage(`Discard failed: ${(error as Error).message}`);
+            vscode.window.showErrorMessage(vscode.l10n.t('Discard failed: {0}', (error as Error).message));
             return false;
         }
     }
@@ -205,22 +208,22 @@ export class FoldersViewEnhancer {
         try {
             await vscode.window.withProgress({
                 location: vscode.ProgressLocation.Notification,
-                title: `Switching Folders view to branch: ${branchName}`,
+                title: vscode.l10n.t('Switching Folders view to branch: {0}', branchName),
                 cancellable: false
             }, async (progress) => {
-                
-                progress.report({ increment: 50, message: 'Switching Git branch...' });
-                
+
+                progress.report({ increment: 50, message: vscode.l10n.t('Switching Git branch...') });
+
                 // 执行Git分支切换
                 execSync(`git checkout "${branchName}"`, { cwd: workspaceRoot });
-                
-                progress.report({ increment: 100, message: 'Branch switched successfully!' });
-                
+
+                progress.report({ increment: 100, message: vscode.l10n.t('Branch switched successfully!') });
+
                 // 显示成功消息
                 vscode.window.showInformationMessage(
-                    `📂 Folders view switched to branch: ${branchName}\n\n✅ Files now show content from this branch`
+                    vscode.l10n.t('📂 Folders view switched to branch: {0}\n\n✅ Files now show content from this branch', branchName)
                 );
-                
+
                 logger.info(`Folders view switched to Git branch: ${branchName}`);
             });
 
@@ -246,31 +249,33 @@ export class FoldersViewEnhancer {
                 
                 // 切换到项目会话
                 await sessionManager.switchToProjectSession(projectName);
-                
+
                 vscode.window.showInformationMessage(
-                    `🔄 Switched to project session: ${projectName}\n\n📂 Folders view now shows files from branch: ${branchName}`
+                    vscode.l10n.t('🔄 Switched to project session: {0}\n\n📂 Folders view now shows files from branch: {1}', projectName, branchName)
                 );
-                
+
                 logger.info(`Successfully synced project session after branch switch: ${projectName}`);
             } else {
                 // 切换到主分支，清理项目会话
                 logger.info(`Switched to main branch: ${branchName}, clearing project session`);
-                
+
                 const { SessionManager } = await import('./session-manager');
                 const sessionManager = SessionManager.getInstance();
-                
+
                 // 如果当前有项目会话，询问用户是否要清理
                 const currentSession = await sessionManager.getCurrentSession();
                 if (currentSession?.projectName) {
+                    const keepSessionBtn = vscode.l10n.t('Keep Project Session');
+                    const clearSessionBtn = vscode.l10n.t('Clear Project Session');
                     const action = await vscode.window.showInformationMessage(
-                        `📂 Switched to main branch: ${branchName}\n\nCurrent project session: ${currentSession.projectName}`,
-                        'Keep Project Session',
-                        'Clear Project Session'
+                        vscode.l10n.t('📂 Switched to main branch: {0}\n\nCurrent project session: {1}', branchName, currentSession.projectName),
+                        keepSessionBtn,
+                        clearSessionBtn
                     );
-                    
-                    if (action === 'Clear Project Session') {
+
+                    if (action === clearSessionBtn) {
                         await sessionManager.clearSession();
-                        vscode.window.showInformationMessage('🧹 Project session cleared');
+                        vscode.window.showInformationMessage(vscode.l10n.t('🧹 Project session cleared'));
                     }
                 }
             }

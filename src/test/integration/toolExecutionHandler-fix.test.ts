@@ -25,6 +25,15 @@ jest.mock('vscode', () => ({
             hide: jest.fn(),
             dispose: jest.fn()
         }))
+    },
+    l10n: {
+        t: (message: string, ...args: (string | number | boolean)[]): string => {
+            if (args.length === 0) return message;
+            return message.replace(/\{(\d+)\}/g, (_, index) => {
+                const idx = parseInt(index, 10);
+                return args[idx] !== undefined ? String(args[idx]) : `{${index}}`;
+            });
+        }
     }
 }));
 

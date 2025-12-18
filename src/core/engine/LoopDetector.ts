@@ -85,33 +85,33 @@ export class LoopDetector {
     stream: vscode.ChatResponseStream,
     recordExecution: (type: ExecutionStep['type'], content: string, success?: boolean) => void
   ): Promise<void> {
-    stream.markdown(`🔄 **智能总结模式启动**\n\n`);
-    
+    stream.markdown(vscode.l10n.t('🔄 **Intelligent summary mode activated**\n\n'));
+
     // 分析已完成的操作
     const completedActions = state.executionHistory
         .filter(step => step.success === true && step.type === 'tool_call')
         .map(step => `${step.toolName}: ${step.content}`)
         .slice(-10); // 最近10个成功操作
-    
+
     if (completedActions.length > 0) {
-        stream.markdown(`✅ **已完成的操作**:\n`);
+        stream.markdown(vscode.l10n.t('✅ **Completed actions**:\n'));
         completedActions.forEach((action, index) => {
             stream.markdown(`${index + 1}. ${action}\n`);
         });
         stream.markdown(`\n`);
     }
-    
+
     // 基于当前任务生成智能总结
-    stream.markdown(`📋 **任务总结**: 基于已执行的操作，我已为您的需求"${state.currentTask}"完成了相关分析和处理。\n\n`);
-    
+    stream.markdown(vscode.l10n.t('📋 **Task summary**: Based on the executed actions, I have completed the relevant analysis and processing for your request "{0}".\n\n', state.currentTask));
+
     if (completedActions.length > 0) {
-        stream.markdown(`💡 **建议**: 您可以基于上述操作结果继续深入，或者提出新的需求。\n\n`);
+        stream.markdown(vscode.l10n.t('💡 **Suggestion**: You can continue exploring based on the above results, or make a new request.\n\n'));
     } else {
-        stream.markdown(`💡 **建议**: 如需进一步协助，请告诉我具体需要什么帮助。\n\n`);
+        stream.markdown(vscode.l10n.t('💡 **Suggestion**: If you need further assistance, please let me know what specific help you need.\n\n'));
     }
-    
+
     // 记录强制响应
-    recordExecution('forced_response', '智能循环检测：强制完成任务', true);
+    recordExecution('forced_response', vscode.l10n.t('Intelligent loop detection: Forced task completion'), true);
     state.stage = 'completed';
   }
 
@@ -123,28 +123,28 @@ export class LoopDetector {
     stream: vscode.ChatResponseStream,
     recordExecution: (type: ExecutionStep['type'], content: string, success?: boolean) => void
   ): Promise<void> {
-    stream.markdown(`⚠️ **检测到无限循环，启动智能恢复机制**\n\n`);
-    
+    stream.markdown(vscode.l10n.t('⚠️ **Infinite loop detected, activating intelligent recovery mechanism**\n\n'));
+
     // 分析循环类型
     const recentToolCalls = state.executionHistory
         .filter(step => step.type === 'tool_call' && step.toolName)
         .slice(-6)
         .map(step => step.toolName!);
-    
+
     if (recentToolCalls.length > 0) {
         const toolCounts = recentToolCalls.reduce((acc, tool) => {
             acc[tool] = (acc[tool] || 0) + 1;
             return acc;
         }, {} as Record<string, number>);
-        
-        stream.markdown(`**循环分析**: 最近调用了 ${Object.keys(toolCounts).length} 种工具\n`);
+
+        stream.markdown(vscode.l10n.t('**Loop analysis**: Recently called {0} types of tools\n', Object.keys(toolCounts).length));
         Object.entries(toolCounts).forEach(([tool, count]) => {
-            stream.markdown(`- ${tool}: ${count} 次\n`);
+            stream.markdown(vscode.l10n.t('- {0}: {1} times\n', tool, count));
         });
         stream.markdown(`\n`);
     }
-    
-    stream.markdown(`**迭代次数**: ${state.iterationCount}\n\n`);
+
+    stream.markdown(vscode.l10n.t('**Iteration count**: {0}\n\n', state.iterationCount));
     
     // 🚀 使用架构师的强制完成机制
     await this.forceDirectResponse(state, stream, recordExecution);
