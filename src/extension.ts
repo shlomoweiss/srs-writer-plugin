@@ -172,13 +172,19 @@ function registerCoreCommands(context: vscode.ExtensionContext): void {
         await performForcedSync();
     });
 
+    // 🔧 调试命令：列出可用的 Language Models
+    const listModelsCommand = vscode.commands.registerCommand('srs-writer.listModels', async () => {
+        await listAvailableModels();
+    });
+
     // 注册所有命令
     context.subscriptions.push(
         statusCommand,
         // 🚀 v6.0清理：移除 startNewProjectCmd
         // 🚀 阶段4清理：移除 viewArchiveHistoryCmd
         toggleAIModeCommand,
-        forceSyncCommand  // 🚀 新增强制同步命令
+        forceSyncCommand,  // 🚀 新增强制同步命令
+        listModelsCommand  // 🔧 调试：列出模型
     );
     
     logger.info('Core commands registered successfully');
@@ -596,6 +602,59 @@ async function showVSCodeToolsStatus(): Promise<void> {
     } catch (error) {
         logger.error('Failed to show VSCode tools status', error as Error);
         vscode.window.showErrorMessage(`Failed to show tools status: ${(error as Error).message}`);
+    }
+}
+
+/**
+ * 🔧 调试：列出可用的 Language Models
+ */
+async function listAvailableModels(): Promise<void> {
+    try {
+        logger.info('🔍 Fetching available Language Models...');
+
+        const models = await vscode.lm.selectChatModels();
+
+        if (models.length === 0) {
+            vscode.window.showWarningMessage('No Language Models available. Please ensure GitHub Copilot is configured.');
+            logger.warn('No Language Models found');
+            return;
+        }
+
+        // 构建模型信息
+        const modelDetails = models.map((model, index) => {
+            return [
+                `[${index + 1}] ${model.name}`,
+                `    ID: ${model.id}`,
+                `    Vendor: ${model.vendor}`,
+                `    Family: ${model.family}`,
+                `    Version: ${model.version}`,
+                `    Max Input Tokens: ${model.maxInputTokens}`,
+            ].join('\n');
+        });
+
+        const statusMessage = [
+            '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
+            '🤖 Available Language Models',
+            '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
+            `Total: ${models.length} models`,
+            '',
+            ...modelDetails,
+            '',
+            '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
+        ].join('\n');
+
+        logger.info('\n' + statusMessage);
+        logger.show();
+
+        // 显示简洁通知
+        const modelNames = models.map(m => m.name).join(', ');
+        vscode.window.showInformationMessage(
+            `Found ${models.length} models: ${modelNames}. See Output for details.`
+        );
+
+    } catch (error) {
+        logger.error('Failed to list Language Models', error as Error);
+        vscode.window.showErrorMessage(`Failed to list models: ${(error as Error).message}`);
     }
 }
 

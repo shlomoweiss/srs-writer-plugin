@@ -130,6 +130,12 @@ export class SRSChatParticipant implements ISessionObserver {
             stream.markdown('⚠️ **未找到AI模型**\n\n请在Chat界面的下拉菜单中选择AI模型。');
             return;
         }
+
+        // 在进入主流程前验证模型可用性，并在必要时回退
+        const validatedModel = await this.ensureModelIsUsable(model, stream);
+        if (!validatedModel) {
+            return; // 已提示用户，无模型可用
+        }
         
         stream.progress('🧠 AI 智能引擎启动中...');
 
@@ -139,7 +145,7 @@ export class SRSChatParticipant implements ISessionObserver {
         if (token.isCancellationRequested) { return; }
 
         // 2. 获取全局引擎实例
-        const agentEngine = this.getOrCreateGlobalEngine(stream, model);
+        const agentEngine = this.getOrCreateGlobalEngine(stream, validatedModel);
 
         if (token.isCancellationRequested) { return; }
 
@@ -203,6 +209,67 @@ export class SRSChatParticipant implements ISessionObserver {
             state: engineState.stage,
             lastActivity: SRSChatParticipant.globalEngineLastActivity
         };
+    }
+
+    /**
+     * Validate selected model against available providers and fall back when necessary.
+     */
+    private async ensureModelIsUsable(
+        selectedModel: vscode.LanguageModelChat,
+        stream: vscode.ChatResponseStream
+    ): Promise<vscode.LanguageModelChat | null> {
+        const selectedName = selectedModel.name;
+
+        try {
+            const availableModels = await vscode.lm.selectChatModels();
+
+            if (!availableModels || availableModels.length === 0) {
+                stream.markdown('⚠️ **No language models available**\n\nPlease configure GitHub Copilot or another language model provider.');
+                this.logger.warn('No language models available from VS Code provider');
+                return null;
+            }
+
+            const matched = availableModels.find(m => m.name.toLowerCase() === selectedName.toLowerCase());
+            if (matched) {
+                this.logger.info(`✅ Using user-selected model: ${matched.name}`);
+                return matched;
+            }
+
+            const preferredFallbacks = this.getPreferredFallbackModels();
+            let fallback: vscode.LanguageModelChat | undefined;
+
+            for (const candidate of preferredFallbacks) {
+                fallback = availableModels.find(m => m.name.toLowerCase() === candidate.toLowerCase());
+                if (fallback) {
+                    break;
+                }
+            }
+
+            if (!fallback) {
+                fallback = availableModels[0];
+            }
+
+            this.logger.warn(`Selected model "${selectedName}" is not available. Falling back to "${fallback.name}".`);
+            stream.markdown(
+                `⚠️ Selected model \`${selectedName}\` is not available via your provider.\n` +
+                `Switched to \`${fallback.name}\` for this conversation.`
+            );
+
+            return fallback;
+        } catch (error) {
+            this.logger.error('Failed to validate selected model availability', error as Error);
+            stream.markdown('❌ Failed to validate language model availability. Please retry or re-open VS Code.');
+            return null;
+        }
+    }
+
+    /**
+     * Get preferred fallback models from configuration or defaults.
+     */
+    private getPreferredFallbackModels(): string[] {
+        const config = vscode.workspace.getConfiguration('srs-writer');
+        const configured = config.get<string[]>('fallbackModels', []);
+        return configured && configured.length > 0 ? configured : [];
     }
     
     /**

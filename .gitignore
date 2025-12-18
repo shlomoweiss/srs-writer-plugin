@@ -59,10 +59,12 @@ specialist-validation-report.json
 srs_quality_check_report_test-project.json
 srs_quality_check_report_unnamed.json
 claude.md
+CLAUDE.md
 src/test/README.md
 bugfix/
 temp*.md
 agents.md
+AGENTS.md
 
 
 # 代码停车场 - 暂不使用的代码

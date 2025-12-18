@@ -57,6 +57,10 @@
         "title": "SRS Writer: Force Sync Context"
       },
       {
+        "command": "srs-writer.listModels",
+        "title": "SRS Writer: List Available Models"
+      },
+      {
         "command": "srs-writer.selectBranchForFolders",
         "title": "Select Git Branch for Folders View",
         "icon": "$(git-branch)"
@@ -109,6 +113,14 @@
           "type": "boolean",
           "default": true,
           "description": "启用AI智能工具代理（新架构）"
+        },
+        "srs-writer.fallbackModels": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [],
+          "description": "语言模型回退优先级列表（从上到下）。当用户选择的模型不可用时按顺序尝试这些模型；为空则按 VS Code provider 返回的模型列表顺序选择。"
         },
         "srs-writer.internetSearch.tavilyApiKey": {
           "type": "string",
@@ -473,7 +485,7 @@
     "@types/mdast": "^4.0.4",
     "@vscode/chat-extension-utils": "^0.0.0-alpha.5",
     "github-slugger": "^2.0.0",
-    "js-yaml": "^4.1.0",
+    "js-yaml": "^4.1.1",
     "jsonrepair": "^3.12.0",
     "markdownlint": "^0.38.0",
     "marked": "^9.x",
