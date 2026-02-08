@@ -22,7 +22,7 @@ This document details the complete implementation process of the **Specialist La
 - Automatic injection of calling guides
 - Backward compatibility guarantee
 
-## 🏗️ 架构设计
+## 🏗️ Architecture Design
 
 Architecture Design
 Final Architecture Diagram
