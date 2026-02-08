@@ -19,8 +19,8 @@ export class UserInteractionHandler {
     handleAutonomousTool: (toolCall: { name: string; args: any }) => Promise<void>
   ): Promise<{ shouldReturnToWaiting: boolean }> {
     const normalizedResponse = response.toLowerCase().trim();
-    const isPositive = ['yes', 'y', '是', '确认', '同意', '继续', 'ok', 'okay'].includes(normalizedResponse);
-    const isNegative = ['no', 'n', '否', '取消', '不', '拒绝', 'cancel'].includes(normalizedResponse);
+    const isPositive = ['yes', 'y', 'yes', 'confirm', 'agree', 'continue', 'ok', 'okay'].includes(normalizedResponse);
+     const isNegative = ['no', 'n', 'no', 'cancel', 'not', 'reject', 'cancel'].includes(normalizedResponse);
     
     if (isPositive) {
         stream.markdown(vscode.l10n.t('✅ **Confirmed**\n\n'));
@@ -82,7 +82,7 @@ export class UserInteractionHandler {
         if (interaction.toolCall) {
             // 🚀 新增：处理计划恢复选择
             if (interaction.toolCall.name === 'internal_plan_recovery') {
-                if (selectedOption === '继续执行写作计划') {
+                if (selectedOption === 'Continue writing plan') {
                     stream.markdown(vscode.l10n.t('✅ **Resuming plan execution**\n\n'));
 
                     // 触发计划恢复
@@ -93,7 +93,7 @@ export class UserInteractionHandler {
                         }
                     });
 
-                } else if (selectedOption === '结束写作计划') {
+                } else if (selectedOption === 'End writing plan'){
                     stream.markdown(vscode.l10n.t('❌ **Plan execution terminated**\n\n'));
                     
                     await handleAutonomousTool({
