@@ -24,40 +24,41 @@ This document details the complete implementation process of the **Specialist La
 
 ## 🏗️ 架构设计
 
-### **最终架构图**
-```
-用户输入 → Orchestrator AI → Specialist AI → Document 胖工具 → 原子操作 → 文件系统
+Architecture Design
+Final Architecture Diagram
+Code
+User Input → Orchestrator AI → Specialist AI → Document Fat Tools → Atomic Operations → File System
               ↓                    ↓               ↓
-        智能意图分诊        业务决策执行      内部工具编排
-        工具路由选择        工具调用序列      原子操作聚合
-```
+        Intelligent Intent      Business         Internal Tool
+        Triage                  Decision         Orchestration
+        Tool Route Selection    Execution        Atomic Operation
+                                Tool Call        Aggregation
+                                Sequence
+Tool Invocation Flow
+SpecialistExecutor.executeSpecialist()
+Load specialist rules + retrieve available tool list
+VSCode API calls (including tool definitions)
+AI returns tool_calls array
+Execute tool calls + verify access permissions
+Feed tool results back to AI
+AI generates final response
+Key Design Decisions
+Fat Tools vs. Fine-Grained Tools
+Choice: Fat Tools Pattern
 
-### **工具调用流程**
-```
-1. SpecialistExecutor.executeSpecialist()
-2. 加载 specialist 规则 + 获取可用工具列表
-3. VSCode API 调用 (包含工具定义)
-4. AI 返回 tool_calls 数组
-5. 执行工具调用 + 访问权限验证
-6. 将工具结果反馈给 AI
-7. AI 生成最终响应
-```
+Rationale:
 
-### **关键设计决策**
+AI focuses on high-level business decisions without needing to manage low-level tool orchestration
+Business logic is encapsulated in code, not in AI prompts
+Aligns with layered architecture principles with clear separation of concerns
+Document Layer Does Not Access LLM
+Choice: Document Layer Contains Pure Programming Logic
 
-#### **胖工具 vs 细粒度工具**
-**选择**: 胖工具模式  
-**原因**: 
-- AI 专注高级业务决策，不需要管理低级工具编排
-- 业务逻辑封装在代码中，而非 AI 提示词中
-- 符合分层架构原则，职责分离清晰
+Rationale:
 
-#### **Document 层不访问 LLM**
-**选择**: Document 层纯编程逻辑  
-**原因**:
-- 避免三层AI架构的复杂性
-- 确保性能和可靠性
-- 将智能决策留给 Specialist AI
+Avoids the complexity of a three-layer AI architecture
+Ensures performance and reliability
+Reserves intelligent decision-making for the Specialist AI
 
 ## 🚀 Core Implementation
 
