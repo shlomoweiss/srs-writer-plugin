@@ -1,10 +1,10 @@
 /**
- * SID特殊字符处理集成测试
+ * SID Special Characters Processing Integration Test
  * 
- * 🎯 目标：测试完整的readMarkdownFile → executeMarkdownEdits工作流
+ * 🎯 Objective: Test complete readMarkdownFile → executeMarkdownEdits workflow
  * 
- * 测试场景：模拟真实的Specialist工作流，从读取包含特殊字符的文档，
- * 到成功执行语义编辑。
+ * Test Scenario: Simulate real Specialist workflow, from reading documents containing special characters,
+ * to successfully executing semantic edits.
  */
 
 import * as vscode from 'vscode';
@@ -14,7 +14,7 @@ import * as os from 'os';
 import { readMarkdownFile } from '../../tools/document/enhanced-readfile-tools';
 import { semanticEditEngineToolImplementations } from '../../tools/document/semantic-edit-engine';
 
-describe('SID特殊字符处理集成测试', () => {
+describe('SID Special Characters Processing Integration Test', () => {
     let tempDir: string;
     let testFile: vscode.Uri;
 
@@ -82,9 +82,9 @@ Some other content.
         expect(targetSection).toBeDefined();
         
         const targetSid = targetSection.sid;
-        console.log(`📍 目标章节SID: ${targetSid}`);
+        console.log(`📍 Target section SID: ${targetSid}`);
 
-        // 4. Specialist使用这个SID进行编辑（原始bug在这里失败）
+        // 4. Specialist uses this SID to edit (original bug fails here)
         const editResult = await semanticEditEngineToolImplementations.executeMarkdownEdits({
             targetFile: testFile.fsPath,
             intents: [{
@@ -94,7 +94,7 @@ Some other content.
                     lineRange: { startLine: 1, endLine: 1 }
                 },
                 content: 'Updated content: Security measures implemented.',
-                reason: '更新数据隐私与安全需求内容',
+                reason: 'Update data privacy and security requirements content',
                 priority: 1
             }]
         });
@@ -104,7 +104,7 @@ Some other content.
         expect(editResult.successfulIntents).toBe(1);
         expect(editResult.failedIntents.length).toBe(0);
 
-        // 6. 验证文件内容已更新
+        // 6. Verify file content has been updated
         const updatedContent = await fs.readFile(testFile.fsPath, 'utf-8');
         expect(updatedContent).toContain('Updated content: Security measures implemented.');
         expect(updatedContent).toContain('数据隐私与安全需求 (Data Privacy & Security Requirements)');
@@ -157,18 +157,18 @@ Content 4
                         lineRange: { startLine: 1, endLine: 1 }
                     },
                     content: `Updated: ${section.title}`,
-                    reason: `更新 ${section.title}`,
+                    reason: `Update ${section.title}`,
                     priority: 1
                 }]
             });
 
-            // 每个编辑都应该成功
+            // Each edit should succeed
             expect(editResult.success).toBe(true);
             expect(editResult.successfulIntents).toBe(1);
             expect(editResult.failedIntents.length).toBe(0);
         }
 
-        // 验证所有内容都已更新
+        // Verify all content has been updated
         const updatedContent = await fs.readFile(testFile.fsPath, 'utf-8');
         expect(updatedContent).toContain('Updated: Section @ 符号');
         expect(updatedContent).toContain('Updated: Section # 符号');
@@ -223,7 +223,7 @@ Content E
                         lineRange: { startLine: 1, endLine: 1 }
                     },
                     content: `Nested updated: ${section.title}`,
-                    reason: `更新嵌套章节 ${section.title}`,
+                    reason: `Update nested section ${section.title}`,
                     priority: 1
                 }]
             });
@@ -275,11 +275,11 @@ Content 3
                 lineRange: { startLine: 1, endLine: 1 }
             },
             content: `Batch updated ${index + 1}`,
-            reason: `批量更新 ${section.title}`,
+            reason: `Batch update ${section.title}`,
             priority: 1
         }));
 
-        // 执行批量编辑
+        // Execute batch edit
         const editResult = await semanticEditEngineToolImplementations.executeMarkdownEdits({
             targetFile: testFile.fsPath,
             intents
@@ -343,9 +343,9 @@ Existing content
     });
 
     /**
-     * 🎯 删除章节测试
+     * 🎯 Section deletion test
      */
-    it('应支持删除包含特殊字符的章节', async () => {
+    it('Should support deleting sections containing special characters', async () => {
         const originalContent = `# Document
 
 ## Keep This
@@ -373,7 +373,7 @@ Content to keep
         const targetSection = toc.find((s: any) => s.title.includes('Delete @ This'));
         expect(targetSection).toBeDefined();
 
-        // 删除章节
+        // Delete section
         const editResult = await semanticEditEngineToolImplementations.executeMarkdownEdits({
             targetFile: testFile.fsPath,
             intents: [{
@@ -382,7 +382,7 @@ Content to keep
                     sid: targetSection!.sid
                 },
                 content: '',
-                reason: '删除包含@的章节内容',
+                reason: 'Delete section content containing @',
                 priority: 1
             }]
         });
@@ -393,14 +393,14 @@ Content to keep
         const updatedContent = await fs.readFile(testFile.fsPath, 'utf-8');
         expect(updatedContent).toContain('Keep This');
         expect(updatedContent).toContain('Keep That');
-        expect(updatedContent).toContain('Delete @ This'); // 标题保留
-        expect(updatedContent).not.toContain('Content to delete'); // 内容被删除
+        expect(updatedContent).toContain('Delete @ This'); // Title preserved
+        expect(updatedContent).not.toContain('Content to delete'); // Content deleted
     });
 
     /**
-     * 🎯 多语言混合测试
+     * 🎯 Multi-language mixed test
      */
-    it('应正确处理中英日韩混合标题中的特殊字符', async () => {
+    it('Should correctly handle special characters in mixed Chinese-English-Japanese-Korean titles', async () => {
         const originalContent = `# Document
 
 ## データ & 分析 (Data & Analysis)
@@ -428,7 +428,7 @@ Chinese content
         const sections = toc.filter((s: any) => s.level === 2);
         expect(sections.length).toBe(3);
 
-        // 编辑所有多语言章节
+        // Edit all multilingual sections
         for (const section of sections) {
             const editResult = await semanticEditEngineToolImplementations.executeMarkdownEdits({
                 targetFile: testFile.fsPath,
@@ -439,7 +439,7 @@ Chinese content
                         lineRange: { startLine: 1, endLine: 1 }
                     },
                     content: `Multilingual updated: ${section.title}`,
-                    reason: `更新多语言章节 ${section.title}`,
+                    reason: `Update multilingual section ${section.title}`,
                     priority: 1
                 }]
             });
