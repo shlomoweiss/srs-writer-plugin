@@ -99,12 +99,12 @@ export class TokenAwareHistoryManager {
    * 主要入口：压缩历史记录
    */
   compressHistory(fullHistory: string[], currentIteration: number): string[] {
-    this.logger.info(`🧠 [HistoryManager] 开始压缩历史记录: ${fullHistory.length}条, 当前轮次: ${currentIteration}`);
+    this.logger.info(`🧠 [HistoryManager] Starting to compress history: ${fullHistory.length} entries, Current iteration: ${currentIteration}`);
 
     // 🔍 [DEBUG_CONTEXT_MISSING] 记录输入历史的迭代编号范围
     const iterations = fullHistory
       .map(entry => {
-        const match = entry.match(/迭代\s*(\d+)/);
+        const match = entry.match(/Iteration\s*(\d+)/);
         return match ? parseInt(match[1], 10) : null;
       })
       .filter(it => it !== null) as number[];
@@ -130,13 +130,13 @@ export class TokenAwareHistoryManager {
       // 4. 重构最终历史
       const finalHistory = this.reconstructHistory(result);
       
-      this.logger.info(`✅ [HistoryManager] 压缩完成: ${fullHistory.length} → ${finalHistory.length}条, 压缩率: ${Math.round(result.compressionRatio * 100)}%`);
-      this.logger.info(`📊 [HistoryManager] Token使用: ${result.totalTokens}/${budgetConfig.totalBudget} (${Math.round(result.totalTokens/budgetConfig.totalBudget*100)}%)`);
+     this.logger.info(`✅ [HistoryManager] Compression complete: ${fullHistory.length} → ${finalHistory.length} entries, Compression ratio: ${Math.round(result.compressionRatio * 100)}%`);
+      this.logger.info(`📊 [HistoryManager] Token usage: ${result.totalTokens}/${budgetConfig.totalBudget} (${Math.round(result.totalTokens/budgetConfig.totalBudget*100)}%)`);
       
       return finalHistory;
       
     } catch (error) {
-      this.logger.error('❌ [HistoryManager] 历史压缩失败，回退到原始历史', error as Error);
+      this.logger.error('❌ [HistoryManager] History compression failed, falling back to original history', error as Error);
       return fullHistory; // 失败时回退
     }
   }
@@ -171,7 +171,7 @@ export class TokenAwareHistoryManager {
     }
     
     // 匹配其他可能的格式
-    const altMatch = entry.match(/第(\d+)轮|Round\s*(\d+)|Iteration\s*(\d+)/i);
+    const altMatch = entry.match(/Round(\d+)|Round\s*(\d+)|Iteration\s*(\d+)/i);
     if (altMatch) {
       return parseInt(altMatch[1] || altMatch[2] || altMatch[3], 10);
     }
