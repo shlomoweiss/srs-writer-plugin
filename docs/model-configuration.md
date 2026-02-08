@@ -1,40 +1,40 @@
-# 🚀 动态模型配置系统
+# 🚀 Dynamic Model Configuration System
 
-SRS Writer 插件采用智能的动态模型配置系统，无需硬编码就能适应各种 AI 模型的上下文限制。
+The SRS Writer plugin uses an intelligent dynamic model configuration system that can adapt to various AI model context limits without hardcoding.
 
-## 工作原理
+## How It Works
 
-### 1. 多层次自适应策略
+### 1. Multi-tier Adaptive Strategy
 
-系统按以下优先级顺序确定模型配置：
+The system determines model configuration in the following priority order:
 
-1. **👤 用户配置覆盖** (最高优先级)
-2. **🎯 错误学习缓存** (高置信度)
-3. **📋 普通推断缓存** (24小时有效)
-4. **🔍 启发式推断** (基于模型名称模式)
+1. **👤 User Configuration Override** (highest priority)
+2. **🎯 Error Learning Cache** (high confidence)
+3. **📋 General Inference Cache** (valid for 24 hours)
+4. **🔍 Heuristic Inference** (based on model name patterns)
 
-### 2. 启发式推断规则
+### 2. Heuristic Inference Rules
 
-系统根据模型名称中的关键词智能推断上下文窗口大小：
+The system intelligently infers context window size based on keywords in model names:
 
-- **大上下文模型** (128k tokens): `turbo`, `128k`, `200k`, `long`, `extended`, `claude-3`, `gemini-pro`, `2024`, `2023`
-- **中等上下文模型** (32k tokens): `gpt-4`, `claude-2`, `gemini`, `16k`, `32k`
-- **小上下文模型** (4k tokens): `gpt-3.5`, `4k`, `2k`, `2022`, `2021`
-- **默认保守估计** (8k tokens): 其他未知模型
+- **Large Context Models** (128k tokens): `turbo`, `128k`, `200k`, `long`, `extended`, `claude-3`, `gemini-pro`, `2024`, `2023`
+- **Medium Context Models** (32k tokens): `gpt-4`, `claude-2`, `gemini`, `16k`, `32k`
+- **Small Context Models** (4k tokens): `gpt-3.5`, `4k`, `2k`, `2022`, `2021`
+- **Default Conservative Estimate** (8k tokens): Other unknown models
 
-### 3. 错误反馈学习
+### 3. Error Feedback Learning
 
-当系统遇到上下文超限错误时，会自动：
-- 识别错误类型
-- 降低该模型的token限制（保守策略）
-- 缓存学习结果（高置信度）
-- 避免再次发生相同错误
+When the system encounters a context limit error, it will automatically:
+- Identify the error type
+- Reduce the token limit for that model (conservative strategy)
+- Cache the learning result (high confidence)
+- Avoid the same error happening again
 
-## 用户自定义配置
+## User-Defined Configuration
 
-### VSCode设置配置
+### VSCode Settings Configuration
 
-在 VSCode 的 `settings.json` 中添加：
+Add to VSCode's `settings.json`:
 
 ```json
 {
@@ -58,15 +58,15 @@ SRS Writer 插件采用智能的动态模型配置系统，无需硬编码就能
 }
 ```
 
-### 配置参数说明
+### Configuration Parameter Description
 
-- **maxTokens**: 模型的最大上下文窗口大小
-- **warningThreshold**: 开始警告的token阈值
-- **compressionThreshold**: 开始压缩对话历史的阈值
+- **maxTokens**: Maximum context window size of the model
+- **warningThreshold**: Token threshold to start warning
+- **compressionThreshold**: Threshold to start compressing conversation history
 
-### 工作区配置
+### Workspace Configuration
 
-也可以在项目的 `.vscode/settings.json` 中配置特定项目的模型设置：
+You can also configure project-specific model settings in the project's `.vscode/settings.json`:
 
 ```json
 {
@@ -80,11 +80,11 @@ SRS Writer 插件采用智能的动态模型配置系统，无需硬编码就能
 }
 ```
 
-## 系统监控
+## System Monitoring
 
-### 日志监控
+### Log Monitoring
 
-系统会记录配置决策过程：
+The system logs the configuration decision process:
 
 ```
 📋 Using cached config for gpt-4-turbo (confidence: medium)
@@ -94,17 +94,17 @@ SRS Writer 插件采用智能的动态模型配置系统，无需硬编码就能
 🔧 Learned from context error for gpt-4: 8000 → 6400 tokens
 ```
 
-### 配置缓存
+### Configuration Cache
 
-- **缓存位置**: 内存中的静态Map
-- **缓存时效**: 24小时（错误学习缓存永久有效）
-- **置信度级别**: low < medium < high
+- **Cache Location**: Static Map in memory
+- **Cache Duration**: 24 hours (error learning cache is permanent)
+- **Confidence Levels**: low < medium < high
 
-## 最佳实践
+## Best Practices
 
-### 1. 新模型首次使用
+### 1. First-time Use of New Models
 
-对于全新的未知模型：
+For brand new unknown models:
 ```json
 {
     "srs-writer.modelConfigs": {
@@ -117,9 +117,9 @@ SRS Writer 插件采用智能的动态模型配置系统，无需硬编码就能
 }
 ```
 
-### 2. 本地小模型
+### 2. Local Small Models
 
-对于资源受限的本地模型：
+For resource-constrained local models:
 ```json
 {
     "srs-writer.modelConfigs": {
@@ -132,9 +132,9 @@ SRS Writer 插件采用智能的动态模型配置系统，无需硬编码就能
 }
 ```
 
-### 3. 企业内部模型
+### 3. Enterprise Internal Models
 
-对于企业部署的定制模型：
+For custom models deployed by enterprises:
 ```json
 {
     "srs-writer.modelConfigs": {
@@ -147,47 +147,47 @@ SRS Writer 插件采用智能的动态模型配置系统，无需硬编码就能
 }
 ```
 
-## 故障排除
+## Troubleshooting
 
-### 常见问题
+### Common Issues
 
-1. **上下文仍然超限**
-   - 检查用户配置是否过高
-   - 系统会自动学习并调整
+1. **Context Still Exceeds Limit**
+   - Check if user configuration is too high
+   - System will automatically learn and adjust
 
-2. **压缩过于频繁**
-   - 降低 `compressionThreshold`
-   - 或增加 `maxTokens`
+2. **Compression Too Frequent**
+   - Lower `compressionThreshold`
+   - Or increase `maxTokens`
 
-3. **配置不生效**
-   - 确认模型名称匹配
-   - 重启 VSCode 刷新配置
+3. **Configuration Not Taking Effect**
+   - Confirm model name matches
+   - Restart VSCode to refresh configuration
 
-### 重置学习缓存
+### Reset Learning Cache
 
-目前需要重启 VSCode 来清除学习缓存。未来版本将提供命令行重置功能。
+Currently, you need to restart VSCode to clear the learning cache. Future versions will provide command-line reset functionality.
 
-## 技术细节
+## Technical Details
 
-### Token估算算法
+### Token Estimation Algorithm
 
 ```typescript
-// 中英文混合文本的智能估算
+// Intelligent estimation for mixed Chinese-English text
 const chineseChars = (text.match(/[\u4e00-\u9fff]/g) || []).length;
 const englishWords = text.replace(/[\u4e00-\u9fff]/g, '').split(/\s+/).filter(w => w.length > 0).length;
 return Math.ceil(chineseChars + englishWords * 1.3);
 ```
 
-### 错误检测模式
+### Error Detection Pattern
 
-系统识别以下错误模式为上下文限制错误：
+The system identifies the following error patterns as context limit errors:
 - `context length`
 - `token limit`
 - `maximum context`
 - `too long`
 - `context size`
-- 常见token数字：`4096`, `8192`, `16384`, `32768`
+- Common token numbers: `4096`, `8192`, `16384`, `32768`
 
 ---
 
-这个动态配置系统确保了插件能够适应任何现有或未来的AI模型，无需代码更新！ 
+This dynamic configuration system ensures that the plugin can adapt to any existing or future AI models without requiring code updates! 

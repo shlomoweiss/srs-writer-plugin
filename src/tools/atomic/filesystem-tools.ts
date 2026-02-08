@@ -6,13 +6,13 @@ import { resolveWorkspacePath, getCurrentWorkspaceFolder } from '../../utils/pat
 import { showFileDiff } from '../../utils/diff-view';
 
 /**
- * 文件系统操作工具 - 基于 vscode.workspace.fs API
+ * File system operation tools - based on vscode.workspace.fs API
  * 
- * 包含功能：
- * - 文件读写操作
- * - 目录管理（创建、列出、删除）
- * - 文件重命名和移动
- * - 智能项目检测
+ * Included features:
+ * - File read/write operations
+ * - Directory management (create, list, delete)
+ * - File rename and move
+ * - Smart project detection
  */
 
 const logger = Logger.getInstance();
@@ -62,7 +62,7 @@ export async function _internalReadFile(args: { path: string }): Promise<{ succe
 
 
 /**
- * 检查文件扩展名是否为支持的文本格式
+ * Check if file extension is a supported text format
  */
 function isSupportedTextFile(filePath: string): boolean {
     const ext = path.extname(filePath).toLowerCase();
@@ -81,11 +81,11 @@ function isSupportedTextFile(filePath: string): boolean {
         // 注意：不包含 .md, .markdown, .yaml, .yml - 这些有专门的工具
     ];
     
-    return supportedExtensions.includes(ext) || !ext; // 无扩展名的文件也视为文本文件
+    return supportedExtensions.includes(ext) || !ext; // Files without extension are also considered text files
 }
 
 /**
- * 读取文本文件内容
+ * Read text file content
  */
 export const readTextFileToolDefinition = {
     name: "readTextFile",
@@ -109,7 +109,7 @@ export const readTextFileToolDefinition = {
     interactionType: 'autonomous',
     riskLevel: 'low',
     requiresConfirmation: false,
-    // 🚀 访问控制：文本文件读取是安全查询操作
+    // 🚀 Access control: Text file reading is a safe query operation
     accessibleBy: [
         CallerType.ORCHESTRATOR_TOOL_EXECUTION,
         CallerType.ORCHESTRATOR_KNOWLEDGE_QA,
@@ -130,9 +130,9 @@ export async function readTextFile(args: {
     error?: string 
 }> {
     try {
-        logger.info(`📖 开始读取文本文件: ${args.path}`);
+        logger.info(`📖 Starting to read text file: ${args.path}`);
 
-        // 1. 检查文件扩展名是否为支持的文本格式
+        // 1. Check if file extension is a supported text format
         if (!isSupportedTextFile(args.path)) {
             const ext = path.extname(args.path).toLowerCase();
             return { 
@@ -141,10 +141,10 @@ export async function readTextFile(args: {
             };
         }
 
-        // 2. 解析文件路径（使用公共路径解析工具，启用存在性检查）
-        const resolvedPath = await resolveWorkspacePath(args.path, { 
-            contextName: '文本文件',
-            checkExistence: true  // 🚀 启用存在性检查，触发智能回退
+        // 2. Parse file path (use common path resolution tool, enable existence check)
+        const resolvedPath = await resolveWorkspacePath(args.path, {
+            contextName: 'Text File',
+            checkExistence: true  // 🚀 Enable existence check, trigger smart fallback
         });
         logger.info(`🔗 解析后的路径: ${resolvedPath}`);
 
@@ -160,7 +160,7 @@ export async function readTextFile(args: {
                 };
             }
 
-            // 检查文件大小，避免读取过大的文件
+            // Check file size to avoid reading files that are too large
             const maxSize = 10 * 1024 * 1024; // 10MB
             if (stat.size > maxSize) {
                 return { 
@@ -177,7 +177,7 @@ export async function readTextFile(args: {
             const fileExtension = path.extname(args.path).toLowerCase();
             const fileType = fileExtension || 'text';
             
-            logger.info(`✅ 文本文件读取成功: ${args.path} (${content.length} 字符, ${(stat.size / 1024).toFixed(1)}KB)`);
+            logger.info(`✅ Text file read successfully: ${args.path} (${content.length} characters, ${(stat.size / 1024).toFixed(1)}KB)`);
             
             return {
                 success: true,
@@ -198,7 +198,7 @@ export async function readTextFile(args: {
         }
 
     } catch (error) {
-        const errorMsg = `文本文件读取失败: ${(error as Error).message}`;
+        const errorMsg = `Text file read failed: ${(error as Error).message}`;
         logger.error(errorMsg, error as Error);
         return {
             success: false,
@@ -233,8 +233,8 @@ export const writeFileToolDefinition = {
     requiresConfirmation: true,
     // 🚀 访问控制：写文件是危险操作，orchestrator不应直接使用
     accessibleBy: [
-        // CallerType.SPECIALIST_CONTENT,            // 内容专家可以创建文档
-        CallerType.SPECIALIST_PROCESS,             // 流程专家可以创建配置文件
+        // CallerType.SPECIALIST_CONTENT,            // Content specialist can create documents
+        CallerType.SPECIALIST_PROCESS,             // Process specialist can create config files
         CallerType.DOCUMENT,                       // 文档层的核心功能
     ]
 };
@@ -265,11 +265,11 @@ export async function writeFile(args: { path: string; content: string }): Promis
         try {
             const originalBytes = await vscode.workspace.fs.readFile(fileUri);
             originalContent = new TextDecoder().decode(originalBytes);
-            logger.info(`📖 读取原文件用于diff: ${args.path}`);
+            logger.info(`📖 Reading original file for diff: ${args.path}`);
         } catch (error) {
-            // 文件不存在，这是新文件创建
+            // File doesn't exist, this is new file creation
             originalContent = undefined;
-            logger.info(`📄 新文件创建: ${args.path}`);
+            logger.info(`📄 New file creation: ${args.path}`);
         }
 
         // 写入文件
@@ -290,8 +290,8 @@ export async function writeFile(args: { path: string; content: string }): Promis
 }
 
 /**
- * 🚀 增强工具：追加文本到文件末尾
- * 高价值场景：生成操作日志、快速添加备注，比完整读写更高效
+ * 🚀 Enhanced tool: Append text to end of file
+ * High-value scenario: Generate operation logs, quickly add notes, more efficient than full read/write
  */
 export const appendTextToFileToolDefinition = {
     name: "appendTextToFile",
@@ -345,7 +345,7 @@ export async function appendTextToFile(args: {
             const existingData = await vscode.workspace.fs.readFile(fileUri);
             existingContent = new TextDecoder().decode(existingData);
         } catch (error) {
-            // 文件不存在，创建新文件
+            // File doesn't exist, create new file
             logger.info(`File ${args.path} doesn't exist, creating new file`);
         }
         
@@ -355,7 +355,7 @@ export async function appendTextToFile(args: {
             (addNewline && existingContent && !existingContent.endsWith('\n') ? '\n' : '') + 
             args.content;
         
-        // 写入更新后的内容
+        // Write updated content
         const contentBytes = new TextEncoder().encode(newContent);
         await vscode.workspace.fs.writeFile(fileUri, contentBytes);
         
@@ -373,9 +373,9 @@ export async function appendTextToFile(args: {
 // ============================================================================
 
 /**
- * 🚀 智能目录创建工具：创建目录并自动管理项目状态
- * 核心价值：解决AI创建项目目录后SessionManager状态不一致的问题
- * 智能检测：当创建的目录看起来像项目时，自动更新会话状态
+ * 🚀 Smart directory creation tool: Create directory and automatically manage project state
+ * Core Value: Solves the problem of SessionManager state inconsistency after AI creates project directories
+ * Smart Detection: Automatically updates session state when created directory looks like a project
  */
 export const createDirectoryToolDefinition = {
     name: "createDirectory",
@@ -398,12 +398,12 @@ export const createDirectoryToolDefinition = {
     interactionType: 'confirmation',
     riskLevel: 'medium',
     requiresConfirmation: true,
-    // 🚀 访问控制：创建目录是重要操作，orchestrator不应直接使用
+    // 🚀 Access control: Creating directory is an important operation, orchestrator should not use directly
     accessibleBy: [
-        // CallerType.SPECIALIST_CONTENT,            // 内容专家需要创建项目结构
-        //CallerType.SPECIALIST_PROCESS,             // 流程专家需要创建项目结构
-        CallerType.INTERNAL,                       // 内部工具（如createNewProjectFolder）
-        "project_initializer"                      // 仅Project_initializer需要创建项目结构
+        // CallerType.SPECIALIST_CONTENT,            // Content specialist needs to create project structure
+        //CallerType.SPECIALIST_PROCESS,             // Process specialist needs to create project structure
+        CallerType.INTERNAL,                       // Internal tools (like createNewProjectFolder)
+        "project_initializer"                      // Only Project_initializer needs to create project structure
     ]
 };
 
@@ -426,15 +426,15 @@ export async function createDirectory(args: {
             resolvedDirPath = args.path;
             logger.info(`🔗 检测到绝对路径: ${args.path}`);
         } else {
-            // 🚀 修复：项目目录创建时强制使用工作区根目录
+            // 🚀 Fix: Force use workspace root directory when creating project directory
             if (args.isProjectDirectory) {
-                // 项目目录：强制使用工作区根目录，避免嵌套路径问题
+                // Project directory: Force use workspace root directory to avoid nested path issues
                 const workspaceFolder = getCurrentWorkspaceFolder();
                 if (!workspaceFolder) {
-                    throw new Error('未找到VSCode工作区，无法创建项目目录');
+                    throw new Error('VSCode workspace not found, cannot create project directory');
                 }
                 resolvedDirPath = path.resolve(workspaceFolder.uri.fsPath, args.path);
-                logger.info(`🎯 项目目录路径解析（使用工作区根目录）: ${args.path} -> ${resolvedDirPath}`);
+                logger.info(`🎯 Project directory path resolution (using workspace root): ${args.path} -> ${resolvedDirPath}`);
             } else {
                 // 非项目目录：使用原有的智能路径解析逻辑
                 resolvedDirPath = await resolveWorkspacePath(args.path, {
@@ -458,20 +458,20 @@ export async function createDirectory(args: {
                 const { SessionManager } = await import('../../core/session-manager');
                 const sessionManager = SessionManager.getInstance();
                 
-                // 获取当前会话，如果没有项目则更新为新创建的项目
+                // Get current session, if no project then update to newly created project
                 const currentSession = await sessionManager.getCurrentSession();
                 if (!currentSession?.projectName) {
                     const projectName = _extractProjectNameFromPath(args.path);
-                    const baseDir = resolvedDirPath;  // 🚀 使用解析后的绝对路径
+                    const baseDir = resolvedDirPath;  // 🚀 Use resolved absolute path
                     
                     if (currentSession) {
-                        // 更新现有会话
+                        // Update existing session
                         await sessionManager.updateSession({
                             projectName,
                             baseDir
                         });
                     } else {
-                        // 创建新会话
+                        // Create new session
                         await sessionManager.createNewSession(projectName);
                         await sessionManager.updateSession({ baseDir });
                     }
@@ -481,7 +481,7 @@ export async function createDirectory(args: {
                 }
             } catch (sessionError) {
                 logger.warn(`Failed to update session for new project: ${sessionError}`);
-                // 即使会话更新失败，目录创建仍然成功
+                // Even if session update fails, directory creation is still successful
             }
         }
         
@@ -581,7 +581,7 @@ export async function listFiles(args: {
     }>; 
     totalCount?: number;        // 返回的项目总数
     truncated?: boolean;        // 是否因超过 maxItems 而被截断
-    scannedDepth?: number;      // 实际扫描的最大深度（仅 recursive=true 时）
+    scannedDepth?: number;      // Actual scanned maximum depth (only when recursive=true)
     error?: string 
 }> {
     try {
@@ -688,7 +688,7 @@ async function listSingleLevel(
                 continue;
             }
 
-            // 检查排除模式
+            // Check exclusion patterns
             if (shouldExclude(name, options.excludePatterns)) {
                 continue;
             }
@@ -696,17 +696,17 @@ async function listSingleLevel(
             const isDirectory = type === vscode.FileType.Directory;
             const itemType: 'file' | 'directory' = isDirectory ? 'directory' : 'file';
 
-            // 检查类型过滤
+            // Check type filtering
             if (!shouldIncludeByType(itemType, options.dirsOnly, options.filesOnly)) {
                 continue;
             }
 
-            // 检查关键词匹配
+            // Check keyword match
             if (!matchesSearchKeywords(name, options.searchKeywords)) {
                 continue;
             }
 
-            // 构建完整相对路径
+            // Build complete relative path
             const fullPath = basePath ? `${basePath}/${name}` : name;
 
             results.push({
@@ -715,7 +715,7 @@ async function listSingleLevel(
                 type: itemType
             });
 
-            // 检查数量限制
+            // Check count limit
             if (results.length >= options.maxItems) {
                 break;
             }
@@ -782,12 +782,12 @@ async function listRecursively(
                     continue;
                 }
 
-                // 检查排除模式
+                // Check exclusion patterns
                 if (shouldExclude(name, options.excludePatterns)) {
                     continue;
                 }
 
-                // 检查数量限制
+                // Check count limit
                 if (totalCount >= options.maxItems) {
                     break;
                 }
@@ -852,7 +852,7 @@ async function listRecursively(
 }
 
 /**
- * 🔧 辅助函数：检查是否应该排除
+ * 🔧 Helper function: Check if should be excluded
  */
 function shouldExclude(name: string, patterns: string[]): boolean {
     return patterns.some(pattern => {
@@ -866,7 +866,7 @@ function shouldExclude(name: string, patterns: string[]): boolean {
 }
 
 /**
- * 🔧 辅助函数：检查是否匹配搜索关键词
+ * 🔧 Helper function: Check if matches search keywords
  */
 function matchesSearchKeywords(name: string, keywords?: string[]): boolean {
     if (!keywords || keywords.length === 0) {
@@ -897,7 +897,7 @@ function matchesSearchKeywords(name: string, keywords?: string[]): boolean {
 }
 
 /**
- * 🔧 辅助函数：检查是否应该根据类型包含
+ * 🔧 Helper function: Check if should be included by type
  */
 function shouldIncludeByType(
     type: 'file' | 'directory',
@@ -1046,7 +1046,7 @@ export const copyAndRenameFileToolDefinition = {
     accessibleBy: [
         // CallerType.SPECIALIST_CONTENT,            // 内容专家可能需要复制文件模板
         // CallerType.SPECIALIST_PROCESS,             // 流程专家可能需要复制文件模板
-        "project_initializer",                      // 仅Project_initializer可能需要复制文件
+        "project_initializer",                      // Only Project_initializer may need to copy files
         CallerType.INTERNAL                       // 内部工具（如项目模板复制）
     ]
 };
@@ -1065,14 +1065,14 @@ export async function copyAndRenameFile(args: {
         const sourceUri = vscode.Uri.joinPath(workspaceFolder.uri, args.sourcePath);
         const targetUri = vscode.Uri.joinPath(workspaceFolder.uri, args.targetPath);
         
-        // 检查源文件是否存在
+        // Check if source file exists
         try {
             await vscode.workspace.fs.stat(sourceUri);
         } catch {
             return { success: false, error: `Source file does not exist: ${args.sourcePath}` };
         }
         
-        // 检查目标文件是否存在（如果不允许覆盖）
+        // Check if target file exists (if overwrite not allowed)
         if (!args.overwrite) {
             try {
                 await vscode.workspace.fs.stat(targetUri);

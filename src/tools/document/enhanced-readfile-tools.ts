@@ -1,10 +1,10 @@
 /**
- * Enhanced ReadMarkdownFile Tool - AI优化的Markdown文档解析器
+ * Enhanced ReadMarkdownFile Tool - AI-optimized Markdown document parser
  * 
- * 专为AI Agent设计的增强型Markdown文件读取工具
- * 支持结构化解析、多目标搜索、智能缓存等高级功能
+ * Enhanced Markdown file reading tool designed specifically for AI Agents
+ * Supports structured parsing, multi-target search, intelligent caching, and other advanced features
  * 
- * @version 2.0.0 - 完全重写，不保持向后兼容
+ * @version 2.0.0 - Complete rewrite, not backward compatible
  */
 
 import * as vscode from 'vscode';
@@ -34,12 +34,12 @@ const logger = Logger.getInstance();
 export type ParseMode = 'content' | 'structure' | 'toc' | 'full';
 
 /**
- * 目标类型：章节或关键字搜索
+ * Target type: Section or keyword search
  */
 export interface TargetRequest {
     type: 'section' | 'keyword';
     
-    // Section类型参数
+    // Section type parameters
     sid?: string;                        // section stable ID (当type为section时，必需)
     
     // Keyword类型参数
@@ -55,43 +55,43 @@ export interface TargetRequest {
  * 文本偏移信息 - 章节范围定位
  */
 export interface TextOffset {
-    // UTF-16编码单位 (VS Code友好) - 提供章节的完整行范围
+    // UTF-16 encoding units (VS Code friendly) - Provides complete line range of section
     utf16: {
-        startLine: number;      // 章节开始行（标题行）
-        endLine: number;        // 章节结束行
-        startColumn: number;    // 标题开始列
-        endColumn: number;      // 标题结束列
+        startLine: number;      // Section start line (heading line)
+        endLine: number;        // Section end line
+        startColumn: number;    // Heading start column
+        endColumn: number;      // Heading end column
     };
 }
 
 /**
- * 树状目录节点 (用于structure和full模式)
+ * Tree-structured table of contents node (for structure and full modes)
  */
 export interface TableOfContentsTreeNode {
-    sid: string;                         // 层级稳定ID (如: /introduction/system-overview)
-    displayId: string;                   // 显示ID (如: "1.1")
-    title: string;                       // 原始标题
-    normalizedTitle: string;             // 规范化标题 (去除编号)
-    level: number;                       // 标题级别 (1-6)
-    line: number;                        // 所在行号
-    offset: TextOffset;                  // 精确位置信息
+    sid: string;                         // Hierarchical stable ID (e.g.: /introduction/system-overview)
+    displayId: string;                   // Display ID (e.g.: "1.1")
+    title: string;                       // Original title
+    normalizedTitle: string;             // Normalized title (numbering removed)
+    level: number;                       // Heading level (1-6)
+    line: number;                        // Line number
+    offset: TextOffset;                  // Precise location info
     
-    // 章节元数据
-    wordCount: number;                   // 字数统计
-    characterCount: number;              // 字符数统计
-    containsCode: boolean;               // 是否包含代码块
-    containsTables: boolean;             // 是否包含表格
-    containsLists: boolean;              // 是否包含列表
+    // Section metadata
+    wordCount: number;                   // Word count
+    characterCount: number;              // Character count
+    containsCode: boolean;               // Whether contains code blocks
+    containsTables: boolean;             // Whether contains tables
+    containsLists: boolean;              // Whether contains lists
     
-    // 树状结构 - 只保留children，不保留parent
-    children: TableOfContentsTreeNode[]; // 子章节数组
+    // Tree structure - only keep children, not parent
+    children: TableOfContentsTreeNode[]; // Child section array
     
-    // AI友好字段
-    siblingIndex: number;                // 在同级中的位置 (0-based)
-    siblingCount: number;                // 同级章节总数
+    // AI-friendly fields
+    siblingIndex: number;                // Position among siblings (0-based)
+    siblingCount: number;                // Total count of sibling sections
     
-    // 🆕 章节边界信息
-    endLine?: number;                    // 章节结束行号（1-based，包含该行）
+    // 🆕 Section boundary information
+    endLine?: number;                    // Section end line number (1-based, inclusive)
 }
 
 /**
@@ -127,15 +127,15 @@ export interface TableOfContents {
     containsLists: boolean;              // 是否包含列表
     
     // 层级关系
-    parent?: string;                     // 父级章节sid
-    children: TableOfContents[];         // 子章节列表
+    parent?: string;                     // Parent section sid
+    children: TableOfContents[];         // Child section list
     
-    // AI友好字段
-    siblingIndex: number;                // 在同级中的位置 (0-based)
-    siblingCount: number;                // 同级章节总数
+    // AI-friendly fields
+    siblingIndex: number;                // Position among siblings (0-based)
+    siblingCount: number;                // Total count of sibling sections
     
-    // 🆕 章节边界信息（为 executeMarkdownEdits 提供支持）
-    endLine?: number;                    // 章节结束行号（1-based，包含该行）
+    // 🆕 Section boundary information (provides support for executeMarkdownEdits)
+    endLine?: number;                    // Section end line number (1-based, inclusive)
 }
 
 /**
@@ -268,7 +268,7 @@ export interface WarningInfo {
 }
 
 /**
- * 目标处理结果
+ * Target processing result
  */
 export interface TargetResult {
     type: "section" | "keyword_search";
@@ -285,13 +285,13 @@ export interface TargetResult {
     matches?: KeywordMatch[];            // 匹配结果列表
     totalMatches?: number;               // 总匹配数
     
-    // 通用字段
-    error?: ErrorDetails;                // 错误详情
-    warning?: string;                    // 该目标的警告信息
+    // Common fields
+    error?: ErrorDetails;                // Error details
+    warning?: string;                    // Warning information for this target
 }
 
 /**
- * 增强型文件读取结果
+ * Enhanced file read result
  */
 export interface EnhancedReadFileResult {
     success: boolean;
@@ -307,15 +307,15 @@ export interface EnhancedReadFileResult {
     tableOfContents?: TableOfContents[];        // 内部兼容用，不在新输出中使用
     tableOfContentsTree?: TableOfContentsTreeNode[];  // 树状目录结构 (parseMode=structure/full时提供)
     tableOfContentsToCTree?: TableOfContentsToCNode[]; // ToC模式树状结构 (parseMode=toc时提供)
-    contentSummary?: ContentSummary;            // 内容摘要 (parseMode=structure时提供)
+    contentSummary?: ContentSummary;            // Content summary (provided when parseMode=structure)
     
-    // 多目标处理结果
-    results: TargetResult[];             // 各个target的处理结果
+    // Multi-target processing results
+    results: TargetResult[];             // Processing results for each target
     
-    // 元信息
-    parseTime: number;                   // 解析耗时(毫秒)
-    cacheHit: boolean;                   // 是否命中缓存
-    warnings?: WarningInfo[];            // 警告信息
+    // Metadata
+    parseTime: number;                   // Parse time (milliseconds)
+    cacheHit: boolean;                   // Whether cache was hit
+    warnings?: WarningInfo[];            // Warning information
     error?: ErrorDetails;                // 全局错误信息
 }
 
@@ -412,12 +412,12 @@ export const readMarkdownFileToolDefinition = {
 // ========== 核心类实现 ==========
 
 /**
- * 短哈希生成器 - 支持跨会话稳定哈希
+ * Short hash generator - Supports cross-session stable hashing
  */
 class HashGenerator {
     /**
-     * 生成稳定的6位短哈希 (跨会话一致)
-     * 基于文档结构上下文确保相同位置的标题总是生成相同哈希
+     * Generate stable 6-character short hash (consistent across sessions)
+     * Based on document structure context to ensure same hash for same position headings
      */
     static generateStableHash(stableInput: string): string {
         const hash = createHash('sha256').update(stableInput, 'utf-8').digest('hex');
@@ -475,12 +475,12 @@ class PathValidator {
  */
 class TitleNormalizer {
     private static readonly numberPrefixPatterns = [
-        /^[\d\.]+\s+/,                    // 数字编号：1. 1.1 1.2.3. 等
-        /^[\d\.]+\.\s+/,                  // 带点结尾：1. 2.1. 3.2.1. 等
-        /^[（\(][一二三四五六七八九十\d][）\)]\s+/, // 中文括号：（一） (1) (二) 等
-        /^第[一二三四五六七八九十\d]+[章节部分]\s+/, // 中文章节：第一章 第二节 第三部分 等
-        /^[IVXLCDM]+[\.\s]+/,            // 罗马数字：I. II III. 等
-        /^[A-Z][\.\)]\s+/,               // 字母编号：A. B) C. 等
+        /^[\d\.]+\s+/,                    // Number prefix: 1. 1.1 1.2.3. etc.
+        /^[\d\.]+\.\s+/,                  // With dot suffix: 1. 2.1. 3.2.1. etc.
+        /^[（\(][一二三四五六七八九十\d][）\)]\s+/, // Chinese parentheses: （一） (1) (二) etc.
+        /^第[一二三四五六七八九十\d]+[章节部分]\s+/, // Chinese chapter: 第一章 第二节 第三部分 etc.
+        /^[IVXLCDM]+[\.\s]+/,            // Roman numerals: I. II III. etc.
+        /^[A-Z][\.\)]\s+/,               // Letter numbering: A. B) C. etc.
     ];
 
     /**
@@ -517,13 +517,13 @@ export class ParsingEngine {
 }
 
 /**
- * 结构分析器 - 负责生成TOC和元数据
+ * Structure analyzer - Responsible for generating TOC and metadata
  */
 export class StructureAnalyzer {
     private slugger = new GithubSlugger();
 
     /**
-     * 生成目录结构 - 支持跨会话稳定哈希
+     * Generate table of contents structure - Supports cross-session stable hashing
      */
     generateTableOfContents(ast: any, content: string): TableOfContents[] {
         const toc: TableOfContents[] = [];
@@ -547,13 +547,13 @@ export class StructureAnalyzer {
             // 1. 计算父级路径
             const parentPath = this.calculateParentPath(levelStack, headingLevel);
             
-            // 2. 生成基础slug（中文友好）
+            // 2. Generate base slug (Chinese-friendly)
             const baseSlug = this.generateChineseFriendlySlug(normalizedTitle);
             
-            // 🔍 调试：输出slug生成过程（仅在需要时启用）
-            // logger.debug(`🔍 SID生成调试: title="${title}" -> normalizedTitle="${normalizedTitle}" -> baseSlug="${baseSlug}" -> parentPath="${parentPath}"`);
+            // 🔍 Debug: Output slug generation process (enable only when needed)
+            // logger.debug(`🔍 SID generation debug: title="${title}" -> normalizedTitle="${normalizedTitle}" -> baseSlug="${baseSlug}" -> parentPath="${parentPath}"`);
             
-            // 3. 计算稳定位置
+            // 3. Calculate stable position
             const stablePosition = this.calculateStablePosition(parentChildCount, parentPath, normalizedTitle);
             
             // 4. 检查是否需要短哈希去重
@@ -576,7 +576,7 @@ export class StructureAnalyzer {
             
             slugOccurrences.set(slugKey, (slugOccurrences.get(slugKey) || 0) + 1);
             
-            // 5. 生成层级SID
+            // 5. Generate hierarchical SID
             const sid = parentPath && parentPath.length > 0 ? `/${parentPath}/${finalSlug}` : `/${finalSlug}`;
             
             // 6. 更新层级堆栈
@@ -585,11 +585,11 @@ export class StructureAnalyzer {
             // 计算文本偏移（暂时不包含endLine，将在calculateSectionEndLines后更新）
             const offset = this.calculateTextOffset(pos);
             
-            // 分析章节内容
+            // Analyze section content
             const sectionContent = this.extractSectionContent(lines, pos.start.line - 1, node.depth);
             const metadata = this.analyzeSectionContent(sectionContent);
             
-            // 生成displayId (这里简化实现，实际需要考虑层级关系)
+            // Generate displayId (simplified implementation, actual needs to consider hierarchy)
             const displayId = toc.length + 1;
 
             const tocEntry: TableOfContents = {
@@ -601,9 +601,9 @@ export class StructureAnalyzer {
                 line: pos.start.line,
                 offset,
                 ...metadata,
-                parent: undefined, // 将在buildHierarchy中设置
+                parent: undefined, // Will be set in buildHierarchy
                 children: [],
-                // AI友好字段初始值
+                // AI-friendly field initial values
                 siblingIndex: 0,
                 siblingCount: 0
             };
@@ -611,13 +611,13 @@ export class StructureAnalyzer {
             toc.push(tocEntry);
         });
 
-        // 建立父子关系
+        // Build parent-child relationships
         this.buildHierarchy(toc);
         
-        // 🆕 计算AI友好字段
+        // 🆕 Calculate AI-friendly fields
         this.calculateAIFriendlyFields(toc);
 
-        // 🆕 计算所有章节的 endLine（为 executeMarkdownEdits 提供支持）
+        // 🆕 Calculate endLine for all sections (provides support for executeMarkdownEdits)
         this.calculateSectionEndLines(toc, lines.length);
 
         return toc;
@@ -635,36 +635,36 @@ export class StructureAnalyzer {
     }
 
     /**
-     * 🚀 生成中文友好的slug
-     * 解决github-slugger对中文支持不好的问题
+     * 🚀 Generate Chinese-friendly slug
+     * Solves the issue of poor Chinese support in github-slugger
      */
     private generateChineseFriendlySlug(title: string): string {
         if (!title || title.trim().length === 0) {
             return 'untitled';
         }
 
-        // 1. 基本清理
+        // 1. Basic cleanup
         let slug = title.trim().toLowerCase();
         
-        // 2. 🔧 Bug Fix: 使用白名单模式处理字符，确保与SID验证器契约一致
-        // 只保留：字母(a-z)、数字(0-9)、中文(CJK统一表意文字)、日文平假名/片假名、韩文、连字符、下划线
-        // 这确保生成的SID能通过 sid-based-semantic-locator.ts 中的验证
+        // 2. 🔧 Bug Fix: Use whitelist mode to process characters, ensuring consistency with SID validator contract
+        // Only keep: letters(a-z), numbers(0-9), Chinese(CJK Unified Ideographs), Japanese Hiragana/Katakana, Korean, hyphens, underscores
+        // This ensures generated SID can pass validation in sid-based-semantic-locator.ts
         slug = slug
-            .replace(/\s+/g, '-')           // 空格转为连字符
-            // 白名单：保留安全字符，移除所有其他字符（包括 &, @, #, $, %, *, +, =, |, ~ 等）
+            .replace(/\s+/g, '-')           // Convert spaces to hyphens
+            // Whitelist: Keep safe characters, remove all others (including &, @, #, $, %, *, +, =, |, ~ etc.)
             .replace(/[^a-z0-9\u4e00-\u9fff\u3040-\u309f\u30a0-\u30ff\uac00-\ud7af\-_]/g, '-')
-            .replace(/-+/g, '-')            // 多个连字符合并为一个
-            .replace(/^-+|-+$/g, '');       // 去除首尾连字符
+            .replace(/-+/g, '-')            // Merge multiple hyphens into one
+            .replace(/^-+|-+$/g, '');       // Remove leading/trailing hyphens
 
-        // 3. 改进的fallback处理（处理纯特殊字符标题）
+        // 3. Improved fallback handling (handle pure special character titles)
         if (!slug || slug.length === 0) {
-            // 3.1 尝试提取任何字母数字字符
+            // 3.1 Try to extract any alphanumeric characters
             const sanitized = title.replace(/[^a-zA-Z0-9]/g, '');
             if (sanitized && sanitized.length > 0) {
                 slug = this.slugger.slug(sanitized);
             }
             
-            // 3.2 如果仍然无法生成有效slug，使用稳定哈希作为fallback
+            // 3.2 If still unable to generate valid slug, use stable hash as fallback
             if (!slug || slug.length === 0) {
                 const hash = HashGenerator.generateStableHash(title);
                 slug = `section-${hash}`;
@@ -764,7 +764,7 @@ export class StructureAnalyzer {
     }
 
     /**
-     * 生成树状目录结构 (用于structure和full模式)
+     * Generate tree-structured table of contents (for structure and full modes)
      */
     generateTableOfContentsTree(ast: any, content: string): TableOfContentsTreeNode[] {
         const flatToc = this.generateTableOfContents(ast, content);
@@ -772,7 +772,7 @@ export class StructureAnalyzer {
     }
 
     /**
-     * 生成ToC模式树状结构 (简化版)
+     * Generate ToC mode tree structure (simplified version)
      */
     generateTableOfContentsToCTree(ast: any, content: string): TableOfContentsToCNode[] {
         const flatToc = this.generateTableOfContents(ast, content);
@@ -906,12 +906,12 @@ export class StructureAnalyzer {
     }
 
     /**
-     * 计算AI友好字段 (移除childTitles字段)
+     * Calculate AI-friendly fields (removed childTitles field)
      */
     private calculateAIFriendlyFields(toc: TableOfContents[]): void {
-        // 递归计算每个节点的AI友好字段
+        // Recursively calculate AI-friendly fields for each node
         const calculateForNode = (node: TableOfContents, siblings: TableOfContents[]) => {
-            // 计算siblingIndex和siblingCount
+            // Calculate siblingIndex and siblingCount
             node.siblingIndex = siblings.indexOf(node);
             node.siblingCount = siblings.length;
             
@@ -1108,7 +1108,7 @@ class SearchEngine {
             
             const missingKeywords = keywords.filter(k => !foundKeywords.includes(k));
             
-            // 生成上下文和高亮偏移
+            // Generate context and highlight offsets
             const contextResult = this.generateOptimizedContext(
             content,
                 bestOccurrences, 
@@ -1192,7 +1192,7 @@ class SearchEngine {
     }
 
     /**
-     * 生成优化的上下文
+     * Generate optimized context
      */
     private generateOptimizedContext(
         content: string,
@@ -1327,7 +1327,7 @@ class SearchEngine {
                 regex = new RegExp(this.escapeRegex(keyword), 'gi');
                 break;
             case 'ngram':
-                // 字符级匹配，适合中文
+                // Character-level matching, suitable for Chinese
                 regex = new RegExp(this.escapeRegex(keyword), 'gi');
                 break;
             case 'token':
@@ -1409,7 +1409,7 @@ class CacheManager {
     });
 
     /**
-     * 生成缓存键
+     * Generate cache key
      */
     generateCacheKey(filePath: string, mtime: Date, size: number): string {
         const content = `${filePath}#${mtime.getTime()}#${size}`;
@@ -1726,7 +1726,7 @@ class EnhancedMarkdownReader {
     }
 
     /**
-     * 生成内容摘要
+     * Generate content summary
      */
     private generateContentSummary(content: string, toc: TableOfContents[]): ContentSummary {
         const lines = content.split('\n');

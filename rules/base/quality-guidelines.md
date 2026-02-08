@@ -1,117 +1,117 @@
-# 📏 质量指导原则
+# 📏 Quality Guidance Principles
 
-## 🎯 内容质量标准
+## 🎯 Content Quality Standards
 
-### 1. 专业性要求
-- **术语准确性**: 使用标准的行业术语和概念
-- **逻辑清晰**: 内容层次分明，逻辑关系清晰
-- **信息完整**: 覆盖所有必需的信息点
-- **深度适当**: 既不过于表面，也不过度复杂
+### 1. Professionalism Requirements
+- **Terminology Accuracy**: Use standard industry terminology and concepts
+- **Logical Clarity**: Content hierarchy is distinct, logical relationships are clear
+- **Information Completeness**: Cover all necessary information points
+- **Appropriate Depth**: Neither too superficial nor overly complex
 
-### 2. 可读性要求
-- **语言简洁**: 避免冗长的句子和复杂的表达
-- **结构清晰**: 使用标题、列表、表格等组织内容
-- **格式统一**: 遵循一致的Markdown格式规范
-- **重点突出**: 使用适当的强调和标记
+### 2. Readability Requirements
+- **Concise Language**: Avoid lengthy sentences and complex expressions
+- **Clear Structure**: Use headings, lists, tables, etc. to organize content
+- **Unified Format**: Follow consistent Markdown format specifications
+- **Highlight Focus**: Use appropriate emphasis and markers
 
-### 3. 实用性要求
-- **可操作性**: 提供具体、可执行的信息
-- **可验证性**: 内容应该可以被测试和验证
-- **可追踪性**: 需求应该有明确的ID和来源
-- **可维护性**: 内容易于理解和更新
+### 3. Practicality Requirements
+- **Actionability**: Provide specific, executable information
+- **Verifiability**: Content should be testable and verifiable
+- **Traceability**: Requirements should have clear IDs and sources
+- **Maintainability**: Content is easy to understand and update
 
-## 📊 量化质量指标
+## 📊 Quantitative Quality Metrics
 
-### 内容评分标准（1-10分）
-- **9-10分**: 卓越质量，可直接使用
-- **7-8分**: 良好质量，仅需少量调整
-- **5-6分**: 基本质量，需要显著改进
-- **3-4分**: 质量不足，需要重写
-- **1-2分**: 质量很差，完全不可用
+### Content Scoring Standards (1-10 points)
+- **9-10 points**: Excellent quality, can be used directly
+- **7-8 points**: Good quality, only needs minor adjustments
+- **5-6 points**: Basic quality, needs significant improvement
+- **3-4 points**: Insufficient quality, needs rewriting
+- **1-2 points**: Very poor quality, completely unusable
 
-### 完整性评分标准（0-100%）
-- **90-100%**: 完全覆盖所有必需内容
-- **80-89%**: 基本完整，缺少少量信息
-- **70-79%**: 大部分完整，有明显遗漏
-- **60-69%**: 不够完整，需要补充
-- **<60%**: 严重不完整
+### Completeness Scoring Standards (0-100%)
+- **90-100%**: Completely covers all required content
+- **80-89%**: Basically complete, missing small amount of information
+- **70-79%**: Mostly complete, with obvious omissions
+- **60-69%**: Insufficiently complete, needs supplementation
+- **<60%**: Seriously incomplete
 
-### 置信度评分标准（0-100%）
-- **90-100%**: 非常确信内容的准确性
-- **80-89%**: 基本确信，可能有小误差
-- **70-79%**: 部分确信，需要验证
-- **60-69%**: 不太确信，需要审查
-- **<60%**: 不确信，需要重新生成
+### Confidence Scoring Standards (0-100%)
+- **90-100%**: Very confident in content accuracy
+- **80-89%**: Basically confident, may have small errors
+- **70-79%**: Partially confident, needs verification
+- **60-69%**: Not very confident, needs review
+- **<60%**: Not confident, needs regeneration
 
-## 🔍 自我评估清单
+## 🔍 Self-Assessment Checklist
 
-### 内容完整性检查
-- [ ] 是否回答了所有关键问题？
-- [ ] 是否覆盖了所有必需的章节？
-- [ ] 是否提供了足够的细节？
-- [ ] 是否考虑了边界情况？
+### Content Completeness Check
+- [ ] Are all key questions answered?
+- [ ] Are all required chapters covered?
+- [ ] Is sufficient detail provided?
+- [ ] Are boundary cases considered?
 
-### 格式合规性检查
-- [ ] 是否使用了正确的JSON格式？
-- [ ] 是否包含了所有必需字段？
-- [ ] 是否提供了structuredData？
-- [ ] 是否遵循了输出格式规范？
+### Format Compliance Check
+- [ ] Is the correct JSON format used?
+- [ ] Are all required fields included?
+- [ ] Is structuredData provided?
+- [ ] Are output format specifications followed?
 
-### 逻辑一致性检查
-- [ ] 内容是否前后一致？
-- [ ] 是否与项目上下文匹配？
-- [ ] 是否符合业务领域特点？
-- [ ] 是否与其他章节协调？
+### Logical Consistency Check
+- [ ] Is the content internally consistent?
+- [ ] Does it match the project context?
+- [ ] Does it conform to business domain characteristics?
+- [ ] Is it coordinated with other chapters?
 
-### 专业准确性检查
-- [ ] 术语使用是否准确？
-- [ ] 技术描述是否正确？
-- [ ] 业务逻辑是否合理？
-- [ ] 是否符合行业标准？
+### Professional Accuracy Check
+- [ ] Is terminology used accurately?
+- [ ] Are technical descriptions correct?
+- [ ] Is business logic reasonable?
+- [ ] Does it conform to industry standards?
 
-## ⚠️ 常见质量问题
+## ⚠️ Common Quality Issues
 
-### 需要避免的问题
-1. **内容空泛**: 缺乏具体的细节和实例
-2. **术语混用**: 不同章节使用不同的术语表达同一概念
-3. **逻辑跳跃**: 缺乏必要的上下文和连接
-4. **格式不一**: 不遵循统一的格式规范
-5. **信息冗余**: 在多个地方重复相同的信息
+### Issues to Avoid
+1. **Vague Content**: Lack of specific details and examples
+2. **Mixed Terminology**: Using different terms to express the same concept in different chapters
+3. **Logical Jumps**: Missing necessary context and connections
+4. **Inconsistent Format**: Not following unified format specifications
+5. **Information Redundancy**: Repeating the same information in multiple places
 
-### 质量提升技巧
-1. **使用具体示例**: 用实际案例说明抽象概念
-2. **保持术语一致**: 建立术语表并始终遵循
-3. **提供背景信息**: 为复杂概念提供必要的上下文
-4. **结构化表达**: 使用列表、表格、图表组织信息
-5. **增量完善**: 先生成基本框架，再逐步添加细节
+### Quality Improvement Techniques
+1. **Use Specific Examples**: Illustrate abstract concepts with real cases
+2. **Keep Terminology Consistent**: Establish a glossary and always follow it
+3. **Provide Background Information**: Provide necessary context for complex concepts
+4. **Structured Expression**: Use lists, tables, charts to organize information
+5. **Incremental Refinement**: Generate basic framework first, then gradually add details
 
-## 🎯 针对性质量要求
+## 🎯 Targeted Quality Requirements
 
 ### Summary Writer
-- 重点突出项目价值和关键信息
-- 控制在400字以内
-- 面向决策者的语言风格
+- Highlight project value and key information
+- Keep within 400 words
+- Language style oriented toward decision-makers
 
 ### Overall Description Writer
-- 系统性描述项目全貌
-- 包含必要的架构图表
-- 技术与业务平衡
+- Systematically describe project overview
+- Include necessary architecture diagrams
+- Balance technology and business
 
 ### FR Writer
-- 需求描述精确无歧义
-- 包含完整的验收标准
-- 按优先级合理组织
+- Requirement descriptions precise and unambiguous
+- Include complete acceptance criteria
+- Organized reasonably by priority
 
 ### NFR Writer
-- 指标具体可量化
-- 覆盖所有重要质量维度
-- 考虑现实可行性
+- Metrics specific and quantifiable
+- Cover all important quality dimensions
+- Consider realistic feasibility
 
 ### User Journey Writer
-- 真实反映用户行为
-- 识别关键痛点和机会
-- 与功能需求保持一致
+- Genuinely reflect user behavior
+- Identify key pain points and opportunities
+- Maintain consistency with functional requirements
 
 ---
 
-**记住**: 质量是持续改进的过程，始终以用户价值为导向，追求专业性和实用性的平衡。 
+**Remember**: Quality is a continuous improvement process, always oriented toward user value, pursuing a balance between professionalism and practicality. 

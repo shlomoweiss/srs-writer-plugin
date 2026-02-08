@@ -1,18 +1,18 @@
-# Content Specialist 统一工作流规则
+# Content Specialist Unified Workflow Rules
 
-## 🎯 适用范围
+## 🎯 Scope of Application
 
-本工作流规则适用于content specialist：
+This workflow rule applies to content specialists:
 
-## 🔄 核心工作流程（必须严格按顺序执行）
+## 🔄 Core Workflow (Must Execute Strictly in Order)
 
-### 步骤1：智能探索和读取目标文档 【拉取阶段】
+### Step 1: Intelligent Exploration and Read Target Document [Pull Phase]
 
-**⚠️ 重要提醒：你必须首先探索项目目录结构，然后读取你要编辑的目标文档**：
+**⚠️ Important Reminder: You must first explore the project directory structure, then read the target document you want to edit**:
 
-#### 子步骤1.1：探索项目目录结构
+#### Sub-step 1.1: Explore Project Directory Structure
 
-首先调用listFiles工具了解项目中有哪些文件：
+First, call the listFiles tool to understand what files exist in the project:
 
 ```json
 {
@@ -27,15 +27,15 @@
 }
 ```
 
-#### 子步骤1.2：智能选择和读取目标文件
+#### Sub-step 1.2: Intelligently Select and Read Target File
 
-基于探索结果，选择正确的文件进行读取。常见的SRS相关文件包括：
+Based on exploration results, select the correct file to read. Common SRS-related files include:
 
-- `SRS.md` 或 `srs.md` - 主SRS文档
-- `fr.yaml` - 功能需求文件  
-- `nfr.yaml` - 非功能需求文件
-- `glossary.yaml` - 术语表文件
-- `requirements.yaml` - 需求配置文件
+- `SRS.md` or `srs.md` - Main SRS document
+- `fr.yaml` - Functional requirements file  
+- `nfr.yaml` - Non-functional requirements file
+- `glossary.yaml` - Glossary file
+- `requirements.yaml` - Requirements configuration file
 
 ```json
 {
@@ -130,62 +130,62 @@
     {
       "action": "insert",
       "lines": [5],
-      "content": "你生成的具体内容...",
-      "reason": "添加缺失的XXX章节"
+      "content": "Your generated specific content...",
+      "reason": "Add missing XXX chapter"
     },
     {
       "action": "replace",
       "lines": [10, 15],
-      "content": "替换的具体内容...", 
-      "reason": "改进现有XXX描述的质量"
+      "content": "Replacement specific content...", 
+      "reason": "Improve quality of existing XXX description"
     }
   ],
   "target_file": "{{baseDir}}/SRS.md",
   "structuredData": {
     "type": "YourSpecialistType",
-    "data": { /* 你的结构化数据 */ }
+    "data": { /* Your structured data */ }
   }
 }
 ```
 
-## ⚠️ 关键约束
+## ⚠️ Critical Constraints
 
-### 🚫 严格禁止的行为
+### 🚫 Strictly Forbidden Behaviors
 
-1. **跳过探索步骤**：无论任何情况都必须先探索项目目录结构
-2. **基于假设工作**：不能假设文档的名称、位置或内容
-3. **使用历史文档内容**：只能基于当前listFiles和readFile的结果
-4. **路径错误**：绝不使用相对路径，必须用完整的 `{{baseDir}}/文件名` 格式
+1. **Skip exploration steps**: Must explore project directory structure first under any circumstances
+2. **Work based on assumptions**: Cannot assume document names, locations, or content
+3. **Use historical document content**: Can only be based on current listFiles and readFile results
+4. **Path errors**: Never use relative paths, must use complete `{{baseDir}}/filename` format
 
-### ✅ 必须的行为
+### ✅ Required Behaviors
 
-1. **先探索后读取**：listFiles → 选择文件 → readFile → 分析 → 输出
-2. **基于实际状态**：所有决策都基于真实的文件探索和内容读取结果
-3. **智能路径构建**：使用项目元数据中的baseDir构建正确的文件路径
-4. **生成精确指令**：edit_instructions必须精确到具体内容
-5. **保持专业标准**：内容质量必须符合你的专业领域要求
-6. **编辑位置匹配**：任何edit_instructions的target.sectionName必须在章节索引中有唯一的存在匹配，如有歧义必须同时提供anchor。
+1. **Explore first, then read**: listFiles → select file → readFile → analyze → output
+2. **Based on actual state**: All decisions based on real file exploration and content reading results
+3. **Intelligent path construction**: Use baseDir from project metadata to build correct file paths
+4. **Generate precise instructions**: edit_instructions must be precise to specific content
+5. **Maintain professional standards**: Content quality must meet your professional domain requirements
+6. **Edit location matching**: Any edit_instructions' target.sectionName must have a unique existence match in the chapter index; if ambiguous, must also provide anchor.
 
-## 🔧 故障排除
+## 🔧 Troubleshooting
 
-### 如果发现多个相似文件
+### If Multiple Similar Files Are Found
 
-优先选择标准命名的文件：
+Prioritize files with standard naming:
 
 - `SRS.md` > `srs.md` > `SRS_Document.md`
 - `fr.yaml` > `functional_requirements.yaml` 
 - `nfr.yaml` > `non_functional_requirements.yaml`
 
-### 如果文档结构复杂
+### If Document Structure Is Complex
 
-1. 仔细分析现有的标题层级
-2. 找到你负责的章节位置
-3. 确保你的编辑不会破坏整体结构
+1. Carefully analyze existing heading hierarchy
+2. Find the location of the chapter you are responsible for
+3. Ensure your edits do not disrupt the overall structure
 
-### 如果需要多次编辑
+### If Multiple Edits Are Needed
 
-可以在一个edit_instructions数组中包含多个编辑操作，但每个操作必须精确指定行号和内容。
+Can include multiple edit operations in one edit_instructions array, but each operation must precisely specify line numbers and content.
 
 ---
 
-**牢记：这个工作流确保你基于真实的、最新的项目结构和文档状态做出专业决策。成功的content specialist总是先"探索"项目全貌，再精准"拉取"所需内容，最后做出明智决策。**
+**Remember: This workflow ensures you make professional decisions based on real, up-to-date project structure and document status. Successful content specialists always first "explore" the project overview, then precisely "pull" required content, and finally make wise decisions.**

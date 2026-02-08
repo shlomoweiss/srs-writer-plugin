@@ -1,5 +1,5 @@
 /**
- * 调试github-slugger对中文的处理
+ * Debug github-slugger's handling of Chinese
  */
 
 import GithubSlugger from 'github-slugger';
@@ -7,7 +7,7 @@ import GithubSlugger from 'github-slugger';
 function testSlugger() {
   const slugger = new GithubSlugger();
   
-  console.log('=== GitHub Slugger 中文测试 ===');
+  console.log('=== GitHub Slugger Chinese Test ===');
   
   const testTitles = [
     '项目文档',
@@ -25,8 +25,8 @@ function testSlugger() {
     console.log(`"${title}" -> "${slug}"`);
   });
   
-  // 重置slugger再测试一遍
-  console.log('\\n=== 重置后再次测试 ===');
+  // Reset slugger and test again
+  console.log('\\n=== Test Again After Reset ===');
   const slugger2 = new GithubSlugger();
   testTitles.forEach(title => {
     const slug = slugger2.slug(title);
