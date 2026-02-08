@@ -180,7 +180,7 @@ export class ContextWindowManager {
       if (compressionSummary) {
         conversationHistory.push({
           role: 'system',
-          content: `📋 **历史摘要**: ${compressionSummary}`,
+          ontent: `📋 **History Summary**: ${compressionSummary}`,
           tokens: this.estimateTokens(compressionSummary)
         });
       }
@@ -276,7 +276,7 @@ export class ContextWindowManager {
         if (item.toolResults) {
           const successCount = item.toolResults.filter(r => r.success).length;
           const toolNames = item.toolResults.map(r => r.toolName).join(', ');
-          return `第${index + 1}步: 执行工具[${toolNames}] - ${successCount}/${item.toolResults.length}成功`;
+         return `Step ${index + 1}: Execute tool[${toolNames}] - ${successCount}/${item.toolResults.length} successful`;
         }
         return `${item.role}: ${item.content.substring(0, 100)}...`;
       }).join('\n');
