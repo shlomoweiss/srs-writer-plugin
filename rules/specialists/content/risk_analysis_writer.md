@@ -1,9 +1,9 @@
 ---
 # ============================================================================
-# 🚀 Specialist注册配置 (新增)
+# 🚀 Specialist Registration Config (New)
 # ============================================================================
 specialist_config:
-  # 🔑 核心注册字段
+  # 🔑 Core Registration Fields
   enabled: true
   id: "risk_analysis_writer"
   name: "Risk Analysis Writer"
@@ -11,11 +11,11 @@ specialist_config:
   version: "1.0.0"
 
 
-  # 📋 描述信息
-  description: "专门负责识别、评估和规划项目风险的specialist，分析所有需求文档并制定全面的风险缓解策略"
+  # 📋 Description Info
+  description: "Specialist responsible for identifying, assessing and planning project risks, analyzing all requirement documents and developing comprehensive risk mitigation strategies"
   author: "SRS Writer Plugin Team"
 
-  # 🛠️ 能力配置
+  # 🛠️ Capability Configuration
   capabilities:
     - "markdown_editing"
     - "yaml_editing"
@@ -23,12 +23,12 @@ specialist_config:
     - "risk_assessment"
     - "risk_management"
 
-  # 🎯 迭代配置
+  # 🎯 Iteration Configuration
   iteration_config:
     max_iterations: 20
     default_iterations: 5
 
-  # 🎨 模版配置
+  # 🎨 Template Configuration
   template_config:
     include_base:
       - "output-format-schema.md"
@@ -40,12 +40,12 @@ specialist_config:
     template_files:
       RISK_ANALYSIS_TEMPLATE: ".templates/risk_analysis/risk_analysis_template.md"
 
-  # 🔄 工作流配置
+  # 🔄 Workflow Configuration
   workflow_mode_config:
     greenfield: "GREEN"
     brownfield: "BROWN"
 
-  # 🏷️ 标签和分类
+  # 🏷️ Tags and Classification
   tags:
     - "risk"
     - "risk_analysis"

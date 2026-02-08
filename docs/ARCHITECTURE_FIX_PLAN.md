@@ -1,23 +1,23 @@
-# 🔧 v5.0架构遗漏修复计划
+# 🔧 v5.0 Architecture Missing Fix Plan
 
-## 🚨 问题描述
+## 🚨 Problem Description
 
-v5.0架构重构时遗漏了`srsAgentEngine`的日志记录适配，导致用户交互和specialist恢复执行的操作没有记录到session文件中。
+The `srsAgentEngine` log recording adaptation was omitted during the v5.0 architecture refactoring, causing user interaction and specialist recovery execution operations to not be recorded in the session file.
 
-## 🔍 问题定位
+## 🔍 Problem Location
 
-### 当前情况
-- `srsAgentEngine.recordExecution()` → `contextManager.recordExecution()` → **仅内存记录**
-- 缺失v5.0汇报模式：`SessionManager.updateSessionWithLog()`
+### Current Situation
+- `srsAgentEngine.recordExecution()` → `contextManager.recordExecution()` → **In-memory recording only**
+- Missing v5.0 reporting mode: `SessionManager.updateSessionWithLog()`
 
-### 遗漏操作
-1. **USER_RESPONSE_RECEIVED**: 用户第二次回复"是的，请继续"
-2. **SPECIALIST_INVOKED**: specialist恢复执行过程  
-3. **TOOL_EXECUTION_END**: specialist任务完成
+### Missing Operations
+1. **USER_RESPONSE_RECEIVED**: User's second response "Yes, please continue"
+2. **SPECIALIST_INVOKED**: specialist recovery execution process
+3. **TOOL_EXECUTION_END**: specialist task completion
 
-## 🛠️ 修复方案
+## 🛠️ Fix Solution
 
-### 方案1: 升级srsAgentEngine (推荐)
+### Solution 1: Upgrade srsAgentEngine (Recommended)
 
 ```typescript
 // src/core/srsAgentEngine.ts
@@ -30,14 +30,14 @@ private async recordExecution(
   args?: any,
   duration?: number
 ): Promise<void> {
-  // 1. 保持现有内存记录
+  // 1. Keep existing in-memory recording
   this.contextManager.recordExecution(
     this.state.executionHistory,
     this.state.iterationCount,
     type, content, success, toolName, result, args, duration
   );
   
-  // 2. 新增v5.0汇报模式
+  // 2. Add v5.0 reporting mode
   try {
     const sessionManager = SessionManager.getInstance();
     const operationType = this.mapToOperationType(type, toolName);
@@ -60,7 +60,7 @@ private async recordExecution(
 private mapToOperationType(type: ExecutionStep['type'], toolName?: string): OperationType {
   switch (type) {
     case 'user_interaction':
-      return content.includes('用户回复') ? 
+      return content.includes('用户回复') || content.includes('User reply') ? 
         OperationType.USER_RESPONSE_RECEIVED : 
         OperationType.USER_QUESTION_ASKED;
     case 'tool_call':
@@ -75,54 +75,54 @@ private mapToOperationType(type: ExecutionStep['type'], toolName?: string): Oper
 }
 ```
 
-### 方案2: SessionManager观察者模式 (备选)
+### Solution 2: SessionManager Observer Pattern (Alternative)
 
-让`SessionManager`监听`srsAgentEngine`的执行历史变更。
+Have `SessionManager` listen to execution history changes from `srsAgentEngine`.
 
-## 📋 实施步骤
+## 📋 Implementation Steps
 
-1. **修改recordExecution方法** - 添加v5.0汇报逻辑
-2. **添加类型映射** - ExecutionStep → OperationType  
-3. **测试验证** - 确保所有操作都被记录
-4. **向后兼容** - 保持现有内存记录功能
+1. **Modify recordExecution method** - Add v5.0 reporting logic
+2. **Add type mapping** - ExecutionStep → OperationType
+3. **Test validation** - Ensure all operations are recorded
+4. **Backward compatibility** - Keep existing in-memory recording functionality
 
-## 🎯 预期效果
+## 🎯 Expected Effect
 
-修复后，session文件将包含完整的操作历史：
+After the fix, the session file will contain complete operation history:
 ```json
 {
   "operations": [
-    // ... 现有记录 ...
+    // ... existing records ...
     {
       "timestamp": "2025-06-24T08:06:48.489Z",
       "type": "USER_RESPONSE_RECEIVED", 
-      "operation": "用户回复: 是的，请继续",
+      "operation": "User reply: Yes, please continue",
       "success": true
     },
     {
       "timestamp": "2025-06-24T08:06:48.490Z",
       "type": "SPECIALIST_INVOKED",
-      "operation": "恢复specialist执行",
+      "operation": "Resume specialist execution",
       "success": true  
     },
     {
       "timestamp": "2025-06-24T08:06:58.874Z",
       "type": "TOOL_EXECUTION_END",
-      "operation": "specialist任务完成",
+      "operation": "Specialist task completed",
       "success": true
     }
   ]
 }
 ```
 
-## ⚠️ 风险评估
+## ⚠️ Risk Assessment
 
-- **低风险**: 只添加新功能，不改变现有逻辑
-- **向后兼容**: 保持现有内存记录机制
-- **错误隔离**: 增加try-catch，避免影响主流程
+- **Low Risk**: Only adds new functionality, doesn't change existing logic
+- **Backward Compatible**: Keeps existing in-memory recording mechanism
+- **Error Isolation**: Adds try-catch to avoid affecting main flow
 
 ---
 
-*优先级: 高*  
-*工作量: 0.5天*  
-*影响范围: srsAgentEngine日志记录* 
+*Priority: High*  
+*Workload: 0.5 days*  
+*Impact Scope: srsAgentEngine log recording* 

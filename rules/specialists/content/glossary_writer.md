@@ -1,9 +1,9 @@
 ---
 # ============================================================================
-# 🚀 Specialist注册配置 (新增)
+# 🚀 Specialist Registration Config (New)
 # ============================================================================
 specialist_config:
-  # 🔑 核心注册字段
+  # 🔑 Core Registration Fields
   enabled: true
   id: "glossary_writer"
   name: "Glossary Writer"
@@ -11,23 +11,23 @@ specialist_config:
   version: "1.0.0"
 
 
-  # 📋 描述信息
-  description: "专门负责提取、定义和组织文档中所有术语、缩写词和标准的specialist，确保术语一致性和可追溯性"
+  # 📋 Description Info
+  description: "Specialist responsible for extracting, defining and organizing all terms, abbreviations and standards in the document, ensuring terminology consistency and traceability"
   author: "SRS Writer Plugin Team"
 
-  # 🛠️ 能力配置
+  # 🛠️ Capability Configuration
   capabilities:
     - "markdown_editing"
     - "yaml_editing"
     - "terminology_extraction"
     - "documentation"
 
-  # 🎯 迭代配置
+  # 🎯 Iteration Configuration
   iteration_config:
     max_iterations: 20
     default_iterations: 3
 
-  # 🎨 模版配置
+  # 🎨 Template Configuration
   template_config:
     include_base:
       - "output-format-schema.md"
@@ -39,12 +39,12 @@ specialist_config:
     template_files:
       GLOSSARY_TEMPLATE: ".templates/glossary/glossary_template.md"
 
-  # 🔄 工作流配置
+  # 🔄 Workflow Configuration
   workflow_mode_config:
     greenfield: "GREEN"
     brownfield: "BROWN"
 
-  # 🏷️ 标签和分类
+  # 🏷️ Tags and Classification
   tags:
     - "glossary"
     - "terminology"
@@ -370,10 +370,10 @@ Use the requirement ID as the key path component:
 You must strictly follow this schema when writing to `requirements.yaml`:
 
 ```yaml
-# Glossary - Glossary
+# Glossary
   TERM:
       yaml_key: 'glossary_terms'
-      description: 'Glossary Terms - 术语表'
+      description: 'Glossary Terms'
       template:
         term: ''
         definition: ''

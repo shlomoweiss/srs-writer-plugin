@@ -1,109 +1,109 @@
-# SRS Writer 会话管理架构重构 - 完成总结
+# SRS Writer Session Management Architecture Refactoring - Completion Summary
 
-## 🎯 重构目标达成
+## 🎯 Refactoring Goals Achieved
 
-成功解决了**会话概念混乱**问题，实现了清晰的分层架构和统一的操作日志系统。
+Successfully resolved the **session concept confusion** problem, implemented clear layered architecture and unified operation logging system.
 
-## 🏗️ 新架构设计
+## 🏗️ New Architecture Design
 
-### **概念分离**
+### **Concept Separation**
 
-| 概念 | 用途 | 生命周期 | 分组方式 |
+| Concept | Purpose | Lifecycle | Grouping Method |
 |------|------|----------|----------|
-| **SessionContext (内存)** | 项目状态快照 | 项目存在期间 | 按项目分组 (UUID) |
-| **srs-writer-session.json (文件)** | 操作流水账 | 15天后归档 | 按时间分片 |
+| **SessionContext (in-memory)** | Project state snapshot | During project existence | Grouped by project (UUID) |
+| **srs-writer-session.json (file)** | Operation log journal | Archived after 15 days | Time-sliced |
 
-### **架构层次**
+### **Architecture Layers**
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │                    Specialist Layer                        │
 │  ┌─────────────────┐  ┌─────────────────┐  ┌──────────────┐ │
-│  │createComprehensiveSRS│ │editSRSDocument│  │   其他专家    │ │
-│  │   (已实现)      │  │  (placeholder)  │  │ (placeholder)│ │
+│  │createComprehensiveSRS│ │editSRSDocument│  │   Other Specialists    │ │
+│  │   (Implemented)      │  │  (placeholder)  │  │ (placeholder)│ │
 │  └─────────────────┘  └─────────────────┘  └──────────────┘ │
 └─────────────────────────────────────────────────────────────┘
-                                ↓ 封装调用
+                                ↓ Encapsulated calls
 ┌─────────────────────────────────────────────────────────────┐
 │                     Internal Layer                         │
 │              sessionManagementTools.ts                     │
 │  ┌──────────────────┐  ┌──────────────────┐  ┌────────────┐ │
-│  │  项目状态管理     │  │  操作日志记录     │  │ 15天归档   │ │
-│  │getOrCreateSession│  │updateWriterSession│  │   自动化    │ │
+│  │  Project State Management     │  │  Operation Logging     │  │ 15-day Archive   │ │
+│  │getOrCreateSession│  │updateWriterSession│  │   Automation    │ │
 │  └──────────────────┘  └──────────────────┘  └────────────┘ │
 └─────────────────────────────────────────────────────────────┘
-                                ↓ 调用
+                                ↓ Calls
 ┌─────────────────────────────────────────────────────────────┐
 │                   SessionManager                           │
-│           (单例 + 观察者模式)                               │
+│           (Singleton + Observer Pattern)                               │
 └─────────────────────────────────────────────────────────────┘
 ```
 
-## 📝 实施的核心组件
+## 📝 Implemented Core Components
 
-### **1. SessionContext 接口 (更新)**
+### **1. SessionContext Interface (Updated)**
 
 ```typescript
 interface SessionContext {
-  sessionContextId: string;        // 🆕 项目唯一标识符 (UUID)
+  sessionContextId: string;        // 🆕 Unique project identifier (UUID)
   projectName: string | null;
   baseDir: string | null;
   activeFiles: string[];
   metadata: {
-    srsVersion: string;            // SRS文档版本号
-    created: string;               // ISO 8601时间戳
-    lastModified: string;          // ISO 8601时间戳
-    version: string;               // 会话格式版本号
+    srsVersion: string;            // SRS document version
+    created: string;               // ISO 8601 timestamp
+    lastModified: string;          // ISO 8601 timestamp
+    version: string;               // Session format version
   };
 }
 ```
 
-### **2. 操作日志接口 (新增)**
+### **2. Operation Log Interface (New)**
 
 ```typescript
 interface OperationLogEntry {
-  timestamp: string;               // ISO 8601时间戳
-  sessionContextId: string;        // 关联的项目ID
-  toolName: string;                // specialist工具名称
-  operation: string;               // 具体操作描述
-  targetFiles: string[];           // 操作的文件列表
-  success: boolean;                // 执行是否成功
-  userInput?: string;              // 触发操作的用户输入
-  executionTime?: number;          // 执行耗时(ms)
-  error?: string;                  // 如果失败，记录错误信息
+  timestamp: string;               // ISO 8601 timestamp
+  sessionContextId: string;        // Associated project ID
+  toolName: string;                // specialist tool name
+  operation: string;               // Specific operation description
+  targetFiles: string[];           // List of files operated on
+  success: boolean;                // Whether execution was successful
+  userInput?: string;              // User input that triggered operation
+  executionTime?: number;          // Execution time (ms)
+  error?: string;                  // Error message if failed
 }
 ```
 
-### **3. 会话日志文件接口 (新增)**
+### **3. Session Log File Interface (New)**
 
 ```typescript
 interface SessionLogFile {
-  fileVersion: string;             // 文件格式版本
+  fileVersion: string;             // File format version
   timeRange: {
-    startDate: string;             // 文件覆盖的开始日期
-    endDate: string;               // 文件覆盖的结束日期
+    startDate: string;             // File coverage start date
+    endDate: string;               // File coverage end date
   };
-  operations: OperationLogEntry[]; // 操作记录数组
-  createdAt: string;               // 文件创建时间
-  lastUpdated: string;             // 最后更新时间
+  operations: OperationLogEntry[]; // Operation record array
+  createdAt: string;               // File creation time
+  lastUpdated: string;             // Last update time
 }
 ```
 
-## 🔧 实施的核心工具
+## 🔧 Implemented Core Tools
 
-### **内部工具层 (src/tools/internal/sessionManagementTools.ts)**
+### **Internal Tool Layer (src/tools/internal/sessionManagementTools.ts)**
 
-✅ **完全实现**的统一会话管理工具：
+✅ **Fully implemented** unified session management tools:
 
-- `getOrCreateSessionContext()` - 项目状态获取/创建
-- `updateSessionContext()` - 项目状态更新
-- `updateWriterSession()` - 操作日志记录（核心方法）
-- `archiveSessionLogIfNeeded()` - 15天自动归档
-- `getOperationHistory()` - 历史查询
+- `getOrCreateSessionContext()` - Project state retrieval/creation
+- `updateSessionContext()` - Project state update
+- `updateWriterSession()` - Operation logging (core method)
+- `archiveSessionLogIfNeeded()` - 15-day automatic archiving
+- `getOperationHistory()` - Historical query
 
-### **专家工具层 (src/tools/specialist/specialistTools.ts)**
+### **Specialist Tool Layer (src/tools/specialist/specialistTools.ts)**
 
-✅ **已完成集成** - `createComprehensiveSRS`：
+✅ **Integration completed** - `createComprehensiveSRS`:
 
 ```typescript
 export async function createComprehensiveSRS(args) {
@@ -111,13 +111,13 @@ export async function createComprehensiveSRS(args) {
     let sessionContext;
     
     try {
-        // 1. 获取或创建会话上下文
+        // 1. Get or create session context
         sessionContext = await getOrCreateSessionContext(args.projectName);
         
-        // 2. 执行specialist逻辑
+        // 2. Execute specialist logic
         const result = await specialistExecutor.executeSpecialist('100_create_srs', context, args.model);
         
-        // 3. 记录成功日志
+        // 3. Record success log
         await updateWriterSession({
             sessionContextId: sessionContext.sessionContextId,
             toolName: 'createComprehensiveSRS',
@@ -131,7 +131,7 @@ export async function createComprehensiveSRS(args) {
         return result;
         
     } catch (error) {
-        // 4. 记录失败日志
+        // 4. Record failure log
         await updateWriterSession({
             sessionContextId: sessionContext?.sessionContextId || 'unknown',
             toolName: 'createComprehensiveSRS',
@@ -148,65 +148,65 @@ export async function createComprehensiveSRS(args) {
 }
 ```
 
-## 📁 文件管理策略
+## 📁 File Management Strategy
 
-### **新的文件结构**
+### **New File Structure**
 
 ```
 .vscode/
-├─ srs-writer-session.json           # 当前15天的操作日志
-└─ session-archives/                 # 归档目录
+├─ srs-writer-session.json           # Current 15-day operation log
+└─ session-archives/                 # Archive directory
    ├─ srs-writer-session-20241201-20241215.json
    ├─ srs-writer-session-20241216-20241230.json
    └─ ...
 ```
 
-### **自动归档机制**
+### **Automatic Archiving Mechanism**
 
-- ✅ 每次 `updateWriterSession` 调用时自动检查归档条件
-- ✅ 超过15天自动移动到归档目录
-- ✅ 文件命名格式：`srs-writer-session-YYYYMMDD-YYYYMMDD.json`
-- ✅ 通过 `getOperationHistory()` 查询跨文件历史
+- ✅ Automatically checks archiving conditions on every `updateWriterSession` call
+- ✅ Automatically moves to archive directory after 15 days
+- ✅ File naming format: `srs-writer-session-YYYYMMDD-YYYYMMDD.json`
+- ✅ Query cross-file history through `getOperationHistory()`
 
-## 🔒 数据一致性保证
+## 🔒 Data Consistency Guarantees
 
-### **Schema一致性**
-- ✅ 无论从内存还是文件读取，数据结构完全一致
-- ✅ 统一的验证和转换逻辑
-- ✅ UUID确保项目唯一性
+### **Schema Consistency**
+- ✅ Data structure is completely consistent whether read from memory or file
+- ✅ Unified validation and conversion logic
+- ✅ UUID ensures project uniqueness
 
-### **错误恢复**
-- ✅ JSON解析失败时自动创建新的日志文件
-- ✅ 空文件检测和清理
-- ✅ 兼容性处理（为现有会话生成UUID）
+### **Error Recovery**
+- ✅ Automatically creates new log file when JSON parsing fails
+- ✅ Empty file detection and cleanup
+- ✅ Compatibility handling (generates UUID for existing sessions)
 
-### **操作原子性**
-- ✅ 日志记录失败不影响主要工具功能
-- ✅ 归档过程中的错误处理和回滚
+### **Operation Atomicity**
+- ✅ Log recording failure doesn't affect main tool functionality
+- ✅ Error handling and rollback during archiving process
 
-## 🚀 已完成的改进
+## 🚀 Completed Improvements
 
-### **1. SessionManager 更新**
-- ✅ 添加 `sessionContextId` 字段支持
-- ✅ 使用 `crypto.randomUUID()` 生成唯一标识符
-- ✅ 保持向后兼容性
+### **1. SessionManager Updates**
+- ✅ Added `sessionContextId` field support
+- ✅ Uses `crypto.randomUUID()` to generate unique identifiers
+- ✅ Maintains backward compatibility
 
-### **2. createComprehensiveSRS 集成**
-- ✅ 完整的日志记录实现
-- ✅ 执行时间测量
-- ✅ 成功/失败状态跟踪
-- ✅ 用户输入和目标文件记录
+### **2. createComprehensiveSRS Integration**
+- ✅ Complete log recording implementation
+- ✅ Execution time measurement
+- ✅ Success/failure status tracking
+- ✅ User input and target file recording
 
-### **3. 15天归档系统**
-- ✅ 自动检查和归档逻辑
-- ✅ 文件命名和目录管理
-- ✅ 历史查询跨文件支持
+### **3. 15-Day Archiving System**
+- ✅ Automatic check and archiving logic
+- ✅ File naming and directory management
+- ✅ Historical query cross-file support
 
-## 📋 使用指南
+## 📋 Usage Guide
 
-### **对其他Specialist工具的集成**
+### **Integration for Other Specialist Tools**
 
-当开发其他specialist工具时，按照以下模式：
+When developing other specialist tools, follow this pattern:
 
 ```typescript
 export async function [toolName](args: any) {
@@ -214,18 +214,18 @@ export async function [toolName](args: any) {
     let sessionContext;
     
     try {
-        // 1. 获取会话上下文
+        // 1. Get session context
         sessionContext = await getOrCreateSessionContext(args.projectName);
         
-        // 2. 执行工具逻辑
+        // 2. Execute tool logic
         const result = await [actual logic];
         
-        // 3. 记录成功日志
+        // 3. Record success log
         await updateWriterSession({
             sessionContextId: sessionContext.sessionContextId,
             toolName: '[toolName]',
-            operation: `[描述执行的操作]`,
-            targetFiles: ['[生成的文件]'],
+            operation: `[Description of the operation performed]`,
+            targetFiles: ['[Generated file]'],
             userInput: args.userInput,
             success: true,
             executionTime: Date.now() - startTime
@@ -234,12 +234,12 @@ export async function [toolName](args: any) {
         return result;
         
     } catch (error) {
-        // 4. 记录失败日志
+        // 4. Record failure log
         if (sessionContext) {
             await updateWriterSession({
                 sessionContextId: sessionContext.sessionContextId,
                 toolName: '[toolName]',
-                operation: `[工具名称] failed: ${error.message}`,
+                operation: `[Tool name] failed: ${error.message}`,
                 targetFiles: [],
                 userInput: args.userInput,
                 success: false,
@@ -253,17 +253,17 @@ export async function [toolName](args: any) {
 }
 ```
 
-## 🎉 重构成果
+## 🎉 Refactoring Results
 
-1. **✅ 概念明确** - SessionContext vs srs-writer-session.json 职责清晰
-2. **✅ 分层架构** - Internal层 → Specialist层封装完成
-3. **✅ 统一日志** - 所有工具操作都通过 `updateWriterSession` 记录
-4. **✅ 自动归档** - 15天生命周期，保护用户资产
-5. **✅ 向后兼容** - 现有功能保持正常工作
-6. **✅ 错误恢复** - 健壮的异常处理和数据修复
+1. **✅ Clear concepts** - SessionContext vs srs-writer-session.json responsibilities clarified
+2. **✅ Layered architecture** - Internal layer → Specialist layer encapsulation completed
+3. **✅ Unified logging** - All tool operations recorded through `updateWriterSession`
+4. **✅ Automatic archiving** - 15-day lifecycle, user asset protection
+5. **✅ Backward compatible** - Existing functionality keeps working
+6. **✅ Error recovery** - Robust exception handling and data repair
 
-## 🔄 下一步
+## 🔄 Next Steps
 
-现在可以按需为其他specialist工具（如 `editSRSDocument`, `lintSRSDocument` 等）应用相同的集成模式，确保整个系统的一致性和可追溯性。
+Now you can apply the same integration pattern to other specialist tools (such as `editSRSDocument`, `lintSRSDocument`, etc.) as needed, ensuring system-wide consistency and traceability.
 
-**架构重构已完成，系统现在具备了清晰的会话管理和完整的操作审计能力！** 🎊 
+**Architecture refactoring completed, the system now has clear session management and complete operational audit capabilities!** 🎊 

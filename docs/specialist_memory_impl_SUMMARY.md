@@ -1,81 +1,81 @@
-# 专家执行器约束记忆修复 - 实施总结
+# Specialist Executor Constraint Memory Fix - Implementation Summary
 
-## 🎯 问题解决方案
+## 🎯 Problem Solution
 
-根据社区用户的深入分析，成功实施了**渐进式、兼容性**的解决方案，解决了专家AI在多轮对话中丢失初始约束（如语言偏好）的问题。
+Based on in-depth analysis from the community, successfully implemented a **progressive, compatible** solution to resolve the issue of Specialist AI losing initial constraints (such as language preferences) in multi-turn conversations.
 
-## ✅ 已完成的修改
+## ✅ Completed Modifications
 
-### 1. **增强 `replaceTemplateVariables` 方法**
-- ✅ 保持所有原有占位符（完全向后兼容）
-- ✅ 新增语义明确的占位符：
-  - `{{INITIAL_USER_REQUEST}}` - 完整的初始用户请求
-  - `{{CURRENT_USER_RESPONSE}}` - 当前轮次的用户回复
+### 1. **Enhanced `replaceTemplateVariables` Method**
+- ✅ Maintain all original placeholders (fully backward compatible)
+- ✅ Added semantically clear placeholders:
+  - `{{INITIAL_USER_REQUEST}}` - Complete initial user request
+  - `{{CURRENT_USER_RESPONSE}}` - Current turn user reply
 
-### 2. **修改 `resumeSpecialistExecution` 方法**
-- ✅ 在恢复执行时创建增强的context
-- ✅ 将用户回复通过 `currentUserResponse` 传递给模板系统
+### 2. **Modified `resumeSpecialistExecution` Method**
+- ✅ Create enhanced context when resuming execution
+- ✅ Pass user reply to template system through `currentUserResponse`
 
-### 3. **更新专家模板文件 (`100_create_srs.md`)**
-- ✅ 使用新占位符替换旧的 `{{userInput}}`
-- ✅ 添加**约束提取指令**，要求AI主动识别关键约束：
-  - 语言要求（中文/英文界面）
-  - 平台要求（移动/桌面/网页）
-  - 技术偏好
-  - 用户体验要求
-- ✅ 在工作流程的每个步骤中强调约束遵守
-- ✅ 添加最终约束检查提醒
+### 3. **Updated Specialist Template File (`100_create_srs.md`)**
+- ✅ Replace old `{{userInput}}` with new placeholders
+- ✅ Added **constraint extraction instructions**, requiring AI to proactively identify key constraints:
+  - Language requirements (Chinese/English interface)
+  - Platform requirements (Mobile/Desktop/Web)
+  - Technology preferences
+  - User experience requirements
+- ✅ Emphasize constraint adherence in every workflow step
+- ✅ Added final constraint check reminder
 
-### 4. **更新降级备用提示词**
-- ✅ 修改 `buildCreateSRSPrompt` 方法
-- ✅ 添加相同的约束提取和保持逻辑
+### 4. **Updated Fallback Prompts**
+- ✅ Modified `buildCreateSRSPrompt` method
+- ✅ Added same constraint extraction and maintenance logic
 
-## 🎉 解决的核心问题
+## 🎉 Core Problems Resolved
 
-1. **约束记忆丢失** → AI现在会主动提取并在每轮对话中保持关键约束
-2. **语言偏好丢失** → 明确要求AI识别和保持语言要求
-3. **概念职责混淆** → 通过新占位符明确区分不同类型的用户输入
+1. **Constraint Memory Loss** → AI now proactively extracts and maintains key constraints in every conversation turn
+2. **Language Preference Loss** → Explicitly requires AI to identify and maintain language requirements
+3. **Conceptual Responsibility Confusion** → New placeholders clearly distinguish different types of user input
 
-## 📋 新占位符系统
+## 📋 New Placeholder System
 
-| 占位符 | 用途 | 兼容性 |
+| Placeholder | Purpose | Compatibility |
 |--------|------|--------|
-| `{{USER_INPUT}}` | 当前用户输入（保持兼容） | ✅ 保留 |
-| `{{INITIAL_USER_REQUEST}}` | 完整的初始请求 | 🆕 新增 |
-| `{{CURRENT_USER_RESPONSE}}` | 恢复时的用户回复 | 🆕 新增 |
-| `{{CONVERSATION_HISTORY}}` | 对话历史 | ✅ 保留 |
-| `{{TOOL_RESULTS_CONTEXT}}` | 工具执行结果 | ✅ 保留 |
+| `{{USER_INPUT}}` | Current user input (maintain compatibility) | ✅ Retained |
+| `{{INITIAL_USER_REQUEST}}` | Complete initial request | 🆕 New |
+| `{{CURRENT_USER_RESPONSE}}` | User reply on resume | 🆕 New |
+| `{{CONVERSATION_HISTORY}}` | Conversation history | ✅ Retained |
+| `{{TOOL_RESULTS_CONTEXT}}` | Tool execution results | ✅ Retained |
 
-## 🛡️ 约束强化机制
+## 🛡️ Constraint Reinforcement Mechanism
 
-### **在提示词层面**（非代码层面）
-- AI被明确要求在第一轮就识别所有关键约束
-- 每个工作流程步骤都强调约束遵守
-- 最终生成前进行约束检查
+### **At Prompt Level** (Not Code Level)
+- AI is explicitly required to identify all key constraints in the first turn
+- Every workflow step emphasizes constraint adherence
+- Constraint check before final generation
 
-### **关键约束类型**
-- 🌐 **语言要求**：界面语言偏好
-- 📱 **平台要求**：目标平台（移动/桌面/网页）
-- 🔧 **技术偏好**：特定技术栈或框架
-- 🎨 **用户体验**：UI/UX约束和偏好
+### **Key Constraint Types**
+- 🌐 **Language Requirements**: Interface language preferences
+- 📱 **Platform Requirements**: Target platform (Mobile/Desktop/Web)
+- 🔧 **Technology Preferences**: Specific tech stack or frameworks
+- 🎨 **User Experience**: UI/UX constraints and preferences
 
-## 🚀 优势特点
+## 🚀 Advantage Features
 
-1. **完全向后兼容** - 现有系统无需修改
-2. **智能约束提取** - 让AI而非代码负责识别约束
-3. **渐进式升级** - 可选择性升级模板文件
-4. **调试友好** - 清晰的语义分离
-5. **可扩展性** - 易于添加新的约束类型
+1. **Fully Backward Compatible** - Existing systems require no modifications
+2. **Intelligent Constraint Extraction** - AI, not code, responsible for identifying constraints
+3. **Progressive Upgrade** - Optional template file upgrades
+4. **Debug Friendly** - Clear semantic separation
+5. **Extensibility** - Easy to add new constraint types
 
-## 📈 预期效果
+## 📈 Expected Effects
 
-- ✅ 专家AI将始终记住"界面都是中文"等关键约束
-- ✅ 多轮对话中保持一致的语言和平台偏好
-- ✅ 更稳定和可预测的AI表现
-- ✅ 更好的用户体验
+- ✅ Specialist AI will always remember key constraints like "all interfaces are in Chinese"
+- ✅ Maintain consistent language and platform preferences in multi-turn conversations
+- ✅ More stable and predictable AI performance
+- ✅ Better user experience
 
 ---
 
-**实施状态**: ✅ **完成**  
-**向后兼容**: ✅ **完全兼容**  
-**测试建议**: 使用包含"中文界面"等约束的复杂需求进行多轮对话测试 
+**Implementation Status**: ✅ **Complete**  
+**Backward Compatibility**: ✅ **Fully Compatible**  
+**Testing Recommendations**: Test with complex requirements containing constraints like "Chinese interface" in multi-turn conversations 

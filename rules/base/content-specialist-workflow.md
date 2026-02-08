@@ -50,78 +50,78 @@ Based on exploration results, select the correct file to read. Common SRS-relate
 }
 ```
 
-**核心原则**：
+**Core Principles**:
 
-- 🚫 **绝不假设**文档内容 - 无论用户描述了什么，都必须亲自读取
-- 🚫 **绝不依赖**历史信息中的文档内容 - 文档可能已经被修改
-- 🚫 **绝不跳过探索步骤** - 必须先了解项目结构再决定读取哪些文件
-- ✅ **智能路径构建** - 始终使用 `{{baseDir}}/文件名` 的完整路径格式
-- ✅ **总是读取**最新的文档状态 - 这是你决策的唯一依据
+- 🚫 **Never assume** document content - no matter what the user describes, you must read it yourself
+- 🚫 **Never rely on** document content in historical information - the document may have been modified
+- 🚫 **Never skip exploration steps** - must first understand project structure before deciding which files to read
+- ✅ **Intelligent path construction** - always use complete path format `{{baseDir}}/filename`
+- ✅ **Always read** the latest document state - this is your only basis for decision-making
 
-### 步骤2：分析文档状态 【分析阶段】
+### Step 2: Analyze Document State [Analysis Phase]
 
-基于listFiles和readFile的结果，分析：
+Based on listFiles and readFile results, analyze:
 
-1. **项目文件结构**：
-   - 项目中已存在哪些SRS相关文件
-   - 文件的命名规范和组织方式
-   - 是否有子目录结构
+1. **Project File Structure**:
+   - Which SRS-related files already exist in the project
+   - File naming conventions and organization methods
+   - Whether there is a subdirectory structure
 
-2. **现有内容结构**：
-   - 文档的当前章节结构
-   - 你负责的部分是否已存在
-   - 现有内容的质量和完整性
+2. **Existing Content Structure**:
+   - Current chapter structure of the document
+   - Whether the part you are responsible for already exists
+   - Quality and completeness of existing content
 
-3. **编辑策略选择**：
-   - **插入新内容**：添加缺失的章节
-   - **替换现有内容**：改进已有但质量不佳的部分
-   - **增强现有内容**：在现有基础上补充细节
+3. **Editing Strategy Selection**:
+   - **Insert new content**: Add missing chapters
+   - **Replace existing content**: Improve existing but poor quality parts
+   - **Enhance existing content**: Supplement details based on existing content
 
-4. **记录章节索引**:
-   - 打开文档后，请记录章节索引，以便后续编辑时使用。
+4. **Record Chapter Index**:
+   - After opening the document, please record the chapter index for use in subsequent editing.
 
-### 步骤3：生成专业内容 【创作阶段】
+### Step 3: Generate Professional Content [Creation Phase]
 
-#### 子步骤3.1：Plan → Draft → Self-Review 闭环 （创作阶段核心）
+#### Sub-step 3.1: Plan → Draft → Self-Review Loop (Creation Phase Core)
 
-> **整个创作过程必须严格遵循以下三步闭环；完成 Self-Review 并修正后，才能进入步骤4：输出编辑指令。**
+> **The entire creation process must strictly follow this three-step loop; only after completing Self-Review and corrections can you proceed to Step 4: Output Edit Instructions.**
 
-1. **Plan（思考）**  
-   - 列出将要生成/修改的章节骨架、需求 ID 规划、信息缺口。  
-   - 如缺关键信息（业务目标、边界条件等），以 `[INFO-NEEDED]` 前缀提出问题，而 **不要**臆造内容。  
-   > 生成时不要把Plan文本输出到最终内容中，仅作为内部思考。
+1. **Plan (Think)**  
+   - List the chapter skeleton, requirement ID plan, and information gaps to be generated/modified.  
+   - If key information is missing (business goals, boundary conditions, etc.), ask questions with `[INFO-NEEDED]` prefix, and **do not** fabricate content.  
+   > Do not output Plan text to final content during generation, keep it as internal thinking only.
 
-2. **Draft（生成）**  
-   - 按 Plan 生成完整 Markdown 内容，遵循“🎨 内容结构模板”与《写作标准》《质量定义》。  
-   - 在草稿前后不要保留 Plan 文本。  
+2. **Draft (Generate)**  
+   - Generate complete Markdown content according to Plan, following "🎨 Content Structure Template" and "Writing Standards" and "Quality Definition".  
+   - Do not retain Plan text before or after the draft.  
 
-3. **Self-Review（自检 & 修正）**  
-   - 按下表填写自检清单；对 ❌ 项立即修正 Draft，直到全部 ✅。  
-   - **仅在模型内部使用自检表**；最终输出中不必保留此表。
+3. **Self-Review (Self-check & Correction)**  
+   - Fill in the self-check list according to the table below; immediately correct Draft for ❌ items until all are ✅.  
+   - **Use self-check table internally in model only**; no need to retain this table in final output.
 
-| 自检项 | 结果(✅/❌) | 修正摘要(如有) |
+| Self-check Item | Result (✅/❌) | Correction Summary (if any) |
 |-------|-----------|---------------|
-| 完整性（六要素齐全） |  |  |
-| 可测试性（验收标准可执行） |  |  |
-| 可追踪性（ID 唯一 & 依赖正确） |  |  |
-| 一致性（格式/术语对齐） |  |  |
-| INVEST 六项符合 |  |  |
+| Completeness (all six elements present) |  |  |
+| Testability (acceptance criteria executable) |  |  |
+| Traceability (ID unique & dependencies correct) |  |  |
+| Consistency (format/terminology aligned) |  |  |
+| INVEST six criteria met |  |  |
 
-> 所有条目均为 ✅ 后，方可进入步骤 3.2。
+> Only after all items are ✅ can you proceed to Step 3.2.
 
-#### 子步骤3.2：确保一致性与专业度（创作阶段收尾）
+#### Sub-step 3.2: Ensure Consistency and Professionalism (Creation Phase Conclusion)
 
-> 完成 Self-Review 后，再次快速检查：
+> After completing Self-Review, quickly check again:
 
-> 1. 与原文档风格、标题层级完全一致  
-> 2. 所有新旧 ID 连续且无冲突  
-> 3. 引用/链接正确可跳转
-> 4. 通过终检后立即准备输出编辑指令
+> 1. Completely consistent with original document style and heading hierarchy  
+> 2. All new and old IDs are continuous and without conflicts  
+> 3. References/links are correct and navigable
+> 4. Immediately prepare to output edit instructions after passing final check
 
-### 步骤4：输出精确编辑指令 【输出阶段】
+### Step 4: Output Precise Edit Instructions [Output Phase]
 
-> **进入此阶段前，必须保证 Self-Review 全部通过。**  
-> 其余格式（requires_file_editing、edit_instructions、content、structuredData 等）保持不变。
+> **Before entering this phase, you must ensure Self-Review has passed completely.**  
+> All other formats (requires_file_editing, edit_instructions, content, structuredData, etc.) remain unchanged.
 
 ```json
 {

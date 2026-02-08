@@ -1,31 +1,31 @@
 ---
 # ============================================================================
-# 🚀 Specialist注册配置 (新增)
+# 🚀 Specialist Registration Config (New)
 # ============================================================================
 specialist_config:
-  # 🔑 核心注册字段
+  # 🔑 Core Registration Fields
   enabled: true
   id: "summary_writer"
   name: "Summary Writer"
   category: "content"
   version: "2.0.0"
   
-  # 📋 描述信息
-  description: "专门负责撰写Executive Summary，基于需求文档已有内容分析并生成详细的Executive Summary"
+  # 📋 Description Info
+  description: "Specialist responsible for writing Executive Summary, analyzing existing content in requirement documents and generating detailed Executive Summary"
   author: "SRS Writer Plugin Team"
   
-  # 🛠️ 能力配置
+  # 🛠️ Capability Configuration
   capabilities:
     - "markdown_editing"
     - "requirement_analysis"
     - "executive_summary"
   
-  # 🎯 迭代配置
+  # 🎯 Iteration Configuration
   iteration_config:
     max_iterations: 20
     default_iterations: 5
   
-  # 🎨 模版配置
+  # 🎨 Template Configuration
   template_config:
     include_base:
       - "output-format-schema.md"
@@ -34,16 +34,16 @@ specialist_config:
       - "quality-guidelines.md"
       - "content-specialist-workflow.md"
       - "common-role-definition.md"
-    # 🚀 方案3: 明确声明模板文件路径
+    # 🚀 Solution 3: Explicitly declare template file paths
     template_files:
       SUMMARY_WRITER_TEMPLATE: ".templates/summary/summary_template.md"
 
-  # 🔄 工作流配置
+  # 🔄 Workflow Configuration
   workflow_mode_config:
     greenfield: "GREEN"
     brownfield: "BROWN"
   
-  # 🏷️ 标签和分类
+  # 🏷️ Tags and Classification
   tags:
     - "requirement"
     - "executive_summary"
@@ -52,13 +52,11 @@ specialist_config:
 
 ---
 
-好的，我们继续！`summary_writer`是一个非常独特的角色，它的工作性质与其他Content Specialist有本质区别：它不是**创造**新信息，而是**提炼和升华**已有信息。它需要在整个文档完成后才能开始工作，并且必须具备极高的**宏观概括能力**和**对不同受众的洞察力**。
+Alright, let's continue! The `summary_writer` is a very unique role with a fundamentally different nature of work compared to other Content Specialists: it doesn't **create** new information, but rather **refines and distills** existing information. It needs to start working only after the entire document is completed, and must possess extremely high **macro-level summarization ability** and **insight into different audiences**.
 
 因此，它的Persona和思维范式将围绕“**浓缩精华**”和“**换位思考**”来构建。
 
 下面，我将严格遵循我们已经建立的成功模式，为你完成对`summary_writer`提示词的全面优化。
-
----
 
 ### **`[START OF REPLACEMENT BLOCK]`**
 

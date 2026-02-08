@@ -1,70 +1,70 @@
-# 分布式工具访问控制设计文档
+# Distributed Tool Access Control Design Document
 
-**文档版本**: 3.0  
-**更新日期**: 2025-10-02  
-**作者**: SRS Writer Plugin 架构团队  
-**状态**: 🚧 计划中 - v3.0 重构设计
+**Document Version**: 3.0  
+**Last Updated**: 2025-10-02  
+**Author**: SRS Writer Plugin Architecture Team  
+**Status**: 🚧 In Planning - v3.0 Refactoring Design
 
-## 📖 概述
+## 📖 Overview
 
-本文档定义了 SRS Writer Plugin 中基于**分布式访问控制**的工具权限管理系统。每个工具通过自身的 `accessibleBy` 属性声明访问权限，实现代码层面的强制访问控制，确保系统架构的清晰性、安全性和可维护性。
+This document defines the tool permission management system based on **distributed access control** in SRS Writer Plugin. Each tool declares access permissions through its own `accessibleBy` property, implementing code-level mandatory access control to ensure system architecture clarity, security, and maintainability.
 
-## 🏗️ 架构升级历史
+## 🏗️ Architecture Upgrade History
 
-**v1.0 → v2.0 重大变更**:
-- ❌ **废弃**: 集中式权限矩阵
-- ✅ **采用**: 分布式工具自治权限控制
-- 🔒 **强化**: 代码层面权限强制执行
-- 🚀 **新增**: 基于 CallerType 的细粒度控制
+**v1.0 → v2.0 Major Changes**:
+- ❌ **Deprecated**: Centralized permission matrix
+- ✅ **Adopted**: Distributed tool autonomous permission control
+- 🔒 **Enhanced**: Code-level permission enforcement
+- 🚀 **Added**: Fine-grained control based on CallerType
 
-**v2.0 → v3.0 计划变更** (🚧 本次重构):
-- 🚀 **新增**: 支持 Specialist 个体级别的访问控制
-- 🔀 **混合**: 支持 CallerType（类型）和 CallerName（个体）混合声明
-- 🤖 **动态**: 利用 SpecialistRegistry 实现动态 specialist 识别
-- 💰 **优化**: 减少专用工具对其他 specialist 的 token 噪声
+**v2.0 → v3.0 Planned Changes** (🚧 Current Refactoring):
+- 🚀 **Added**: Support for individual Specialist-level access control
+- 🔀 **Hybrid**: Support for mixed CallerType (type) and CallerName (individual) declarations
+- 🤖 **Dynamic**: Utilize SpecialistRegistry for dynamic specialist identification
+- 💰 **Optimized**: Reduce token noise from specialized tools to other specialists
 
-### **新架构层级**
+### **New Architecture Hierarchy**
 
-SRS Writer Plugin 采用四层工具架构 + AI调用者类型：
+SRS Writer Plugin adopts a four-layer tool architecture + AI caller types:
 
-#### **🤖 AI调用者层级**
-- **🎯 orchestrator:TOOL_EXECUTION**: 智能分诊中心 - 执行模式
-- **🧠 orchestrator:KNOWLEDGE_QA**: 智能分诊中心 - 知识问答和一般对话模式  
-- **🔬 specialist**: 专家执行器，负责具体SRS业务逻辑
+#### **🤖 AI Caller Hierarchy**
+- **🎯 orchestrator:TOOL_EXECUTION**: Intelligent routing center - execution mode
+- **🧠 orchestrator:KNOWLEDGE_QA**: Intelligent routing center - knowledge Q&A and general conversation mode  
+- **🔬 specialist**: Expert executor, responsible for specific SRS business logic
 
-#### **🛠️ 工具实现层级**
-- **📄 document**: 文档业务层，负责SRS文档的具体操作和业务规则
-- **⚛️ atomic**: 原子操作层，负责基础的文件系统操作
-- **🔧 internal**: 系统工具层，负责日志、用户交互、流程控制等系统功能
+#### **🛠️ Tool Implementation Hierarchy**
+- **📄 document**: Document business layer, responsible for specific operations and business rules of SRS documents
+- **⚛️ atomic**: Atomic operation layer, responsible for basic file system operations
+- **🔧 internal**: System tool layer, responsible for logging, user interaction, process control and other system functions
 
-## 🚀 分布式访问控制实现
+## 🚀 Distributed Access Control Implementation
 
-### **核心类型系统（v2.0）**
+### **Core Type System (v2.0)**
 
 ```typescript
 // src/types/index.ts
 export enum CallerType {
-    // Orchestrator AI 的不同模式
+    // Different modes of Orchestrator AI
     ORCHESTRATOR_TOOL_EXECUTION = 'orchestrator:TOOL_EXECUTION',
     ORCHESTRATOR_KNOWLEDGE_QA = 'orchestrator:KNOWLEDGE_QA',
     
-    // Specialist AI（类型级别）
+    // Specialist AI (type level)
     SPECIALIST_CONTENT = 'specialist:content',
     SPECIALIST_PROCESS = 'specialist:process',
     
-    // 代码层级
+    // Code hierarchy
     DOCUMENT = 'document',
     ATOMIC = 'atomic', 
     INTERNAL = 'internal'
 }
 ```
 
-### **核心类型系统（v3.0 计划）**
+### **Core Type System (v3.0 Planned)**
 
 ```typescript
 // src/types/index.ts
 
-// CallerType 保持不变
+// CallerType remains unchanged
 export enum CallerType {
     ORCHESTRATOR_TOOL_EXECUTION = 'orchestrator:TOOL_EXECUTION',
     ORCHESTRATOR_KNOWLEDGE_QA = 'orchestrator:KNOWLEDGE_QA',
@@ -74,15 +74,15 @@ export enum CallerType {
     INTERNAL = 'internal'
 }
 
-// 🚀 新增：CallerName - Specialist 个体标识
-// 基于 SpecialistRegistry 动态获取，无需手动维护枚举
-export type CallerName = string;  // Specialist ID (例如: "prototype_designer", "fr_writer")
+// 🚀 New: CallerName - Individual Specialist identifier
+// Dynamically obtained from SpecialistRegistry, no need to manually maintain enums
+export type CallerName = string;  // Specialist ID (e.g.: "prototype_designer", "fr_writer")
 
-// 🚀 新增：混合访问控制类型
+// 🚀 New: Hybrid access control type
 export type AccessControl = CallerType | CallerName;
 ```
 
-### **工具定义扩展（v2.0）**
+### **Tool Definition Extension (v2.0)**
 
 ```typescript
 // src/tools/index.ts
@@ -92,12 +92,12 @@ export interface ToolDefinition {
     parameters: any;
     layer?: 'atomic' | 'specialist' | 'document' | 'internal';
     category?: string;
-    // v2.0: 分布式访问控制
+    // v2.0: Distributed access control
     accessibleBy?: CallerType[];
 }
 ```
 
-### **工具定义扩展（v3.0 计划）**
+### **Tool Definition Extension (v3.0 Planned)**
 
 ```typescript
 // src/tools/index.ts
@@ -108,17 +108,17 @@ export interface ToolDefinition {
     layer?: 'atomic' | 'specialist' | 'document' | 'internal';
     category?: string;
     
-    // 🚀 v3.0: 混合访问控制 - 支持 CallerType 和 CallerName
+    // 🚀 v3.0: Hybrid access control - supports CallerType and CallerName
     accessibleBy?: Array<CallerType | CallerName>;
     
-    // 其他属性保持不变
+    // Other properties remain unchanged
     interactionType?: 'autonomous' | 'confirmation' | 'interactive';
     riskLevel?: 'low' | 'medium' | 'high';
     requiresConfirmation?: boolean;
 }
 ```
 
-### **访问控制器（v2.0）**
+### **Access Controller (v2.0)**
 
 ```typescript
 // src/core/orchestrator/ToolAccessController.ts
@@ -129,52 +129,52 @@ export class ToolAccessController {
 }
 ```
 
-### **访问控制器（v3.0 计划）**
+### **Access Controller (v3.0 Planned)**
 
 ```typescript
 // src/core/orchestrator/ToolAccessController.ts
 export class ToolAccessController {
-    private specialistRegistry: SpecialistRegistry;  // 🚀 新增
+    private specialistRegistry: SpecialistRegistry;  // 🚀 New
     
     constructor() {
         this.specialistRegistry = getSpecialistRegistry();
     }
     
     /**
-     * 获取指定调用者可访问的工具列表
-     * 🚀 v3.0: 支持传入 specialist ID
+     * Get the list of tools accessible to the specified caller
+     * 🚀 v3.0: Support passing specialist ID
      */
     getAvailableTools(
         caller: CallerType, 
-        specialistId?: string  // 🚀 新增：具体的 specialist ID
+        specialistId?: string  // 🚀 New: specific specialist ID
     ): ToolDefinition[]
     
     /**
-     * 验证调用者是否可以访问指定工具
-     * 🚀 v3.0: 支持传入 specialist ID
+     * Verify if the caller can access the specified tool
+     * 🚀 v3.0: Support passing specialist ID
      */
     validateAccess(
         caller: CallerType, 
         toolName: string,
-        specialistId?: string  // 🚀 新增
+        specialistId?: string  // 🚀 New
     ): boolean
     
     /**
-     * 生成访问控制报告
-     * 🚀 v3.0: 支持 specialist 级别的报告
+     * Generate access control report
+     * 🚀 v3.0: Support specialist-level reports
      */
     generateAccessReport(
         caller: CallerType,
-        specialistId?: string  // 🚀 新增
+        specialistId?: string  // 🚀 New
     ): string
     
     /**
-     * 🚀 v3.0 新增：检查访问控制值的类型
+     * 🚀 v3.0 New: Check the type of access control value
      */
     private isCallerType(value: AccessControl): value is CallerType
     
     /**
-     * 🚀 v3.0 新增：检查工具是否对指定调用者可访问
+     * 🚀 v3.0 New: Check if tool is accessible to specified caller
      */
     private isToolAccessible(
         tool: ToolDefinition, 
@@ -186,18 +186,18 @@ export class ToolAccessController {
         }
         
         for (const accessor of tool.accessibleBy) {
-            // 1. 检查 CallerType（枚举值）
+            // 1. Check CallerType (enum value)
             if (this.isCallerType(accessor)) {
                 if (accessor === caller) return true;
             }
-            // 2. 检查 CallerName（specialist ID 字符串）
+            // 2. Check CallerName (specialist ID string)
             else if (typeof accessor === 'string' && specialistId) {
                 if (accessor === specialistId) {
-                    // 验证 specialist 是否存在
+                    // Verify if specialist exists
                     if (this.specialistRegistry.isSpecialistAvailable(accessor)) {
                         return true;
                     } else {
-                        this.logger.warn(`⚠️ 工具引用了不存在的 specialist: ${accessor}`);
+                        this.logger.warn(`⚠️ Tool references non-existent specialist: ${accessor}`);
                     }
                 }
             }
@@ -208,24 +208,24 @@ export class ToolAccessController {
 }
 ```
 
-## 🔐 具体权限定义
+## 🔐 Specific Permission Definitions
 
 ### **🎯 orchestrator:TOOL_EXECUTION** 
-**权限**: 最高权限，可以访问所有标记的工具
+**Permissions**: Highest privileges, can access all marked tools
 
-**可访问工具示例**:
+**Accessible Tool Examples**:
 ```typescript
-// 🧠 专家工具 - 智能路由职责
+// 🧠 Expert tools - intelligent routing responsibilities
 createComprehensiveSRS: {
     accessibleBy: [CallerType.ORCHESTRATOR_TOOL_EXECUTION]
 }
 
-// 📄 文档工具 - 简单操作也可直接处理
+// 📄 Document tools - can also directly handle simple operations
 addNewRequirement: {
     accessibleBy: [CallerType.ORCHESTRATOR_TOOL_EXECUTION, CallerType.SPECIALIST]
 }
 
-// ⚛️ 原子工具 - 基础操作
+// ⚛️ Atomic tools - basic operations
 readFile: {
     accessibleBy: [
         CallerType.ORCHESTRATOR_TOOL_EXECUTION,
@@ -234,31 +234,31 @@ readFile: {
     ]
 }
 
-// 🔧 内部工具 - 系统控制
+// 🔧 Internal tools - system control
 finalAnswer: {
     accessibleBy: [CallerType.ORCHESTRATOR_TOOL_EXECUTION, CallerType.SPECIALIST]
 }
 ```
 
 ### **🧠 orchestrator:KNOWLEDGE_QA**
-**权限**: 知识检索 + 安全查询操作，包含一般对话功能
+**Permissions**: Knowledge retrieval + safe query operations, includes general conversation functionality
 
-**可访问工具示例**:
+**Accessible Tool Examples**:
 ```typescript
-// 🔧 知识检索工具
+// 🔧 Knowledge retrieval tools
 customRAGRetrieval: {
     accessibleBy: [
         CallerType.ORCHESTRATOR_TOOL_EXECUTION,
-        CallerType.ORCHESTRATOR_KNOWLEDGE_QA,    // ✅ 核心能力
+        CallerType.ORCHESTRATOR_KNOWLEDGE_QA,    // ✅ Core capability
         CallerType.SPECIALIST
     ]
 }
 
-// ⚛️ 安全查询工具（从原GENERAL_CHAT合并）
+// ⚛️ Safe query tools (merged from original GENERAL_CHAT)
 readFile: {
     accessibleBy: [
         CallerType.ORCHESTRATOR_TOOL_EXECUTION,
-        CallerType.ORCHESTRATOR_KNOWLEDGE_QA,    // ✅ "帮我看看config.json"
+        CallerType.ORCHESTRATOR_KNOWLEDGE_QA,    // ✅ "Help me check config.json"
         CallerType.SPECIALIST
     ]
 }
@@ -266,7 +266,7 @@ readFile: {
 listFiles: {
     accessibleBy: [
         CallerType.ORCHESTRATOR_TOOL_EXECUTION,
-        CallerType.ORCHESTRATOR_KNOWLEDGE_QA,    // ✅ "项目里有什么文件？"
+        CallerType.ORCHESTRATOR_KNOWLEDGE_QA,    // ✅ "What files are in the project?"
         CallerType.SPECIALIST
     ]
 }
@@ -274,22 +274,22 @@ listFiles: {
 internetSearch: {
     accessibleBy: [
         CallerType.ORCHESTRATOR_TOOL_EXECUTION,
-        CallerType.ORCHESTRATOR_KNOWLEDGE_QA     // ✅ "最新技术趋势？"
+        CallerType.ORCHESTRATOR_KNOWLEDGE_QA     // ✅ "Latest tech trends?"
     ]
 }
 
-// ❌ 危险操作均不可访问
-// writeFile, createDirectory, deleteFile 等都看不到
+// ❌ All dangerous operations are inaccessible
+// writeFile, createDirectory, deleteFile etc. are all invisible
 ```
 
 
 
 ### **🔬 specialist**
-**权限**: 业务工具 + 系统控制，不能递归调用专家
+**Permissions**: Business tools + system control, cannot recursively call experts
 
-**可访问工具示例**:
+**Accessible Tool Examples**:
 ```typescript
-// 📄 文档层工具 - 核心业务能力
+// 📄 Document layer tools - core business capabilities
 addNewRequirement: {
     accessibleBy: [CallerType.ORCHESTRATOR_TOOL_EXECUTION, CallerType.SPECIALIST]
 }
@@ -298,12 +298,12 @@ updateRequirement: {
     accessibleBy: [CallerType.ORCHESTRATOR_TOOL_EXECUTION, CallerType.SPECIALIST]
 }
 
-// 🔧 内部工具 - 流程控制
+// 🔧 Internal tools - process control
 customRAGRetrieval: {
     accessibleBy: [
         CallerType.ORCHESTRATOR_TOOL_EXECUTION,
         CallerType.ORCHESTRATOR_KNOWLEDGE_QA,
-        CallerType.SPECIALIST                     // ✅ 专家内容生成需要
+        CallerType.SPECIALIST                     // ✅ Required for expert content generation
     ]
 }
 
@@ -311,21 +311,21 @@ finalAnswer: {
     accessibleBy: [CallerType.ORCHESTRATOR_TOOL_EXECUTION, CallerType.SPECIALIST]
 }
 
-// ⚛️ 部分原子工具 - 通过文档层间接访问
+// ⚛️ Some atomic tools - indirect access through document layer
 readFile: {
     accessibleBy: [/* ..., */ CallerType.SPECIALIST]
 }
 
-// ❌ 专家工具不能递归调用
-// createComprehensiveSRS, editSRSDocument 等看不到
+// ❌ Expert tools cannot be called recursively
+// createComprehensiveSRS, editSRSDocument etc. are invisible
 
-// ❌ 不需要外部信息
-// internetSearch 看不到
+// ❌ No need for external information
+// internetSearch is invisible
 ```
 
-## 🏗️ 实施架构
+## 🏗️ Implementation Architecture
 
-### **工具注册与过滤**
+### **Tool Registration and Filtering**
 
 ```typescript
 // src/core/orchestrator/ToolCacheManager.ts
@@ -334,7 +334,7 @@ export class ToolCacheManager {
     private toolsCache: Map<CallerType, { definitions: any[], jsonSchema: string }> = new Map();
     
     /**
-     * 获取指定调用者可访问的工具（带缓存）
+     * Get tools accessible to specified caller (with caching)
      */
     public async getTools(caller: CallerType): Promise<{ definitions: any[], jsonSchema: string }> {
         if (this.toolsCache.has(caller)) {
@@ -352,21 +352,21 @@ export class ToolCacheManager {
 }
 ```
 
-### **智能意图检测**
+### **Intelligent Intent Detection**
 
 ```typescript
 // src/core/orchestrator/PromptManager.ts  
 private detectIntentType(userInput: string): CallerType {
     const input = userInput.toLowerCase();
     
-    // 检测知识问答
+    // Detect knowledge Q&A
     const knowledgePatterns = [
         /^(how|what|why|when|where|which)/,
         /如何|怎么|什么是|为什么|怎样/,
         /best practices?|最佳实践/
     ];
     
-    // 检测闲聊
+    // Detect chat
     const chatPatterns = [
         /^(hi|hello|hey|thanks)/,
         /^(你好|谢谢|感谢)/,
@@ -385,47 +385,47 @@ private detectIntentType(userInput: string): CallerType {
 }
 ```
 
-### **访问控制验证**
+### **Access Control Verification**
 
 ```typescript
-// 在工具执行时进行验证
+// Verify during tool execution
 public async executeTool(toolName: string, params: any, caller: CallerType): Promise<any> {
-    // 🔒 关键：访问控制验证
+    // 🔒 Critical: Access control verification
     if (!this.accessController.validateAccess(caller, toolName)) {
         throw new Error(`🚫 Access denied: ${caller} cannot access tool: ${toolName}`);
     }
     
-    // 执行工具
+    // Execute tool
     const implementation = toolRegistry.getImplementation(toolName);
     return await implementation(params);
 }
 ```
 
-## 📋 工具权限快速参考
+## 📋 Tool Permission Quick Reference
 
-### **按调用者分类**
+### **By Caller Category**
 
-| 调用者 | 可访问工具类型 | 典型用例 |
-|--------|---------------|----------|
-| **TOOL_EXECUTION** | 全部标记的工具 | "创建SRS", "添加需求", "检查文件" |
-| **KNOWLEDGE_QA** | 知识检索 + 安全查询工具 | "如何写需求？", "项目有什么文件？", "天气如何？" |
-| **SPECIALIST** | 业务 + 系统工具 | 专家规则执行时的工具调用 |
+| Caller | Accessible Tool Types | Typical Use Cases |
+|--------|----------------------|-------------------|
+| **TOOL_EXECUTION** | All marked tools | "Create SRS", "Add requirement", "Check file" |
+| **KNOWLEDGE_QA** | Knowledge retrieval + safe query tools | "How to write requirements?", "What files in project?", "What's the weather?" |
+| **SPECIALIST** | Business + system tools | Tool calls during expert rule execution |
 
-### **按工具风险分类**
+### **By Tool Risk Classification**
 
-| 风险等级 | 工具示例 | 访问权限 |
-|----------|----------|----------|
-| **🟢 低风险** | readFile, listFiles | 多数调用者可访问 |
-| **🟡 中风险** | internetSearch, customRAGRetrieval | 特定场景可访问 |
-| **🔴 高风险** | writeFile, deleteFile | 仅执行模式可访问 |
-| **⚫ 系统关键** | finalAnswer, 专家工具 | 严格限制访问 |
+| Risk Level | Tool Examples | Access Permissions |
+|------------|--------------|-------------------|
+| **🟢 Low Risk** | readFile, listFiles | Accessible to most callers |
+| **🟡 Medium Risk** | internetSearch, customRAGRetrieval | Accessible in specific scenarios |
+| **🔴 High Risk** | writeFile, deleteFile | Only accessible in execution mode |
+| **⚫ System Critical** | finalAnswer, expert tools | Strictly restricted access |
 
-## 🎯 使用示例
+## 🎯 Usage Examples
 
-### **v2.0 权限声明示例**
+### **v2.0 Permission Declaration Examples**
 
 ```typescript
-// ✅ 安全查询工具 - 多模式访问
+// ✅ Safe query tool - multi-mode access
 export const readFileDefinition = {
     name: "readFile",
     description: "Read file content", 
@@ -438,7 +438,7 @@ export const readFileDefinition = {
     ]
 };
 
-// ✅ 危险操作工具 - 限制访问
+// ✅ Dangerous operation tool - restricted access
 export const writeFileDefinition = {
     name: "writeFile",
     description: "Write file content",
@@ -449,32 +449,32 @@ export const writeFileDefinition = {
 };
 ```
 
-### **v3.0 权限声明示例（计划）**
+### **v3.0 Permission Declaration Examples (Planned)**
 
 ```typescript
-// ✅ 示例1: 只给特定 specialist（个体级别控制）
+// ✅ Example 1: Only for specific specialists (individual-level control)
 export const writePrototypeThemeDefinition = {
     name: "writePrototypeTheme",
-    description: `生成原型主题CSS文件。
+    description: `Generate prototype theme CSS file.
     
-    必须包含以下 CSS 变量：
-    - --background, --foreground (基础颜色)
-    - --primary, --primary-foreground (品牌颜色)
-    - --secondary, --muted, --accent (语义颜色)
-    - --destructive, --border, --input, --ring (UI元素)
-    - --font-sans, --font-serif, --font-mono (字体系统)
-    - --radius, --spacing (间距和形状)
-    - --shadow-xs, --shadow-sm, --shadow-md, --shadow-lg, --shadow-xl (阴影系统)
+    Must include the following CSS variables:
+    - --background, --foreground (base colors)
+    - --primary, --primary-foreground (brand colors)
+    - --secondary, --muted, --accent (semantic colors)
+    - --destructive, --border, --input, --ring (UI elements)
+    - --font-sans, --font-serif, --font-mono (font system)
+    - --radius, --spacing (spacing and shapes)
+    - --shadow-xs, --shadow-sm, --shadow-md, --shadow-lg, --shadow-xl (shadow system)
     `,
     parameters: {
         type: "object",
         properties: {
-            themeName: { type: "string", description: "主题名称" },
-            cssContent: { type: "string", description: "完整的CSS内容" }
+            themeName: { type: "string", description: "Theme name" },
+            cssContent: { type: "string", description: "Complete CSS content" }
         },
         required: ["themeName", "cssContent"]
     },
-    // 🚀 v3.0: 只给两个特定 specialist
+    // 🚀 v3.0: Only for two specific specialists
     accessibleBy: [
         "prototype_designer",      // CallerName
         "project_initializer"      // CallerName
@@ -482,26 +482,26 @@ export const writePrototypeThemeDefinition = {
     layer: "atomic"
 };
 
-// ✅ 示例2: 混合类型和个体控制
+// ✅ Example 2: Mixed type and individual control
 export const writeFileDefinition = {
     name: "writeFile",
     description: "Write file content",
     parameters: { /* ... */ },
-    // 🚀 v3.0: 混合 CallerType 和 CallerName
+    // 🚀 v3.0: Mixed CallerType and CallerName
     accessibleBy: [
-        CallerType.SPECIALIST_PROCESS,    // 所有 process specialist
-        "prototype_designer",             // 特定的 content specialist
-        CallerType.DOCUMENT               // 文档层
+        CallerType.SPECIALIST_PROCESS,    // All process specialists
+        "prototype_designer",             // Specific content specialist
+        CallerType.DOCUMENT               // Document layer
     ],
     layer: "atomic"
 };
 
-// ✅ 示例3: 通用工具（保持 v2.0 方式）
+// ✅ Example 3: General tool (keeping v2.0 approach)
 export const readFileDefinition = {
     name: "readFile",
     description: "Read file content",
     parameters: { /* ... */ },
-    // 使用 CallerType，所有同类型 specialist 都能访问
+    // Using CallerType, all specialists of the same type can access
     accessibleBy: [
         CallerType.ORCHESTRATOR_KNOWLEDGE_QA,
         CallerType.SPECIALIST_CONTENT,
@@ -511,14 +511,14 @@ export const readFileDefinition = {
     layer: "atomic"
 };
 
-// ✅ 示例4: 预览工具（新增）
+// ✅ Example 4: Preview tool (new)
 export const previewPrototypeDefinition = {
     name: "previewPrototype",
-    description: "在 VSCode 或浏览器中预览 HTML 原型文件",
+    description: "Preview HTML prototype file in VSCode or browser",
     parameters: {
         type: "object",
         properties: {
-            fileName: { type: "string", description: "原型文件名" },
+            fileName: { type: "string", description: "Prototype file name" },
             mode: { 
                 type: "string", 
                 enum: ["vscode", "browser", "both"],
@@ -527,7 +527,7 @@ export const previewPrototypeDefinition = {
         },
         required: ["fileName"]
     },
-    // 🚀 v3.0: 只给 prototype_designer
+    // 🚀 v3.0: Only for prototype_designer
     accessibleBy: ["prototype_designer"],
     layer: "atomic",
     interactionType: 'autonomous',
@@ -535,47 +535,47 @@ export const previewPrototypeDefinition = {
 };
 ```
 
-### **错误的权限声明示例**
+### **Incorrect Permission Declaration Examples**
 
 ```typescript
-// ❌ 过于宽松 - 安全风险
+// ❌ Too permissive - security risk
 export const deleteFileDefinition = {
     name: "deleteFile",
     // ...
     accessibleBy: [
-        CallerType.ORCHESTRATOR_GENERAL_CHAT     // 危险！聊天模式不应该删除文件
+        CallerType.ORCHESTRATOR_GENERAL_CHAT     // Dangerous! Chat mode should not delete files
     ]
 };
 
-// ❌ 过于严格 - 功能受限
+// ❌ Too restrictive - limited functionality
 export const listFilesDefinition = {
     name: "listFiles", 
     // ...
     accessibleBy: [
-        CallerType.ORCHESTRATOR_TOOL_EXECUTION   // 太严格！用户询问"项目有什么文件？"无法响应
+        CallerType.ORCHESTRATOR_TOOL_EXECUTION   // Too strict! Cannot respond to "What files in project?"
     ]
 };
 
-// ❌ 递归调用 - 架构违反
+// ❌ Recursive call - architecture violation
 export const createComprehensiveSRSDefinition = {
     name: "createComprehensiveSRS",
     // ...
     accessibleBy: [
-        CallerType.SPECIALIST                     // 错误！专家不能调用其他专家
+        CallerType.SPECIALIST                     // Wrong! Experts cannot call other experts
     ]
 };
 ```
 
-## 🔍 调试与监控
+## 🔍 Debugging and Monitoring
 
-### **访问控制报告**
+### **Access Control Report**
 
 ```typescript
-// 生成访问控制报告
+// Generate access control report
 const report = toolAccessController.generateAccessReport(CallerType.ORCHESTRATOR_GENERAL_CHAT);
 
 /*
-输出示例:
+Output example:
 # Access Control Report for orchestrator:GENERAL_CHAT
 
 **Summary**: 4/25 tools accessible
@@ -592,7 +592,7 @@ const report = toolAccessController.generateAccessReport(CallerType.ORCHESTRATOR
 */
 ```
 
-### **访问统计**
+### **Access Statistics**
 
 ```typescript
 const stats = toolAccessController.getAccessStats(CallerType.ORCHESTRATOR_KNOWLEDGE_QA);
@@ -606,248 +606,248 @@ const stats = toolAccessController.getAccessStats(CallerType.ORCHESTRATOR_KNOWLE
 */
 ```
 
-## 🔄 维护指南
+## 🔄 Maintenance Guide
 
-### **添加新工具**
+### **Adding New Tools**
 
-1. **定义工具**: 在对应层级添加工具定义
-2. **声明权限**: 明确设置 `accessibleBy` 属性
-3. **验证权限**: 运行访问控制测试
-4. **更新文档**: 同步更新本文档
+1. **Define Tool**: Add tool definition at the corresponding layer
+2. **Declare Permissions**: Explicitly set the `accessibleBy` property
+3. **Verify Permissions**: Run access control tests
+4. **Update Documentation**: Synchronize updates to this document
 
 ```typescript
-// 新工具模板
+// New tool template
 export const newToolDefinition = {
     name: "newTool",
     description: "Tool description",
     parameters: { /* ... */ },
-    layer: "atomic",  // 或其他层级
-    // 🚀 必须：声明访问权限
+    layer: "atomic",  // or other layer
+    // 🚀 Required: Declare access permissions
     accessibleBy: [
         CallerType.ORCHESTRATOR_TOOL_EXECUTION,
-        // 根据工具性质添加其他调用者
+        // Add other callers based on tool nature
     ]
 };
 ```
 
-### **权限变更流程**
+### **Permission Change Workflow**
 
-1. **评估影响**: 分析权限变更对现有功能的影响
-2. **更新定义**: 修改工具的 `accessibleBy` 属性
-3. **测试验证**: 运行完整的权限测试套件
-4. **文档更新**: 更新相关文档和示例
+1. **Assess Impact**: Analyze the impact of permission changes on existing functionality
+2. **Update Definition**: Modify the tool's `accessibleBy` property
+3. **Test Verification**: Run the complete permission test suite
+4. **Documentation Update**: Update related documentation and examples
 
-### **权限审计**
+### **Permission Audit**
 
-定期运行权限审计脚本：
+Run permission audit scripts regularly:
 
 ```bash
-# 生成所有工具的访问权限报告
+# Generate access permission report for all tools
 node scripts/audit-tool-permissions.js
 
-# 验证权限配置的一致性
+# Verify consistency of permission configuration
 npm run test:permissions
 ```
 
-## 🚧 v3.0 重构实施计划
+## 🚧 v3.0 Refactoring Implementation Plan
 
-### 重构动机
+### Refactoring Motivation
 
-**问题**: 当前的 CallerType 只支持类型级别控制（如 SPECIALIST_CONTENT），无法针对特定 specialist 进行访问控制。
+**Problem**: Current CallerType only supports type-level control (e.g., SPECIALIST_CONTENT), cannot perform access control for specific specialists.
 
-**场景**: 为 `prototype_designer` 创建专用的语义化工具时：
-- 工具定义较长（包含详细的 CSS 变量要求）
-- 只有 `prototype_designer` 会使用
-- 如果对所有 content specialist 可见，会产生 token 噪声
+**Scenario**: When creating dedicated semantic tools for `prototype_designer`:
+- Tool definitions are lengthy (including detailed CSS variable requirements)
+- Only `prototype_designer` will use them
+- If visible to all content specialists, will generate token noise
 
-**解决方案**: 支持混合访问控制，既可以指定类型（CallerType），也可以指定个体（specialist ID）
+**Solution**: Support hybrid access control, can specify both type (CallerType) and individual (specialist ID)
 
-### 实施步骤
+### Implementation Steps
 
-#### 阶段一：类型系统扩展
+#### Phase 1: Type System Extension
 
-**文件**: `src/types/index.ts`
+**File**: `src/types/index.ts`
 
 ```typescript
-// 新增类型定义
+// New type definitions
 export type CallerName = string;  // Specialist ID
 export type AccessControl = CallerType | CallerName;
 ```
 
-**工作量**: ~10 行代码，30 分钟
+**Effort**: ~10 lines of code, 30 minutes
 
-#### 阶段二：工具定义接口更新
+#### Phase 2: Tool Definition Interface Update
 
-**文件**: `src/tools/index.ts`
+**File**: `src/tools/index.ts`
 
 ```typescript
 export interface ToolDefinition {
-    // 更新 accessibleBy 类型
-    accessibleBy?: Array<CallerType | CallerName>;  // ← 支持混合
+    // Update accessibleBy type
+    accessibleBy?: Array<CallerType | CallerName>;  // ← Support hybrid
 }
 ```
 
-**工作量**: ~5 行代码，15 分钟
+**Effort**: ~5 lines of code, 15 minutes
 
-#### 阶段三：访问控制器重构
+#### Phase 3: Access Controller Refactoring
 
-**文件**: `src/core/orchestrator/ToolAccessController.ts`
+**File**: `src/core/orchestrator/ToolAccessController.ts`
 
-**修改内容**:
-1. 新增 `specialistRegistry` 成员
-2. 更新 `getAvailableTools` 方法签名（添加 specialistId 参数）
-3. 更新 `validateAccess` 方法签名（添加 specialistId 参数）
-4. 重构 `isToolAccessible` 方法（支持混合检查）
-5. 新增 `isCallerType` 辅助方法
+**Changes**:
+1. Add `specialistRegistry` member
+2. Update `getAvailableTools` method signature (add specialistId parameter)
+3. Update `validateAccess` method signature (add specialistId parameter)
+4. Refactor `isToolAccessible` method (support hybrid checking)
+5. Add `isCallerType` helper method
 
-**工作量**: ~40 行代码，2 小时
+**Effort**: ~40 lines of code, 2 hours
 
-#### 阶段四：工具缓存管理器更新
+#### Phase 4: Tool Cache Manager Update
 
-**文件**: `src/core/orchestrator/ToolCacheManager.ts`
+**File**: `src/core/orchestrator/ToolCacheManager.ts`
 
-**修改内容**:
-1. 更新缓存键设计（`${callerType}:${specialistId || 'any'}`）
-2. 更新 `getTools` 方法签名
-3. 新增 `buildCacheKey` 辅助方法
+**Changes**:
+1. Update cache key design (`${callerType}:${specialistId || 'any'}`)
+2. Update `getTools` method signature
+3. Add `buildCacheKey` helper method
 
-**工作量**: ~30 行代码，1.5 小时
+**Effort**: ~30 lines of code, 1.5 hours
 
-#### 阶段五：调用点更新
+#### Phase 5: Call Site Updates
 
-**文件**: 
+**Files**: 
 - `src/core/specialistExecutor.ts`
 - `src/core/toolExecutor.ts`
 
-**修改内容**: 在调用 `getAvailableTools` 和 `validateAccess` 时传递 `specialistId`
+**Changes**: Pass `specialistId` when calling `getAvailableTools` and `validateAccess`
 
-**工作量**: ~10 行代码，30 分钟
+**Effort**: ~10 lines of code, 30 minutes
 
-#### 阶段六：测试和验证
+#### Phase 6: Testing and Verification
 
-- 单元测试：访问控制逻辑
-- 集成测试：specialist 工具可见性
-- 端到端测试：实际使用场景
+- Unit tests: Access control logic
+- Integration tests: Specialist tool visibility
+- End-to-end tests: Actual usage scenarios
 
-**工作量**: 3-4 小时
+**Effort**: 3-4 hours
 
-### 总体评估
+### Overall Assessment
 
-| 指标 | 评估 |
-|------|------|
-| **代码改动量** | ~95 行 |
-| **文件数量** | 5 个核心文件 |
-| **复杂度** | 🟡 中等 |
-| **风险** | 🟢 低（向后兼容） |
-| **开发时间** | 4-5 小时 |
-| **测试时间** | 3-4 小时 |
-| **总时间** | 1 天 |
-| **收益** | 🟢 高（支持专用工具，减少 token 噪声） |
+| Metric | Assessment |
+|--------|-----------|
+| **Code Changes** | ~95 lines |
+| **File Count** | 5 core files |
+| **Complexity** | 🟡 Medium |
+| **Risk** | 🟢 Low (backward compatible) |
+| **Development Time** | 4-5 hours |
+| **Testing Time** | 3-4 hours |
+| **Total Time** | 1 day |
+| **Benefits** | 🟢 High (supports specialized tools, reduces token noise) |
 
-### 关键设计决策
+### Key Design Decisions
 
-1. **利用 SpecialistRegistry**: 无需手动维护 specialist 列表，动态获取
-2. **向后兼容**: 现有工具无需修改，继续使用 CallerType
-3. **混合支持**: 新工具可以同时使用 CallerType 和 CallerName
-4. **运行时验证**: 通过 SpecialistRegistry 验证 specialist ID 的有效性
+1. **Utilize SpecialistRegistry**: No need to manually maintain specialist list, dynamically obtained
+2. **Backward Compatibility**: Existing tools do not need modification, continue using CallerType
+3. **Hybrid Support**: New tools can use both CallerType and CallerName simultaneously
+4. **Runtime Verification**: Verify specialist ID validity through SpecialistRegistry
 
-### 使用场景
+### Usage Scenarios
 
-**场景1**: 为 prototype_designer 创建专用工具
+**Scenario 1**: Create dedicated tool for prototype_designer
 ```typescript
-accessibleBy: ["prototype_designer"]  // 只有这个 specialist 能看到
+accessibleBy: ["prototype_designer"]  // Only this specialist can see it
 ```
 
-**场景2**: 多个 specialist 共享工具
+**Scenario 2**: Multiple specialists share tool
 ```typescript
 accessibleBy: ["prototype_designer", "project_initializer"]
 ```
 
-**场景3**: 混合控制
+**Scenario 3**: Hybrid control
 ```typescript
 accessibleBy: [
-    CallerType.SPECIALIST_PROCESS,  // 所有 process specialist
-    "prototype_designer"             // 加上这一个 content specialist
+    CallerType.SPECIALIST_PROCESS,  // All process specialists
+    "prototype_designer"             // Plus this one content specialist
 ]
 ```
 
-## 📊 当前所有工具权限分配表
+## 📊 Current Tool Permission Assignment Table
 
-**更新日期**: 2025-10-02  
-**基于**: v3.0 重构后的实际配置
+**Last Updated**: 2025-10-02  
+**Based on**: Actual configuration after v3.0 refactoring
 
-### Atomic Layer 工具（文件系统）
+### Atomic Layer Tools (File System)
 
-| 工具名称 | 层级 | 分类 | 访问权限 | 说明 |
-|---------|------|------|---------|------|
-| **readTextFile** | atomic | File Ops | `ORCHESTRATOR_TOOL_EXECUTION`<br/>`ORCHESTRATOR_KNOWLEDGE_QA`<br/>`SPECIALIST_CONTENT`<br/>`SPECIALIST_PROCESS`<br/>`DOCUMENT` | 安全读取操作，广泛访问 |
-| **writeFile** | atomic | File Ops | `SPECIALIST_PROCESS`<br/>`DOCUMENT` | 危险写操作，限制访问 |
-| **appendTextToFile** | atomic | File Ops | `DOCUMENT` | 追加操作，仅文档层 |
-| **createDirectory** | atomic | File Ops | `project_initializer`<br/>`INTERNAL` | 目录创建，仅项目初始化者使用 |
-| **listFiles** | atomic | File Ops | `ORCHESTRATOR_KNOWLEDGE_QA`<br/>`SPECIALIST_PROCESS`<br/>`SPECIALIST_CONTENT`<br/>`DOCUMENT` | 🚀 统一目录列表工具（支持单层/递归），返回完整相对路径 |
-| **deleteFile** | atomic | File Ops | `INTERNAL` | 高危操作，仅内部工具 |
-| **moveAndRenameFile** | atomic | File Ops | `INTERNAL` | 文件重构，限制访问 |
-| **copyAndRenameFile** | atomic | File Ops | `project_initializer`<br/>`INTERNAL` | 文件复制，仅项目初始化者使用 |
+| Tool Name | Layer | Category | Access Permissions | Description |
+|-----------|-------|----------|-------------------|-------------|
+| **readTextFile** | atomic | File Ops | `ORCHESTRATOR_TOOL_EXECUTION`<br/>`ORCHESTRATOR_KNOWLEDGE_QA`<br/>`SPECIALIST_CONTENT`<br/>`SPECIALIST_PROCESS`<br/>`DOCUMENT` | Safe read operation, wide access |
+| **writeFile** | atomic | File Ops | `SPECIALIST_PROCESS`<br/>`DOCUMENT` | Dangerous write operation, restricted access |
+| **appendTextToFile** | atomic | File Ops | `DOCUMENT` | Append operation, document layer only |
+| **createDirectory** | atomic | File Ops | `project_initializer`<br/>`INTERNAL` | Directory creation, project initializer only |
+| **listFiles** | atomic | File Ops | `ORCHESTRATOR_KNOWLEDGE_QA`<br/>`SPECIALIST_PROCESS`<br/>`SPECIALIST_CONTENT`<br/>`DOCUMENT` | 🚀 Unified directory listing tool (supports single-level/recursive), returns full relative paths |
+| **deleteFile** | atomic | File Ops | `INTERNAL` | High-risk operation, internal tools only |
+| **moveAndRenameFile** | atomic | File Ops | `INTERNAL` | File refactoring, restricted access |
+| **copyAndRenameFile** | atomic | File Ops | `project_initializer`<br/>`INTERNAL` | File copying, project initializer only |
 
-### Atomic Layer 工具（编辑器）
+### Atomic Layer Tools (Editor)
 
-| 工具名称 | 层级 | 分类 | 访问权限 | 说明 |
-|---------|------|------|---------|------|
-| **getActiveDocumentContent** | atomic | Editor | `ORCHESTRATOR_KNOWLEDGE_QA`<br/>`DOCUMENT` | 获取当前文档内容 |
-| **openAndShowFile** | atomic | Editor | `DOCUMENT` | 打开文件显示 |
+| Tool Name | Layer | Category | Access Permissions | Description |
+|-----------|-------|----------|-------------------|-------------|
+| **getActiveDocumentContent** | atomic | Editor | `ORCHESTRATOR_KNOWLEDGE_QA`<br/>`DOCUMENT` | Get current document content |
+| **openAndShowFile** | atomic | Editor | `DOCUMENT` | Open and display file |
 
-### Atomic Layer 工具（交互）
+### Atomic Layer Tools (Interaction)
 
-| 工具名称 | 层级 | 分类 | 访问权限 | 说明 |
-|---------|------|------|---------|------|
-| **showInformationMessage** | atomic | User Interaction | `ORCHESTRATOR_KNOWLEDGE_QA`<br/>`DOCUMENT` | 显示信息 |
-| **showWarningMessage** | atomic | User Interaction | `ORCHESTRATOR_KNOWLEDGE_QA`<br/>`DOCUMENT` | 显示警告 |
-| **askQuestion** | atomic | User Interaction | `ORCHESTRATOR_KNOWLEDGE_QA`<br/>`SPECIALIST_PROCESS` | 询问用户输入 |
-| **suggestNextAction** | atomic | User Interaction | `ORCHESTRATOR_KNOWLEDGE_QA`<br/>`SPECIALIST_PROCESS` | 提供行动建议 |
+| Tool Name | Layer | Category | Access Permissions | Description |
+|-----------|-------|----------|-------------------|-------------|
+| **showInformationMessage** | atomic | User Interaction | `ORCHESTRATOR_KNOWLEDGE_QA`<br/>`DOCUMENT` | Display information |
+| **showWarningMessage** | atomic | User Interaction | `ORCHESTRATOR_KNOWLEDGE_QA`<br/>`DOCUMENT` | Display warning |
+| **askQuestion** | atomic | User Interaction | `ORCHESTRATOR_KNOWLEDGE_QA`<br/>`SPECIALIST_PROCESS` | Ask user for input |
+| **suggestNextAction** | atomic | User Interaction | `ORCHESTRATOR_KNOWLEDGE_QA`<br/>`SPECIALIST_PROCESS` | Provide action suggestions |
 
-### Atomic Layer 工具（知识检索）
+### Atomic Layer Tools (Knowledge Retrieval)
 
-| 工具名称 | 层级 | 分类 | 访问权限 | 说明 |
-|---------|------|------|---------|------|
-| **readLocalKnowledge** | atomic | RAG | `ORCHESTRATOR_KNOWLEDGE_QA` | 本地知识检索 |
-| **internetSearch** | atomic | RAG | | 互联网搜索 |
-| **enterpriseRAGCall** | atomic | RAG | `ORCHESTRATOR_KNOWLEDGE_QA`<br/>`ORCHESTRATOR_TOOL_EXECUTION` | 企业知识库 |
-| **customRAGRetrieval** | atomic | RAG | `SPECIALIST_CONTENT`<br/>`SPECIALIST_PROCESS`<br/>`ORCHESTRATOR_TOOL_EXECUTION` | 自定义RAG检索 |
+| Tool Name | Layer | Category | Access Permissions | Description |
+|-----------|-------|----------|-------------------|-------------|
+| **readLocalKnowledge** | atomic | RAG | `ORCHESTRATOR_KNOWLEDGE_QA` | Local knowledge retrieval |
+| **internetSearch** | atomic | RAG | | Internet search |
+| **enterpriseRAGCall** | atomic | RAG | `ORCHESTRATOR_KNOWLEDGE_QA`<br/>`ORCHESTRATOR_TOOL_EXECUTION` | Enterprise knowledge base |
+| **customRAGRetrieval** | atomic | RAG | `SPECIALIST_CONTENT`<br/>`SPECIALIST_PROCESS`<br/>`ORCHESTRATOR_TOOL_EXECUTION` | Custom RAG retrieval |
 
-### Atomic Layer 工具（智能编辑）
+### Atomic Layer Tools (Smart Editing)
 
-| 工具名称 | 层级 | 分类 | 访问权限 | 说明 |
-|---------|------|------|---------|------|
-| **findAndReplace** | atomic | Smart Edit | `DOCUMENT` | 查找替换 |
-| **findInFiles** | atomic | Smart Edit | `ORCHESTRATOR_TOOL_EXECUTION, ORCHESTRATOR_KNOWLEDGE_QA, SPECIALIST_CONTENT` | 🚀 多文件搜索(Cursor风格，替换原findInFile) |
-| **replaceInSelection** | atomic | Smart Edit | `DOCUMENT` | 选区替换 |
+| Tool Name | Layer | Category | Access Permissions | Description |
+|-----------|-------|----------|-------------------|-------------|
+| **findAndReplace** | atomic | Smart Edit | `DOCUMENT` | Find and replace |
+| **findInFiles** | atomic | Smart Edit | `ORCHESTRATOR_TOOL_EXECUTION, ORCHESTRATOR_KNOWLEDGE_QA, SPECIALIST_CONTENT` | 🚀 Multi-file search (Cursor style, replaces original findInFile) |
+| **replaceInSelection** | atomic | Smart Edit | `DOCUMENT` | Replace in selection |
 
-### Document Layer 工具
+### Document Layer Tools
 
-| 工具名称 | 层级 | 分类 | 访问权限 | 说明 |
-|---------|------|------|---------|------|
-| **readMarkdownFile** | document | Markdown | `ORCHESTRATOR_TOOL_EXECUTION`<br/>`ORCHESTRATOR_KNOWLEDGE_QA`<br/>`SPECIALIST_CONTENT`<br/>`SPECIALIST_PROCESS`<br/>`DOCUMENT` | 增强的Markdown读取 |
-| **executeMarkdownEdits** | document | Markdown | `SPECIALIST_CONTENT`<br/>`SPECIALIST_PROCESS`<br/>`DOCUMENT` | Markdown语义编辑 |
-| **readYAMLFiles** | document | YAML | `ORCHESTRATOR_TOOL_EXECUTION`<br/>`ORCHESTRATOR_KNOWLEDGE_QA`<br/>`SPECIALIST_CONTENT`<br/>`SPECIALIST_PROCESS`<br/>`DOCUMENT` | YAML文件读取 |
-| **executeYAMLEdits** | document | YAML | `SPECIALIST_CONTENT`<br/>`SPECIALIST_PROCESS`<br/>`DOCUMENT` | YAML语义编辑 |
+| Tool Name | Layer | Category | Access Permissions | Description |
+|-----------|-------|----------|-------------------|-------------|
+| **readMarkdownFile** | document | Markdown | `ORCHESTRATOR_TOOL_EXECUTION`<br/>`ORCHESTRATOR_KNOWLEDGE_QA`<br/>`SPECIALIST_CONTENT`<br/>`SPECIALIST_PROCESS`<br/>`DOCUMENT` | Enhanced Markdown reading |
+| **executeMarkdownEdits** | document | Markdown | `SPECIALIST_CONTENT`<br/>`SPECIALIST_PROCESS`<br/>`DOCUMENT` | Markdown semantic editing |
+| **readYAMLFiles** | document | YAML | `ORCHESTRATOR_TOOL_EXECUTION`<br/>`ORCHESTRATOR_KNOWLEDGE_QA`<br/>`SPECIALIST_CONTENT`<br/>`SPECIALIST_PROCESS`<br/>`DOCUMENT` | YAML file reading |
+| **executeYAMLEdits** | document | YAML | `SPECIALIST_CONTENT`<br/>`SPECIALIST_PROCESS`<br/>`DOCUMENT` | YAML semantic editing |
 | **executeTextFileEdits** | document | Text Editing | `"prototype_designer"` | Text file editing (CSS/HTML/JS)<br/>**v3.0 new tool** |
-| **syntax-checker** | document | Quality | `document_formatter` | 语法检查工具 |
-| **traceability-completion-tool** | document | Quality | `document_formatter` | 追溯性同步工具 |
+| **syntax-checker** | document | Quality | `document_formatter` | Syntax checking tool |
+| **traceability-completion-tool** | document | Quality | `document_formatter` | Traceability synchronization tool |
 
-### Internal Layer 工具
+### Internal Layer Tools
 
-| 工具名称 | 层级 | 分类 | 访问权限 | 说明 |
-|---------|------|------|---------|------|
-| **finalAnswer** | internal | System | `ORCHESTRATOR_TOOL_EXECUTION`<br/>`ORCHESTRATOR_KNOWLEDGE_QA` | 最终答案（仅orchestrator） |
-| **getSystemStatus** | internal | System | `ORCHESTRATOR_TOOL_EXECUTION`<br/>`ORCHESTRATOR_KNOWLEDGE_QA` | 系统状态查询 |
-| **createNewProjectFolder** | internal | Project | `project_initializer` | 创建新项目 |
-| **recordThought** | internal | Thinking | `SPECIALIST_CONTENT`<br/>`SPECIALIST_PROCESS` | 思考记录 |
-| **taskComplete** | internal | Task | `SPECIALIST_CONTENT`<br/>`SPECIALIST_PROCESS` | 任务完成 |
+| Tool Name | Layer | Category | Access Permissions | Description |
+|-----------|-------|----------|-------------------|-------------|
+| **finalAnswer** | internal | System | `ORCHESTRATOR_TOOL_EXECUTION`<br/>`ORCHESTRATOR_KNOWLEDGE_QA` | Final answer (orchestrator only) |
+| **getSystemStatus** | internal | System | `ORCHESTRATOR_TOOL_EXECUTION`<br/>`ORCHESTRATOR_KNOWLEDGE_QA` | System status query |
+| **createNewProjectFolder** | internal | Project | `project_initializer` | Create new project |
+| **recordThought** | internal | Thinking | `SPECIALIST_CONTENT`<br/>`SPECIALIST_PROCESS` | Record thoughts |
+| **taskComplete** | internal | Task | `SPECIALIST_CONTENT`<br/>`SPECIALIST_PROCESS` | Task completion |
 
-### 权限分配统计
+### Permission Assignment Statistics
 
-| Caller Type | 可访问工具数 | 占比 |
-|-------------|------------|------|
+| Caller Type | Accessible Tool Count | Percentage |
+|-------------|----------------------|------------|
 | **ORCHESTRATOR_TOOL_EXECUTION** | 9 | 26% |
 | **ORCHESTRATOR_KNOWLEDGE_QA** | 14 | 41% |
 | **SPECIALIST_CONTENT** | 11 | 32% |
@@ -855,37 +855,37 @@ accessibleBy: [
 | **DOCUMENT** | 16 | 47% |
 | **INTERNAL** | 3 | 9% |
 
-### 按风险等级分类
+### Classification by Risk Level
 
-| 风险等级 | 工具数量 | 典型工具 |
-|---------|---------|---------|
-| **低风险（读操作）** | 11 | readFile, listFiles (重构), readMarkdownFile |
-| **中等风险（写操作）** | 8 | writeFile, executeMarkdownEdits |
-| **高风险（删除/移动）** | 3 | deleteFile, moveAndRenameFile |
-| **系统关键** | 8 | finalAnswer, createNewProjectFolder |
+| Risk Level | Tool Count | Typical Tools |
+|------------|-----------|---------------|
+| **Low Risk (Read Operations)** | 11 | readFile, listFiles (refactored), readMarkdownFile |
+| **Medium Risk (Write Operations)** | 8 | writeFile, executeMarkdownEdits |
+| **High Risk (Delete/Move)** | 3 | deleteFile, moveAndRenameFile |
+| **System Critical** | 8 | finalAnswer, createNewProjectFolder |
 
-### v3.0 个体级别控制示例
+### v3.0 Individual-Level Control Examples
 
-| 工具名称 | 访问权限（v3.0格式） | 说明 |
-|---------|-------------------|------|
-| **askQuestion** | `ORCHESTRATOR_KNOWLEDGE_QA`<br/>`SPECIALIST_PROCESS`<br/>`"overall_description_writer"` | 混合控制示例：<br/>类型+个体 |
+| Tool Name | Access Permissions (v3.0 format) | Description |
+|-----------|----------------------------------|-------------|
+| **askQuestion** | `ORCHESTRATOR_KNOWLEDGE_QA`<br/>`SPECIALIST_PROCESS`<br/>`"overall_description_writer"` | Hybrid control example:<br/>Type + Individual |
 
-**注**: 更多个体级别控制工具将在 prototype_designer 专用工具创建时添加。
+**Note**: More individual-level control tools will be added when creating dedicated tools for prototype_designer.
 
-## 📚 相关文档
+## 📚 Related Documentation
 
-- [工具注册表实现 (src/tools/index.ts)](../src/tools/index.ts)
-- [访问控制器实现 (src/core/orchestrator/ToolAccessController.ts)](../src/core/orchestrator/ToolAccessController.ts)
-- [Specialist 注册表 (src/core/specialistRegistry.ts)](../src/core/specialistRegistry.ts)
-- [Orchestrator 规则 (rules/orchestrator.md)](../rules/orchestrator.md)  
-- [Specialist 规则目录 (rules/specialists/)](../rules/specialists/)
-- [v3.0 测试报告 (docs/TOOL_ACCESS_CONTROL_V3_TEST_REPORT.md)](./TOOL_ACCESS_CONTROL_V3_TEST_REPORT.md)
+- [Tool Registry Implementation (src/tools/index.ts)](../src/tools/index.ts)
+- [Access Controller Implementation (src/core/orchestrator/ToolAccessController.ts)](../src/core/orchestrator/ToolAccessController.ts)
+- [Specialist Registry (src/core/specialistRegistry.ts)](../src/core/specialistRegistry.ts)
+- [Orchestrator Rules (rules/orchestrator.md)](../rules/orchestrator.md)  
+- [Specialist Rules Directory (rules/specialists/)](../rules/specialists/)
+- [v3.0 Test Report (docs/TOOL_ACCESS_CONTROL_V3_TEST_REPORT.md)](./TOOL_ACCESS_CONTROL_V3_TEST_REPORT.md)
 
 ---
 
-**文档状态**: 
-- ✅ v2.0 已完成 - 分布式访问控制实现
-- ✅ v3.0 已完成 - 混合访问控制（CallerType + CallerName）
-- 📊 权限分配表 - 已更新（2025-10-02）
-**下次审查**: 2025-Q1  
-**维护者**: SRS Writer Plugin 架构团队 
+**Document Status**: 
+- ✅ v2.0 Completed - Distributed access control implementation
+- ✅ v3.0 Completed - Hybrid access control (CallerType + CallerName)
+- 📊 Permission Assignment Table - Updated (2025-10-02)
+**Next Review**: 2025-Q1  
+**Maintainer**: SRS Writer Plugin Architecture Team 

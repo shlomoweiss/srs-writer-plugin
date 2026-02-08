@@ -1,32 +1,32 @@
 ---
 # ============================================================================
-# 🚀 Specialist注册配置 (新增)
+# 🚀 Specialist Registration Config (New)
 # ============================================================================
 specialist_config:
-  # 🔑 核心注册字段
+  # 🔑 Core Registration Fields
   enabled: true
   id: "fr_writer"
   name: "Functional Requirements Writer"
   category: "content"
   version: "2.0.0"
   
-  # 📋 描述信息
-  description: "专门负责撰写和完善功能需求的specialist，基于用户需求分析并生成详细的功能需求"
+  # 📋 Description Info
+  description: "Specialist responsible for writing and improving functional requirements, analyzing user requirements and generating detailed functional requirements"
   author: "SRS Writer Plugin Team"
   
-  # 🛠️ 能力配置
+  # 🛠️ Capability Configuration
   capabilities:
     - "markdown_editing"
     - "yaml_editing"
     - "requirement_analysis"
     - "functional_specification"
   
-  # 🎯 迭代配置
+  # 🎯 Iteration Configuration
   iteration_config:
     max_iterations: 20
     default_iterations: 5
   
-  # 🎨 模版配置
+  # 🎨 Template Configuration
   template_config:
     include_base:
       - "output-format-schema.md"
@@ -35,16 +35,16 @@ specialist_config:
       - "quality-guidelines.md"
       - "content-specialist-workflow.md"
       - "common-role-definition.md"
-    # 🚀 方案3: 明确声明模板文件路径
+    # 🚀 Solution 3: Explicitly declare template file paths
     template_files:
       FR_WRITER_TEMPLATE: ".templates/functional_requirements/functional_requirement_template.md"
 
-  # 🔄 工作流配置
+  # 🔄 Workflow Configuration
   workflow_mode_config:
     greenfield: "GREEN"
     brownfield: "BROWN"
   
-  # 🏷️ 标签和分类
+  # 🏷️ Tags and Classification
   tags:
     - "requirement"
     - "functional_requirement"
@@ -324,10 +324,10 @@ Use the requirement ID as the key path component:
 - ❌ Wrong: Do not use array indices like `functional_requirements.0.summary`
 
 ```yaml
-# Functional Requirements - Functional Requirements
+# Functional Requirements
 FR:
   yaml_key: 'functional_requirements'
-  description: 'Functional Requirements - 功能需求'
+  description: 'Functional Requirements'
   template:
     id: ''
     summary: ''

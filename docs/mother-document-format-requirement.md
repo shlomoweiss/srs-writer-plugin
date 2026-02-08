@@ -1,21 +1,21 @@
-# SRS Writer Plugin - AI生成母文档格式规范 (v1.2 AST-Enhanced)
+# SRS Writer Plugin - AI-Generated Mother Document Format Specification (v1.2 AST-Enhanced)
 
-## 概述
+## Overview
 
-本文档为提示词工程师提供AI生成`mother_document.md`时的格式规范和要求。
+This document provides format specifications and requirements for prompt engineers when AI generates `mother_document.md`.
 
-🚀 **v1.2 重大升级**: 解析器已升级为 **AST-based 架构**，使用 marked.js 进行智能解析，大幅提升了格式容错性和健壮性。
+🚀 **v1.2 Major Upgrade**: Parser upgraded to **AST-based architecture**, using marked.js for intelligent parsing, greatly improving format tolerance and robustness.
 
-**新架构优势**:
+**New Architecture Advantages**:
 
-- ✅ **语义解析**: 基于markdown语法树，而非严格的字符串匹配
-- ✅ **格式灵活**: 支持标题和表格之间的空行、描述文字、子标题
-- ✅ **智能匹配**: 自动识别标题变体，无需精确的格式要求
-- ✅ **健壮容错**: AI生成格式微调不会导致解析失败
+- ✅ **Semantic Parsing**: Based on markdown syntax tree, not strict string matching
+- ✅ **Format Flexibility**: Supports blank lines, description text, subheadings between headings and tables
+- ✅ **Intelligent Matching**: Automatically recognizes heading variants, no need for exact format requirements
+- ✅ **Robust Tolerance**: AI-generated format adjustments won't cause parsing failures
 
-## 🏗️ 顶层块标识符（新格式，推荐）
+## 🏗️ Top-Level Block Identifiers (New Format, Recommended)
 
-AI生成的母文档必须包含以下三个顶层块，按顺序排列：
+AI-generated mother documents must contain the following three top-level blocks in order:
 
 ```markdown
 ### --- AI_CLASSIFICATION_DECISION ---
@@ -23,54 +23,54 @@ AI生成的母文档必须包含以下三个顶层块，按顺序排列：
 ### --- QUESTIONS_AND_SUGGESTIONS_CONTENT ---
 ```
 
-## 📊 SRS内部章节标识符 (AST智能识别)
+## 📊 SRS Internal Section Identifiers (AST Intelligent Recognition)
 
-🎯 **v1.2新特性**: AST解析器能智能识别章节标题的各种变体，无需严格遵循固定格式。
+🎯 **v1.2 New Feature**: AST parser can intelligently recognize various variants of section headings, no need to strictly follow fixed formats.
 
-### 功能需求章节（推荐格式，支持变体）
+### Functional Requirements Section (Recommended Format, Supports Variants)
 
-**推荐格式**:
+**Recommended Format**:
 
 ```markdown
 ## 3. 功能需求
 ## Functional Requirements
 ```
 
-**AST解析器自动支持的变体**:
+**AST Parser Automatically Supports Variants**:
 
-- `## 3.功能需求` (无空格)
-- `## 3 功能需求` (无点号)
-- `### 3. 功能需求` (三级标题)
-- `## 三、功能需求` (中文编号)
-- 以及其他包含"功能需求"或"Functional Requirements"的标题
+- `## 3.功能需求` (no space)
+- `## 3 功能需求` (no period)
+- `### 3. 功能需求` (heading level 3)
+- `## 三、功能需求` (Chinese numbering)
+- And other headings containing "功能需求" or "Functional Requirements"
 
-### 非功能需求章节（推荐格式，支持变体）
+### Non-Functional Requirements Section (Recommended Format, Supports Variants)
 
-**推荐格式**:
+**Recommended Format**:
 
 ```markdown
 ## 4. 非功能性需求
 ## Non-Functional Requirements
 ```
 
-**AST解析器自动支持**: 包含"非功能性需求"或"Non-Functional Requirements"的任何标题
+**AST Parser Automatically Supports**: Any heading containing "非功能性需求" or "Non-Functional Requirements"
 
-### 术语表章节（推荐格式，支持变体）
+### Glossary Section (Recommended Format, Supports Variants)
 
-**推荐格式**:
+**Recommended Format**:
 
 ```markdown
 ## 术语表
 ## Glossary
 ```
 
-**AST解析器自动支持**: 包含"术语表"、"Glossary"、"词汇表"、"术语定义"、"Terms"的任何标题
+**AST Parser Automatically Supports**: Any heading containing "术语表", "Glossary", "词汇表", "术语定义", "Terms"
 
-## 🎯 表格格式要求 (AST灵活定位)
+## 🎯 Table Format Requirements (AST Flexible Positioning)
 
-🚀 **v1.2重大改进**: 表格位置完全灵活！AST解析器能智能定位章节下的第一个表格，无论中间有多少内容。
+🚀 **v1.2 Major Improvement**: Table positioning is completely flexible! AST parser can intelligently locate the first table under a section, regardless of how much content is in between.
 
-### ✅ 支持的灵活格式示例
+### ✅ Supported Flexible Format Examples
 
 ```markdown
 ## 3. 功能需求
@@ -88,14 +88,14 @@ AI生成的母文档必须包含以下三个顶层块，按顺序排列：
 | FR-001 | 用户登录 | 高 | 用户可以登录系统 | 成功跳转主页 | 支持记住密码 |
 ```
 
-**AST解析器的智能识别**:
+**AST Parser's Intelligent Recognition**:
 
-- ✅ 自动跳过描述性文字
-- ✅ 自动跳过子标题
-- ✅ 自动跳过空行
-- ✅ 精确定位第一个表格
+- ✅ Automatically skips descriptive text
+- ✅ Automatically skips subheadings
+- ✅ Automatically skips blank lines
+- ✅ Precisely locates the first table
 
-### 功能需求表格格式
+### Functional Requirements Table Format
 
 ```markdown
 | FR-ID | 需求名称 | 优先级 | 详细描述 | 验收标准 | 备注 |
@@ -103,7 +103,7 @@ AI生成的母文档必须包含以下三个顶层块，按顺序排列：
 | FR-LOGIN-001 | 示例需求 | 高 | 具体描述... | 验收条件... | 额外说明... |
 ```
 
-### 非功能需求表格格式
+### Non-Functional Requirements Table Format
 
 ```markdown
 | NFR-ID | 类别 | 优先级 | 详细描述 | 衡量指标 | 备注 |
@@ -111,7 +111,7 @@ AI生成的母文档必须包含以下三个顶层块，按顺序排列：
 | NFR-PERF-001 | 性能 | 高 | 具体描述... | 具体指标... | 额外说明... |
 ```
 
-### 术语表格式
+### Glossary Format
 
 ```markdown
 | 术语 | 定义 | 备注 |
@@ -119,9 +119,9 @@ AI生成的母文档必须包含以下三个顶层块，按顺序排列：
 | API | 应用程序编程接口 | 用于系统间通信 |
 ```
 
-## 🔄 向后兼容支持（旧格式）
+## 🔄 Backward Compatibility Support (Old Format)
 
-系统同时支持以下旧格式标识符，但建议使用新格式：
+The system also supports the following old format identifiers, but the new format is recommended:
 
 ```markdown
 --- AI CLASSIFICATION DECISION ---
@@ -132,39 +132,39 @@ AI生成的母文档必须包含以下三个顶层块，按顺序排列：
 --- GLOSSARY ---
 ```
 
-## 📋 完整的母文档结构示例 (v1.2 灵活格式)
+## 📋 Complete Mother Document Structure Example (v1.2 Flexible Format)
 
-### ✅ 推荐格式（展示AST解析器的灵活性）
+### ✅ Recommended Format (Demonstrating AST Parser Flexibility)
 
 ```markdown
 # AI-Generated Project Artifacts Bundle
 
 ### --- AI_CLASSIFICATION_DECISION ---
-项目类型: Web应用
-复杂度: 中等
-技术栈: React + Node.js
-推荐架构: 微服务
-部署方式: 容器化
+Project Type: Web Application
+Complexity: Medium
+Tech Stack: React + Node.js
+Recommended Architecture: Microservices
+Deployment: Containerized
 ...
 
 ### --- SOFTWARE_REQUIREMENTS_SPECIFICATION_CONTENT ---
-# 《示例项目》软件需求规格说明书
+# 《Sample Project》Software Requirements Specification
 
-## 1. 引言
-本系统旨在提供一个现代化的用户管理平台...
+## 1. Introduction
+This system aims to provide a modern user management platform...
 
-## 2. 系统概述
-系统采用前后端分离架构...
+## 2. System Overview
+The system uses a front-end and back-end separation architecture...
 
-## 3. 功能需求
+## 3. Functional Requirements
 
-本系统需要实现以下核心功能：
+This system needs to implement the following core functionalities:
 
-### 3.1 用户管理功能
-系统应提供完整的用户生命周期管理，包括注册、登录、权限控制等。
+### 3.1 User Management Functions
+The system should provide complete user lifecycle management, including registration, login, permission control, etc.
 
-### 3.2 详细功能需求列表
-以下表格详细描述了系统的功能需求：
+### 3.2 Detailed Functional Requirements List
+The following table describes the functional requirements of the system in detail:
 
 | FR-ID | 需求名称 | 优先级 | 详细描述 | 验收标准 | 备注 |
 |-------|---------|--------|----------|----------|------|
@@ -173,26 +173,26 @@ AI生成的母文档必须包含以下三个顶层块，按顺序排列：
 
 ## 4. 非功能性需求
 
-系统的非功能性需求关注性能、安全性、可用性等方面。
+The system's non-functional requirements focus on performance, security, availability, etc.
 
-### 4.1 性能要求
-系统应在各种负载条件下保持良好的性能表现。
+### 4.1 Performance Requirements
+The system should maintain good performance under various load conditions.
 
-### 4.2 安全要求
-系统必须符合行业安全标准。
+### 4.2 Security Requirements
+The system must comply with industry security standards.
 
-### 4.3 具体非功能需求
+### 4.3 Specific Non-Functional Requirements
 | NFR-ID | 类别 | 优先级 | 详细描述 | 衡量指标 | 备注 |
 |--------|------|--------|----------|----------|------|
 | NFR-001 | 性能 | 高 | 页面加载时间 | <2秒 | 在正常网络条件下 |
 | NFR-002 | 安全 | 高 | 数据加密 | AES-256 | 敏感数据必须加密 |
 
-## 5. 系统架构
+## 5. System Architecture
 ...
 
 ## 术语表
 
-为了确保文档的一致性，这里定义了系统中使用的关键术语：
+To ensure document consistency, key terms used in the system are defined here:
 
 | 术语 | 定义 | 备注 |
 |------|------|------|
@@ -201,87 +201,87 @@ AI生成的母文档必须包含以下三个顶层块，按顺序排列：
 | JWT | JSON Web Token | 用于身份验证的令牌格式 |
 
 ### --- QUESTIONS_AND_SUGGESTIONS_CONTENT ---
-## 需要澄清的问题
+## Questions Requiring Clarification
 
-以下问题需要进一步澄清：
+The following questions require further clarification:
 
-1. 用户角色权限如何划分？
-2. 是否需要支持第三方登录（如微信、支付宝）？
-3. 系统是否需要支持多语言？
+1. How should user role permissions be divided?
+2. Is third-party login support needed (e.g., WeChat, Alipay)?
+3. Does the system need to support multiple languages?
 
-## 改进建议
+## Improvement Suggestions
 
-基于最佳实践，建议考虑以下改进：
+Based on best practices, consider the following improvements:
 
-1. 建议增加数据备份策略，确保数据安全
-2. 考虑添加用户行为分析，优化用户体验
-3. 建议实施API限流机制，防止恶意攻击
+1. It is recommended to add a data backup strategy to ensure data security
+2. Consider adding user behavior analysis to optimize user experience
+3. It is recommended to implement API rate limiting to prevent malicious attacks
 ```
 
-**🚀 AST解析器的强大之处**：
+**🚀 AST Parser's Power**:
 
-- ✅ 自动识别标题"3. 功能需求"，即使前面有很多内容
-- ✅ 智能跳过子标题"3.1 用户管理功能"和"3.2 详细功能需求列表"
-- ✅ 精确定位到功能需求表格，无论中间有多少描述文字
-- ✅ 同样适用于非功能需求和术语表的解析
+- ✅ Automatically recognizes heading "3. 功能需求", even if there's much content before it
+- ✅ Intelligently skips subheadings "3.1 用户管理功能" and "3.2 详细需求列表"
+- ✅ Precisely locates the functional requirements table, regardless of how much descriptive text is in between
+- ✅ Also applies to parsing non-functional requirements and glossary
 
-## ⚠️ 重要注意事项 (v1.2 更新)
+## ⚠️ Important Notes (v1.2 Update)
 
-### ✅ 仍需严格遵循的要求
+### ✅ Requirements That Still Need Strict Compliance
 
-1. **顶层块标识符精确匹配**：`### --- XXX ---` 格式必须完整
-2. **表格格式完整性**：表头行和分隔符行必须完整
-3. **块的顺序重要**：建议按照示例顺序排列
-4. **表格内容转义**：如果单元格内容包含`|`字符，将自动转换为`&#124;`
+1. **Top-Level Block Identifier Exact Match**: `### --- XXX ---` format must be complete
+2. **Table Format Integrity**: Header row and separator row must be complete
+3. **Block Order Matters**: It is recommended to arrange in the order shown in examples
+4. **Table Content Escaping**: If cell content contains `|` character, it will be automatically converted to `&#124;`
 
-### 🚀 v1.2 放宽的要求（AST解析器优势）
+### 🚀 v1.2 Relaxed Requirements (AST Parser Advantages)
 
-1. **章节标题灵活匹配**：不再需要精确的标点符号和空格
-2. **表格位置灵活**：可以在标题和表格之间添加描述文字、子标题、空行
-3. **标题层级灵活**：支持二级、三级标题等不同层级
-4. **格式容错性强**：AI生成的格式微调不会导致解析失败
+1. **Section Heading Flexible Matching**: No longer need exact punctuation and spacing
+2. **Table Position Flexibility**: Can add descriptive text, subheadings, blank lines between headings and tables
+3. **Heading Level Flexibility**: Supports different levels such as level 2, level 3 headings
+4. **Strong Format Tolerance**: AI-generated format adjustments won't cause parsing failures
 
-### 💡 最佳实践建议
+### 💡 Best Practice Recommendations
 
-1. **标题包含关键词**：确保标题包含"功能需求"、"非功能性需求"、"术语表"等关键词
-2. **逻辑结构清晰**：虽然格式灵活，但保持逻辑结构清晰有助于理解
-3. **表格完整性**：确保表格包含所有必需的列
-4. **内容丰富性**：可以在标题和表格之间添加说明文字，提高文档可读性
+1. **Headings Contain Keywords**: Ensure headings contain keywords like "功能需求", "非功能性需求", "术语表"
+2. **Clear Logical Structure**: Although format is flexible, maintaining clear logical structure aids understanding
+3. **Table Integrity**: Ensure tables contain all required columns
+4. **Content Richness**: Can add explanatory text between headings and tables to improve document readability
 
-## 📍 解析流程说明 (v1.2 AST-Enhanced)
+## 📍 Parsing Process Description (v1.2 AST-Enhanced)
 
-### 🚀 新架构：AST-based 智能解析流程
+### 🚀 New Architecture: AST-based Intelligent Parsing Flow
 
-1. **顶层解析**：识别三个主要块（使用正则表达式匹配标识符）
-2. **SRS内容提取**：从`SOFTWARE_REQUIREMENTS_SPECIFICATION_CONTENT`块中提取完整SRS文档  
-3. **🆕 AST解析**：使用 marked.js 将SRS内容解析为抽象语法树
-4. **🆕 智能定位**：在AST中智能搜索标题节点和表格节点
-   - 找到包含关键词的标题节点（如"功能需求"）
-   - 在该标题后查找第一个表格节点
-   - 自动跳过中间的描述文字、子标题、空行
-5. **表格提取**：从AST表格节点中提取结构化数据
-6. **YAML转换**：将表格数据转换为结构化的YAML文件
-7. **文件生成**：生成SRS.md、fr.yaml、nfr.yaml、glossary.yaml等文件
+1. **Top-Level Parsing**: Recognize three main blocks (using regular expressions to match identifiers)
+2. **SRS Content Extraction**: Extract complete SRS document from `SOFTWARE_REQUIREMENTS_SPECIFICATION_CONTENT` block  
+3. **🆕 AST Parsing**: Use marked.js to parse SRS content into abstract syntax tree
+4. **🆕 Intelligent Positioning**: Intelligently search for heading nodes and table nodes in AST
+   - Find heading nodes containing keywords (e.g., "功能需求")
+   - Look for the first table node after that heading
+   - Automatically skip descriptive text, subheadings, blank lines in between
+5. **Table Extraction**: Extract structured data from AST table nodes
+6. **YAML Conversion**: Convert table data into structured YAML files
+7. **File Generation**: Generate SRS.md, fr.yaml, nfr.yaml, glossary.yaml, etc.
 
-### 🎯 AST架构的核心优势
+### 🎯 Core Advantages of AST Architecture
 
-- **语义理解**：基于markdown语法树，理解文档结构而非字符串匹配
-- **智能容错**：自动适应格式变化，提高解析成功率
-- **精确定位**：准确找到标题对应的表格，即使中间有复杂内容
-- **未来扩展**：为更复杂的文档结构解析奠定基础
+- **Semantic Understanding**: Based on markdown syntax tree, understands document structure rather than string matching
+- **Intelligent Tolerance**: Automatically adapts to format changes, improving parsing success rate
+- **Precise Positioning**: Accurately finds tables corresponding to headings, even with complex content in between
+- **Future Expansion**: Lays foundation for more complex document structure parsing
 
-### 📋 提示词工程师指南
+### 📋 Prompt Engineer Guide
 
-**核心要求**（必须遵守）:
+**Core Requirements** (Must comply):
 
-- 包含正确的顶层块标识符
-- 章节标题包含关键词（功能需求、非功能性需求、术语表）
-- 表格格式完整
+- Include correct top-level block identifiers
+- Section headings contain keywords (功能需求, 非功能性需求, 术语表)
+- Complete table format
 
-**推荐实践**（提升体验）:
+**Recommended Practices** (Enhance experience):
 
-- 在标题和表格之间添加说明文字
-- 使用子标题组织内容
-- 保持逻辑结构清晰
+- Add explanatory text between headings and tables
+- Use subheadings to organize content
+- Maintain clear logical structure
 
-AST解析器将自动处理格式变化，确保稳定的解析结果。
+The AST parser will automatically handle format variations, ensuring stable parsing results.

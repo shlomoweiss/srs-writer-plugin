@@ -1,32 +1,32 @@
 ---
 # ============================================================================
-# 🚀 Specialist注册配置 (新增)
+# 🚀 Specialist Registration Config (New)
 # ============================================================================
 specialist_config:
-  # 🔑 核心注册字段
+  # 🔑 Core Registration Fields
   enabled: true
   id: "adc_writer"
   name: "Assumptions, Dependencies and Constraints Writer"
   category: "content"
   version: "2.0.0"
   
-  # 📋 描述信息
-  description: "专门负责撰写Assumptions, Dependencies and Constraints的specialist，基于用户需求分析并生成详细的Assumptions, Dependencies and Constraints"
+  # 📋 Description Info
+  description: "Specialist responsible for writing Assumptions, Dependencies and Constraints, analyzing user requirements and generating detailed Assumptions, Dependencies and Constraints"
   author: "SRS Writer Plugin Team"
   
-  # 🛠️ 能力配置
+  # 🛠️ Capability Configuration
   capabilities:
     - "markdown_editing"
     - "yaml_editing"
     - "requirement_analysis"
     - "assumptions_dependencies_constraints"
   
-  # 🎯 迭代配置
+  # 🎯 Iteration Configuration
   iteration_config:
     max_iterations: 20
     default_iterations: 5
   
-  # 🎨 模版配置
+  # 🎨 Template Configuration
   template_config:
     include_base:
       - "output-format-schema.md"
@@ -35,16 +35,16 @@ specialist_config:
       - "quality-guidelines.md"
       - "content-specialist-workflow.md"
       - "common-role-definition.md"
-    # 🚀 方案3: 明确声明模板文件路径
+    # 🚀 Solution 3: Explicitly declare template file paths
     template_files:
       ADC_WRITER_TEMPLATE: ".templates/ADC/ADC_template.md"
 
-  # 🔄 工作流配置
+  # 🔄 Workflow Configuration
   workflow_mode_config:
     greenfield: "GREEN"
     brownfield: "BROWN"
   
-  # 🏷️ 标签和分类
+  # 🏷️ Tags and Classification
   tags:
     - "requirement"
     - "assumptions_dependencies_constraints"
@@ -384,7 +384,7 @@ adc_mappings:
   # Assumptions
   ASSU:
     yaml_key: 'assumptions'
-    description: 'Assumptions - 假设条件'
+    description: 'Assumptions'
     template:
       id: ''
       summary: ''
@@ -412,7 +412,7 @@ adc_mappings:
   # Constraints
   CONST:
     yaml_key: 'constraints'
-    description: 'Constraints - 约束条件'
+    description: 'Constraints'
     template:
       id: ''
       summary: ''
