@@ -1,25 +1,17 @@
-/**
- * 插件相关常量
- */
+
 export const PLUGIN_NAME = 'srs-writer-plugin';
 export const PLUGIN_DISPLAY_NAME = 'SRS Writer Plugin';
 
-/**
- * 命令常量
- */
+
 export const COMMANDS = {
     START_CHAT: 'srs-writer.startChat',
     GENERATE_SRS: 'srs-writer.generateSRS',
 } as const;
 
-/**
- * 聊天参与者常量
- */
+
 export const CHAT_PARTICIPANT_ID = 'srs-writer';
 
-/**
- * 文件扩展名常量
- */
+
 export const FILE_EXTENSIONS = {
     MARKDOWN: '.md',
     YAML: '.yml',
@@ -27,7 +19,7 @@ export const FILE_EXTENSIONS = {
 } as const;
 
 /**
- * SRS模板常量
+ * SRS
  */
 export const SRS_SECTIONS = {
     INTRODUCTION: 'introduction',
@@ -39,12 +31,10 @@ export const SRS_SECTIONS = {
     APPENDICES: 'appendices',
 } as const;
 
-/**
- * 默认配置常量
- */
+
 export const DEFAULT_CONFIG = {
     AI_PROVIDER: 'openai',
-    DEFAULT_LANGUAGE: 'zh-CN',
+    DEFAULT_LANGUAGE: 'en-CN',
     OUTPUT_FORMAT: 'yaml',
     MAX_TOKENS: 4000,
     TEMPERATURE: 0.7,
@@ -53,7 +43,7 @@ export const DEFAULT_CONFIG = {
 } as const;
 
 /**
- * API相关常量
+ * API
  */
 export const API = {
     TIMEOUT: 30000,
@@ -61,9 +51,7 @@ export const API = {
     RETRY_DELAY: 1000,
 } as const;
 
-/**
- * 日志级别常量
- */
+
 export const LOG_LEVELS = {
     ERROR: 'error',
     WARN: 'warn',
@@ -72,7 +60,7 @@ export const LOG_LEVELS = {
 } as const;
 
 /**
- * 错误消息常量
+ * 
  * Note: These are English base strings. Use vscode.l10n.t() when displaying to users.
  */
 export const ERROR_MESSAGES = {
