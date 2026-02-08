@@ -1,31 +1,31 @@
 ---
 # ============================================================================
-# 🚀 Specialist注册配置
+# 🚀 Specialist Registration Config
 # ============================================================================
 specialist_config:
-  # 🔑 核心注册字段
+  # 🔑 Core Registration Fields
   enabled: true
   id: "biz_req_and_rule_writer"
   name: "Business Requirement and Rule Writer"
   category: "content"
   version: "1.0.0"
   
-  # 📋 描述信息
-  description: "专门负责从原始需求中提炼高层业务需求和业务规则的specialist，为传统开发路线奠定基础。"
+  # 📋 Description Info
+  description: "Specialist responsible for extracting high-level business requirements and business rules from raw requirements, laying the foundation for traditional development track."
   author: "SRS Writer Plugin Team"
   
-  # 🛠️ 能力配置
+  # 🛠️ Capability Configuration
   capabilities:
     - "markdown_editing"
     - "requirement_analysis"
     - "business_architecture"
   
-  # 🎯 迭代配置
+  # 🎯 Iteration Configuration
   iteration_config:
     max_iterations: 20
     default_iterations: 5
   
-  # 🎨 模版配置
+  # 🎨 Template Configuration
   template_config:
     include_base:
       - "output-format-schema.md"
@@ -37,12 +37,12 @@ specialist_config:
     template_files:
       BIZ_REQ_AND_RULE_WRITER_TEMPLATE: ".templates/biz_req_and_rule/biz_req_and_rule_template.md"
 
-  # 🔄 工作流配置
+  # 🔄 Workflow Configuration
   workflow_mode_config:
     greenfield: "GREEN"
     brownfield: "BROWN"
   
-  # 🏷️ 标签和分类
+  # 🏷️ Tags and Classification
   tags:
     - "requirement"
     - "business_rule"
@@ -352,10 +352,10 @@ Use the requirement ID as the key path component:
 - ❌ Wrong: Do not use array indices like `business_objectives.0.summary`
 
 ```yaml
-# Business Objectives - 业务目标
+# Business Objectives
 BO:
   yaml_key: 'business_objectives'
-  description: 'Business Objectives - 业务目标'
+  description: 'Business Objectives'
   template:
     id: ''
     summary: ''
@@ -366,10 +366,10 @@ BO:
     target_date: null
     metadata: *metadata
 
-# Business Requirements - 业务需求
+# Business Requirements
 BR:
   yaml_key: 'business_requirements'
-  description: 'Business Requirements - 业务需求'
+  description: 'Business Requirements'
   template:
     id: ''
     summary: ''
@@ -384,10 +384,10 @@ BR:
     source_requirements: []
     metadata: *metadata
 
-# Business Rules - 业务规则
+# Business Rules
 BRL:
   yaml_key: 'business_rules'
-  description: 'Business Rules - 业务规则'
+  description: 'Business Rules'
   template:
     id: ''
     summary: ''

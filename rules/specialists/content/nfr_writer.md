@@ -1,9 +1,9 @@
 ---
 # ============================================================================
-# 🚀 Specialist注册配置 (新增)
+# 🚀 Specialist Registration Config (New)
 # ============================================================================
 specialist_config:
-  # 🔑 核心注册字段
+  # 🔑 Core Registration Fields
   enabled: true
   id: "nfr_writer"
   name: "Non-Functional Requirement Writer"
@@ -11,23 +11,23 @@ specialist_config:
   version: "2.0.0"
 
   
-  # 📋 描述信息
-  description: "专门负责撰写和完善非功能需求的specialist，基于用户需求分析并生成详细的非功能需求"
+  # 📋 Description Info
+  description: "Specialist responsible for writing and improving non-functional requirements, analyzing user requirements and generating detailed non-functional requirements"
   author: "SRS Writer Plugin Team"
   
-  # 🛠️ 能力配置
+  # 🛠️ Capability Configuration
   capabilities:
     - "markdown_editing"
     - "yaml_editing"
     - "requirement_analysis"
     - "non_functional_requirement"
   
-  # 🎯 迭代配置
+  # 🎯 Iteration Configuration
   iteration_config:
     max_iterations: 20
     default_iterations: 5
 
-  # 🎨 模版配置
+  # 🎨 Template Configuration
   template_config:
     include_base:
       - "output-format-schema.md"
@@ -36,16 +36,16 @@ specialist_config:
       - "quality-guidelines.md"
       - "content-specialist-workflow.md"
       - "common-role-definition.md"
-    # 🚀 方案3: 明确声明模板文件路径
+    # 🚀 Solution 3: Explicitly declare template file paths
     template_files:
       NFR_WRITER_TEMPLATE: ".templates/NFR/nfr_template.md"
 
-  # 🔄 工作流配置
+  # 🔄 Workflow Configuration
   workflow_mode_config:
     greenfield: "GREEN"
     brownfield: "BROWN"
   
-  # 🏷️ 标签和分类
+  # 🏷️ Tags and Classification
   tags:
     - "requirement"
     - "non_functional_requirement"
@@ -345,10 +345,10 @@ Use the requirement ID as the key path component:
 - ❌ Wrong: Do not use array indices like `non_functional_requirements.0.summary`
 
 ```yaml
-# Non-Functional Requirements - Non-Functional Requirements
+# Non-Functional Requirements
   NFR:
       yaml_key: 'non_functional_requirements'
-      description: 'Non-Functional Requirements - 非功能需求'
+      description: 'Non-Functional Requirements'
       template:
         id: ''
         summary: ''

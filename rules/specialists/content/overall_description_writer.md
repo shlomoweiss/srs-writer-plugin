@@ -1,31 +1,31 @@
 ---
 # ============================================================================
-# 🚀 Specialist注册配置 (新增)
+# 🚀 Specialist Registration Config (New)
 # ============================================================================
 specialist_config:
-  # 🔑 核心注册字段
+  # 🔑 Core Registration Fields
   enabled: true
   id: "overall_description_writer"
   name: "Overall Description Writer"
   category: "content"
   version: "2.0.0"
   
-  # 📋 描述信息
-  description: "专门负责撰写和完善系统高层规约的specialist，基于用户需求分析并生成详细的系统高层规约"
+  # 📋 Description Info
+  description: "Specialist responsible for writing and improving high-level system specifications, analyzing user requirements and generating detailed high-level system specifications"
   author: "SRS Writer Plugin Team"
   
-  # 🛠️ 能力配置
+  # 🛠️ Capability Configuration
   capabilities:
     - "markdown_editing"
     - "requirement_analysis"
     - "overall_description"
   
-  # 🎯 迭代配置
+  # 🎯 Iteration Configuration
   iteration_config:
     max_iterations: 20
     default_iterations: 5
   
-  # 🎨 模版配置
+  # 🎨 Template Configuration
   template_config:
     include_base:
       - "output-format-schema.md"
@@ -34,16 +34,16 @@ specialist_config:
       - "quality-guidelines.md"
       - "content-specialist-workflow.md"
       - "common-role-definition.md"
-    # 🚀 方案3: 明确声明模板文件路径
+    # 🚀 Solution 3: Explicitly declare template file paths
     template_files:
       OVERALL_DESCRIPTION_WRITER_TEMPLATE: ".templates/overall_description/overall_description_template.md"
 
-  # 🔄 工作流配置
+  # 🔄 Workflow Configuration
   workflow_mode_config:
     greenfield: "GREEN"
     brownfield: "BROWN"
   
-  # 🏷️ 标签和分类
+  # 🏷️ Tags and Classification
   tags:
     - "requirement"
     - "overall_description"

@@ -1,20 +1,20 @@
 ---
 # ============================================================================
-# 🚀 Specialist注册配置
+# 🚀 Specialist Registration Config
 # ============================================================================
 specialist_config:
-  # 🔑 核心注册字段
+  # 🔑 Core Registration Fields
   enabled: true
   id: "prototype_designer"
   name: "Prototype Designer"
   category: "content"
-  version: "4.0.0"  # SuperDesign 集成版本
+  version: "4.0.0"  # SuperDesign Integration Version
   
-  # 📋 描述信息
-  description: "高保真前端设计专家，专注创建可交互HTML原型，基于SuperDesign设计方法论的多阶段交互式设计流程"
+  # 📋 Description Info
+  description: "High-fidelity front-end design specialist focused on creating interactive HTML prototypes, based on SuperDesign methodology with multi-stage interactive design process"
   author: "SRS Writer Plugin Team (SuperDesign Integration)"
   
-  # 🛠️ 能力配置
+  # 🛠️ Capability Configuration
   capabilities:
     - "html_prototype_generation"
     - "responsive_ui_design"
@@ -23,12 +23,12 @@ specialist_config:
     - "css_variable_system"
     - "design_documentation"
   
-  # 🎯 迭代配置
+  # 🎯 Iteration Configuration
   iteration_config:
     max_iterations: 20
-    default_iterations: 8  # 更多迭代支持多阶段设计流程
+    default_iterations: 8  # More iterations to support multi-stage design process
   
-  # 🎨 模版配置
+  # 🎨 Template Configuration
   template_config:
     include_base:
       - "output-format-schema.md"
@@ -39,12 +39,12 @@ specialist_config:
     template_files:
       PROTOTYPE_DESIGNER_TEMPLATE: ".templates/prototype_designer/prototype_designer_template.md"
   
-  # 🔄 工作流配置
+  # 🔄 Workflow Configuration
   workflow_mode_config:
     greenfield: "GREEN"
     brownfield: "BROWN"
   
-  # 🏷️ 标签和分类
+  # 🏷️ Tags and Classification
   tags:
     - "prototype"
     - "html"
