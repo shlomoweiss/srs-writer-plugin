@@ -11,29 +11,29 @@
 Note: There are currently no dedicated SRS templates for "Developer Productivity" and "Security & Compliance" projects. If a project falls into these two categories, please clarify in communication: "No standard template available, refer to medium-complexity platform template or customize accordingly".
 
 
-## 项目类型选择
+## Project Type Selection
 
-在评估项目复杂度之前，首先需要确定项目属于以下四种类型中的哪一种：
+Before evaluating project complexity, first determine which of the following four types the project belongs to:
 
-### 🎯 面向用户交付 (User Delivery)
-**核心特征：** 直接面向最终用户提供产品或服务
-- 主要关注用户体验、功能完整性和业务价值交付
-- 包括前端应用、移动App、网站、API服务等直接用户接触的系统
+### 🎯 User Delivery
+**Core Characteristics:** Directly provides products or services to end users
+- Mainly focuses on user experience, feature completeness, and business value delivery
+- Includes frontend applications, mobile apps, websites, API services, and other systems directly accessible to users
 
-### 🏗️ 面向平台 (Platform)
-**核心特征：** 为其他系统或开发团队提供基础设施和服务
-- 主要关注稳定性、可扩展性、性能和运维友好性
-- 包括基础设施、数据平台、监控系统、中间件等支撑性系统
+### 🏗️ Platform
+**Core Characteristics:** Provides infrastructure and services for other systems or development teams
+- Mainly focuses on stability, scalability, performance, and operations-friendliness
+- Includes infrastructure, data platforms, monitoring systems, middleware, and other supporting systems
 
-### ⚡ 面向团队效率 (Developer Productivity)
-**核心特征：** 提升开发团队工作效率和质量
-- 主要关注开发流程优化、自动化和工具链完善
-- 包括CI/CD平台、代码质量工具、开发环境、自动化测试框架等
+### ⚡ Developer Productivity
+**Core Characteristics:** Enhances the work efficiency and quality of development teams
+- Mainly focuses on development process optimization, automation, and toolchain improvement
+- Includes CI/CD platforms, code quality tools, development environments, automated testing frameworks, etc.
 
-### 🔒 面向安全 (Security & Compliance)
-**核心特征：** 保障系统安全和满足合规要求
-- 主要关注安全防护、风险控制和法规遵循
-- 包括身份认证系统、安全审计平台、合规检查工具、风险监控系统等
+### 🔒 Security & Compliance
+**Core Characteristics:** Ensures system security and meets compliance requirements
+- Mainly focuses on security protection, risk control, and regulatory compliance
+- Includes identity authentication systems, security audit platforms, compliance checking tools, risk monitoring systems, etc.
 
 
 ## Quick Decision Tree
