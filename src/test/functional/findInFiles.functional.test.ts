@@ -1,6 +1,6 @@
 /**
- * FindInFiles工具功能测试
- * 测试真实的端到端使用场景和工作流程
+ * FindInFiles Tool Functional Tests
+ * Tests real-world end-to-end usage scenarios and workflows
  */
 
 import * as fs from 'fs/promises';
@@ -16,11 +16,11 @@ describe('FindInFiles - Functional Tests', () => {
   beforeAll(async () => {
     originalCwd = process.cwd();
     
-    // 创建复杂的测试项目结构，模拟真实的开发项目
+    // Create a complex test project structure simulating a real development project
     const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'findinfiles-functional-test-'));
     testProjectDir = tempDir;
     
-    // 创建典型的项目结构
+    // Create typical project structure
     await fs.mkdir(path.join(testProjectDir, 'src', 'components'), { recursive: true });
     await fs.mkdir(path.join(testProjectDir, 'src', 'utils'), { recursive: true });
     await fs.mkdir(path.join(testProjectDir, 'src', 'types'), { recursive: true });
@@ -29,7 +29,7 @@ describe('FindInFiles - Functional Tests', () => {
     await fs.mkdir(path.join(testProjectDir, 'docs'), { recursive: true });
     await fs.mkdir(path.join(testProjectDir, 'config'), { recursive: true });
     
-    // 创建SRS相关文件
+    // Create SRS-related files
     await fs.writeFile(path.join(testProjectDir, 'SRS.md'), `
 # Software Requirements Specification
 
@@ -68,7 +68,7 @@ requirements:
     depends_on: ["FR-001"]
 `);
 
-    // 创建代码文件
+    // Create code files
     await fs.writeFile(path.join(testProjectDir, 'src', 'components', 'LoginForm.tsx'), `
 import React from 'react';
 
@@ -152,7 +152,7 @@ export type ApiResponse<T> = {
 };
 `);
 
-    // 创建测试文件
+    // Create test files
     await fs.writeFile(path.join(testProjectDir, 'tests', 'unit', 'auth.test.ts'), `
 import { validateEmail } from '../../src/utils/api';
 
@@ -166,7 +166,7 @@ describe('Authentication Utils', () => {
 // TODO: Add more comprehensive tests
 `);
 
-    // 创建配置文件
+    // Create configuration files
     await fs.writeFile(path.join(testProjectDir, 'config', 'database.json'), `
 {
   "development": {
@@ -182,7 +182,7 @@ describe('Authentication Utils', () => {
 }
 `);
 
-    // 创建文档文件
+    // Create documentation files
     await fs.writeFile(path.join(testProjectDir, 'docs', 'api-guide.md'), `
 # API Guide
 
@@ -222,13 +222,13 @@ See docs/api-guide.md for detailed API documentation.
 See SRS.md and requirements.yaml for detailed requirements.
 `);
 
-    // 创建应被忽略的文件和目录
+    // Create files and directories that should be ignored
     await fs.mkdir(path.join(testProjectDir, 'node_modules', 'react'), { recursive: true });
     await fs.writeFile(path.join(testProjectDir, 'node_modules', 'react', 'index.js'), 'module.exports = React;');
     await fs.writeFile(path.join(testProjectDir, 'debug.log'), 'Debug logging information...');
     await fs.writeFile(path.join(testProjectDir, '.env'), 'SECRET_KEY=abc123');
 
-    // 创建.gitignore
+    // Create .gitignore
     await fs.writeFile(path.join(testProjectDir, '.gitignore'), `
 node_modules/
 *.log
@@ -259,11 +259,11 @@ coverage/
     }));
   });
 
-  describe('端到端工作流测试', () => {
-    test('工作流1: 新开发者了解项目结构', async () => {
-      // 模拟场景：新开发者想了解项目有哪些主要功能
+  describe('End-to-End Workflow Tests', () => {
+    test('Workflow 1: New developer understanding project structure', async () => {
+      // Simulate scenario: New developer wants to understand the project's main features
       
-      // Step 1: 查找所有导出的函数和类
+      // Step 1: Find all exported functions and classes
       const exportsResult = await findInFiles({
         pattern: 'export\\s+(function|class|interface)',
         regex: true,
@@ -273,7 +273,7 @@ coverage/
       expect(exportsResult.success).toBe(true);
       expect(exportsResult.matches!.length).toBeGreaterThan(0);
 
-      // Step 2: 查找所有TODO项了解待完成工作
+      // Step 2: Find all TODO items to understand pending work
       const todoResult = await findInFiles({
         pattern: 'TODO|FIXME',
         regex: true,
@@ -284,17 +284,17 @@ coverage/
       expect(todoResult.success).toBe(true);
       
       if (todoResult.matches && todoResult.matches.length > 0) {
-        // 验证有上下文信息
+        // Verify that context information is present
         const firstMatch = todoResult.matches[0] as any;
         expect(firstMatch.context).toBeDefined();
         expect(firstMatch.context.length).toBeGreaterThan(0);
       }
     });
 
-    test('工作流2: 需求分析师追踪需求实现', async () => {
-      // 模拟场景：需求分析师想了解FR-001在代码中的实现情况
+    test('Workflow 2: Requirements analyst tracking requirement implementation', async () => {
+      // Simulate scenario: Requirements analyst wants to understand how FR-001 is implemented in code
 
-      // Step 1: 查找所有需求ID引用
+      // Step 1: Find all requirement ID references
       const requirementsResult = await findInFiles({
         pattern: '(FR|UC|US)-\\d+',
         regex: true,
@@ -303,7 +303,7 @@ coverage/
 
       expect(requirementsResult.success).toBe(true);
 
-      // Step 2: 专门搜索FR-001的引用
+      // Step 2: Specifically search for FR-001 references
       const fr001Result = await findInFiles({
         pattern: 'FR-001',
         outputMode: 'files'
@@ -313,15 +313,15 @@ coverage/
       
       if (fr001Result.matches && fr001Result.matches.length > 0) {
         const files = (fr001Result.matches as any[]).map(m => path.basename(m.file));
-        // 应该在SRS.md和requirements.yaml中找到
+        // Should be found in SRS.md and requirements.yaml
         expect(files.some(f => f.includes('SRS.md') || f.includes('requirements.yaml'))).toBe(true);
       }
     });
 
-    test('工作流3: 代码审查查找潜在问题', async () => {
-      // 模拟场景：代码审查者查找代码中的潜在问题
+    test('Workflow 3: Code review to find potential issues', async () => {
+      // Simulate scenario: Code reviewer searching for potential issues in code
 
-      // Step 1: 查找所有console.log（可能需要清理）
+      // Step 1: Find all console.log statements (may need cleanup)
       const consoleResult = await findInFiles({
         pattern: 'console\\.(log|warn|error)',
         regex: true,
@@ -331,7 +331,7 @@ coverage/
 
       expect(consoleResult.success).toBe(true);
 
-      // Step 2: 查找硬编码的配置值
+      // Step 2: Find hardcoded configuration values
       const hardcodedResult = await findInFiles({
         pattern: '(http://|https://|localhost|127\\.0\\.0\\.1)',
         regex: true,
@@ -341,7 +341,7 @@ coverage/
 
       expect(hardcodedResult.success).toBe(true);
 
-      // Step 3: 查找所有FIXME标记
+      // Step 3: Find all FIXME markers
       const fixmeResult = await findInFiles({
         pattern: 'FIXME',
         outputMode: 'files'
@@ -350,10 +350,10 @@ coverage/
       expect(fixmeResult.success).toBe(true);
     });
 
-    test('工作流4: 技术文档维护', async () => {
-      // 模拟场景：技术写作人员维护项目文档
+    test('Workflow 4: Technical documentation maintenance', async () => {
+      // Simulate scenario: Technical writer maintaining project documentation
 
-      // Step 1: 查找所有文档文件中的API引用
+      // Step 1: Find all API references in documentation files
       const apiRefsResult = await findInFiles({
         pattern: '/(auth|products|users)/',
         regex: true,
@@ -363,7 +363,7 @@ coverage/
 
       expect(apiRefsResult.success).toBe(true);
 
-      // Step 2: 查找文档中的断链和待更新内容
+      // Step 2: Find broken links and content needing updates in documentation
       const docIssuesResult = await findInFiles({
         pattern: 'TODO|TBD|\\[TBD\\]|\\?\\?\\?',
         regex: true,
@@ -373,7 +373,7 @@ coverage/
 
       expect(docIssuesResult.success).toBe(true);
 
-      // Step 3: 验证代码和文档的一致性
+      // Step 3: Verify consistency between code and documentation
       const functionRefsResult = await findInFiles({
         pattern: 'validateEmail|LoginForm|ApiClient',
         regex: true,
@@ -385,13 +385,13 @@ coverage/
     });
   });
 
-  describe('性能和可靠性测试', () => {
-    test('应该在大量文件的项目中保持性能', async () => {
-      // Arrange - 创建更多文件模拟大项目
+  describe('Performance and Reliability Tests', () => {
+    test('should maintain performance in projects with many files', async () => {
+      // Arrange - Create more files to simulate a large project
       const largeProjectDir = path.join(testProjectDir, 'large-scale');
       await fs.mkdir(largeProjectDir, { recursive: true });
 
-      // 创建50个文件
+      // Create 50 files
       for (let i = 0; i < 50; i++) {
         await fs.writeFile(
           path.join(largeProjectDir, `module-${i}.ts`),
@@ -419,7 +419,7 @@ export interface Interface${i} {
         }
       }));
 
-      // Act - 搜索所有函数定义
+      // Act - Search for all function definitions
       const startTime = Date.now();
       const result = await findInFiles({
         pattern: 'export\\s+function\\s+\\w+',
@@ -431,12 +431,12 @@ export interface Interface${i} {
 
       // Assert
       expect(result.success).toBe(true);
-      expect(duration).toBeLessThan(3000); // 应该在3秒内完成
-      expect(result.totalMatches).toBe(50); // 应该找到50个函数
+      expect(duration).toBeLessThan(3000); // Should complete within 3 seconds
+      expect(result.totalMatches).toBe(50); // Should find 50 functions
     });
 
-    test('应该正确处理各种文件编码', async () => {
-      // Arrange - 创建包含特殊字符的文件
+    test('should correctly handle various file encodings', async () => {
+      // Arrange - Create files containing special characters
       await fs.writeFile(
         path.join(testProjectDir, 'unicode-test.md'),
         `# 中文测试文档
@@ -471,12 +471,12 @@ TODO: 添加更多中文文档
       }
     });
 
-    test('应该优雅处理搜索限制', async () => {
-      // Arrange - 测试各种边界条件
+    test('should gracefully handle search limits', async () => {
+      // Arrange - Test various boundary conditions
       const testCases = [
-        { pattern: 'function', limit: 1 },    // 最小限制
-        { pattern: '.*', regex: true, limit: 10 }, // 匹配所有内容但限制结果
-        { pattern: 'nonexistent_pattern' }    // 无匹配结果
+        { pattern: 'function', limit: 1 },    // Minimum limit
+        { pattern: '.*', regex: true, limit: 10 }, // Match all content but limit results
+        { pattern: 'nonexistent_pattern' }    // No matching results
       ];
 
       // Act & Assert
@@ -491,27 +491,27 @@ TODO: 添加更多中文文档
     });
   });
 
-  describe('复杂搜索模式测试', () => {
-    test('应该支持复杂的正则表达式模式', async () => {
-      // Arrange - 各种复杂的搜索模式
+  describe('Complex Search Pattern Tests', () => {
+    test('should support complex regular expression patterns', async () => {
+      // Arrange - Various complex search patterns
       const complexPatterns = [
         {
-          name: '函数定义',
+          name: 'Function definitions',
           pattern: 'export\\s+(function|const\\s+\\w+\\s*=\\s*\\([^)]*\\)\\s*=>)',
           regex: true
         },
         {
-          name: '接口定义',
+          name: 'Interface definitions',
           pattern: 'interface\\s+\\w+\\s*{',
           regex: true
         },
         {
-          name: 'HTTP方法调用',
+          name: 'HTTP method calls',
           pattern: '\\.(get|post|put|delete)\\(',
           regex: true
         },
         {
-          name: '注释标记',
+          name: 'Comment markers',
           pattern: '(TODO|FIXME|HACK|BUG)\\s*:',
           regex: true
         }
@@ -526,12 +526,12 @@ TODO: 添加更多中文文档
         });
 
         expect(result.success).toBe(true);
-        // 不要求必须有匹配，但应该成功执行
+        // No matches required, but execution should succeed
       }
     });
 
-    test('应该支持文件类型组合搜索', async () => {
-      // Arrange - 测试不同文件类型的搜索
+    test('should support combined file type searches', async () => {
+      // Arrange - Test searching different file types
       const fileTypeTests = [
         { type: 'ts', expectedPattern: /\.(ts|tsx)$/ },
         { type: 'js', expectedPattern: /\.(js|jsx)$/ },
@@ -551,7 +551,7 @@ TODO: 添加更多中文文档
         expect(result.success).toBe(true);
         
         if (result.matches && result.matches.length > 0) {
-          // 验证所有结果都是正确的文件类型
+          // Verify all results are of the correct file type
           const allCorrectType = (result.matches as any[]).every(
             match => fileTypeTest.expectedPattern.test(match.file)
           );
@@ -561,26 +561,26 @@ TODO: 添加更多中文文档
     });
   });
 
-  describe('与Cursor对标测试', () => {
-    test('应该提供与Cursor grep相似的搜索结果', async () => {
-      // 这个测试验证我们的搜索结果质量与预期一致
+  describe('Cursor Parity Tests', () => {
+    test('should provide search results similar to Cursor grep', async () => {
+      // This test verifies that our search result quality matches expectations
       
-      // Arrange - 模拟典型的Cursor使用模式
+      // Arrange - Simulate typical Cursor usage patterns
       const cursorStyleSearches = [
         {
-          description: '查找所有函数定义',
+          description: 'Find all function definitions',
           args: { pattern: 'function', outputMode: 'count' as const }
         },
         {
-          description: '查找特定目录中的TODO',
+          description: 'Find TODO in specific directory',
           args: { pattern: 'TODO', path: 'src/', outputMode: 'files' as const }
         },
         {
-          description: '查找TypeScript接口',
+          description: 'Find TypeScript interfaces',
           args: { pattern: 'interface', type: 'ts' as const }
         },
         {
-          description: '正则搜索导入语句',
+          description: 'Regex search for import statements',
           args: { pattern: 'import.*from', regex: true }
         }
       ];
@@ -593,32 +593,32 @@ TODO: 添加更多中文文档
         expect(result.matches).toBeDefined();
         expect(result.totalMatches).toBeGreaterThanOrEqual(0);
         
-        // 验证输出格式符合预期
+        // Verify output format meets expectations
         if (search.args.outputMode === 'count' && result.matches!.length > 0) {
           expect((result.matches![0] as any).count).toBeDefined();
         } else if (search.args.outputMode === 'files' && result.matches!.length > 0) {
           expect((result.matches![0] as any).line).toBeUndefined();
-        } else if (result.matches!.length > 0) { // content模式
+        } else if (result.matches!.length > 0) { // content mode
           expect((result.matches![0] as any).line).toBeDefined();
         }
       }
     });
   });
 
-  describe('SRS项目特定测试', () => {
-    test('应该高效搜索SRS文档结构', async () => {
-      // Arrange - SRS项目特有的搜索模式
+  describe('SRS Project-Specific Tests', () => {
+    test('should efficiently search SRS document structure', async () => {
+      // Arrange - Search patterns specific to SRS projects
       const srsSearches = [
         {
-          description: '查找所有需求ID',
+          description: 'Find all requirement IDs',
           args: { pattern: '(FR|UC|US|NFR)-\\d+', regex: true, outputMode: 'files' as const }
         },
         {
-          description: '查找SRS章节标题',
+          description: 'Find SRS section headers',
           args: { pattern: '^##\\s+\\d+\\.', regex: true, type: 'md' as const }
         },
         {
-          description: '查找requirements.yaml中的依赖',
+          description: 'Find dependencies in requirements.yaml',
           args: { pattern: 'depends_on', type: 'yaml' as const }
         }
       ];
@@ -628,12 +628,12 @@ TODO: 添加更多中文文档
         const result = await findInFiles(search.args);
         
         expect(result.success).toBe(true);
-        // SRS项目中应该能找到这些模式
+        // Should be able to find these patterns in SRS projects
         expect(result.totalMatches).toBeGreaterThan(0);
       }
     });
 
-    test('应该支持跨文档的需求引用搜索', async () => {
+    test('should support cross-document requirement reference search', async () => {
       // Arrange
       const args: FindInFilesArgs = {
         pattern: 'FR-001',
@@ -648,16 +648,16 @@ TODO: 添加更多中文文档
       expect(result.success).toBe(true);
       expect(result.totalMatches).toBeGreaterThan(0);
       
-      // 验证在多个文件中找到了引用
+      // Verify references are found in multiple files
       const fileSet = new Set((result.matches as any[]).map(m => path.basename(m.file)));
       expect(fileSet.has('SRS.md')).toBe(true);
       expect(fileSet.has('requirements.yaml')).toBe(true);
     });
   });
 
-  describe('边界情况和鲁棒性测试', () => {
-    test('应该处理空文件', async () => {
-      // Arrange - 创建空文件
+  describe('Edge Cases and Robustness Tests', () => {
+    test('should handle empty files', async () => {
+      // Arrange - Create an empty file
       await fs.writeFile(path.join(testProjectDir, 'empty.txt'), '');
 
       const args: FindInFilesArgs = {
@@ -674,8 +674,8 @@ TODO: 添加更多中文文档
       expect(result.matches).toEqual([]);
     });
 
-    test('应该处理非常长的行', async () => {
-      // Arrange - 创建包含很长行的文件
+    test('should handle very long lines', async () => {
+      // Arrange - Create a file with very long lines
       const longLine = 'x'.repeat(10000) + ' function test() {}';
       await fs.writeFile(path.join(testProjectDir, 'long-lines.js'), longLine);
 
@@ -692,8 +692,8 @@ TODO: 添加更多中文文档
       expect(result.totalMatches).toBe(1);
     });
 
-    test('应该正确处理特殊字符', async () => {
-      // Arrange - 创建包含特殊字符的文件
+    test('should correctly handle special characters', async () => {
+      // Arrange - Create a file containing special characters
       await fs.writeFile(path.join(testProjectDir, 'special-chars.ts'), `
 const specialString = "Hello (world) [test] {data} $var @user #tag %percent";
 const regexPattern = /^[a-zA-Z]+$/;
