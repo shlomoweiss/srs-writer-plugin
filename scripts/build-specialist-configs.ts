@@ -1,17 +1,14 @@
 #!/usr/bin/env ts-node
 
-/**
- * 构建时specialist配置生成器
+/* Build-time Specialist Configuration Generator
  * 
- * 功能：
- * 1. 扫描rules/specialists/目录下所有specialist文件
- * 2. 提取category为'content'且enabled为true的specialist配置
- * 3. 动态生成package.json中的VSCode配置项
- * 4. 生成TypeScript映射文件供运行时使用
+ * Features:
+ * 1. Scan all specialist files in the rules/specialists/ directory
+ * 2. Extract specialist configurations where category is 'content' and enabled is true
+ * 3. Dynamically generate VSCode configuration items in package.json
+ * 4. Generate TypeScript mapping files for runtime use
  * 
- * 注意：只处理content specialist，process specialist不需要模版配置
- */
-
+ * Note: Only processes content specialists; process specialists do not require template configuration */
 import * as fs from 'fs';
 import * as path from 'path';
 import * as yaml from 'js-yaml';
