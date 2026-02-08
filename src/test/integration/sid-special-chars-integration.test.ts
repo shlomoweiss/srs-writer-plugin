@@ -19,7 +19,7 @@ describe('SID Special Characters Processing Integration Test', () => {
     let testFile: vscode.Uri;
 
     beforeEach(async () => {
-        // 创建临时目录
+        // Create temporary directory
         tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'sid-integration-test-'));
         testFile = vscode.Uri.file(path.join(tempDir, 'test.md'));
     });
@@ -46,10 +46,10 @@ describe('SID Special Characters Processing Integration Test', () => {
     };
 
     /**
-     * 🎯 原始Bug场景的端到端测试
+     * 🎯 End-to-end test of original Bug scenario
      */
-    it('Bug修复验证：包含 & 符号的标题应该能够成功编辑', async () => {
-        // 1. 创建包含 & 符号的文档（原始bug场景）
+    it('Bug fix verification: Titles containing & symbol should be successfully editable', async () => {
+        // 1. Create document containing & symbol (original bug scenario)
         const originalContent = `# SRS Document
 
 ## 1. 非功能需求 (Non-Functional Requirements)
@@ -99,7 +99,7 @@ Some other content.
             }]
         });
 
-        // 5. 🎯 关键断言：编辑应该成功（修复前会失败）
+        // 5. 🎯 Key assertion: Edit should succeed (would fail before fix)
         expect(editResult.success).toBe(true);
         expect(editResult.successfulIntents).toBe(1);
         expect(editResult.failedIntents.length).toBe(0);
@@ -111,9 +111,9 @@ Some other content.
     });
 
     /**
-     * 🎯 多种特殊字符的综合测试
+     * 🎯 Comprehensive test of multiple special characters
      */
-    it('应成功编辑包含各种特殊字符的章节', async () => {
+    it('Should successfully edit sections containing various special characters', async () => {
         const originalContent = `# Document
 
 ## Section @ 符号

@@ -290,8 +290,8 @@ export async function writeFile(args: { path: string; content: string }): Promis
 }
 
 /**
- * 🚀 增强工具：追加文本到文件末尾
- * 高价值场景：生成操作日志、快速添加备注，比完整读写更高效
+ * 🚀 Enhanced tool: Append text to end of file
+ * High-value scenario: Generate operation logs, quickly add notes, more efficient than full read/write
  */
 export const appendTextToFileToolDefinition = {
     name: "appendTextToFile",
@@ -355,7 +355,7 @@ export async function appendTextToFile(args: {
             (addNewline && existingContent && !existingContent.endsWith('\n') ? '\n' : '') + 
             args.content;
         
-        // 写入更新后的内容
+        // Write updated content
         const contentBytes = new TextEncoder().encode(newContent);
         await vscode.workspace.fs.writeFile(fileUri, contentBytes);
         
@@ -398,12 +398,12 @@ export const createDirectoryToolDefinition = {
     interactionType: 'confirmation',
     riskLevel: 'medium',
     requiresConfirmation: true,
-    // 🚀 访问控制：创建目录是重要操作，orchestrator不应直接使用
+    // 🚀 Access control: Creating directory is an important operation, orchestrator should not use directly
     accessibleBy: [
-        // CallerType.SPECIALIST_CONTENT,            // 内容专家需要创建项目结构
-        //CallerType.SPECIALIST_PROCESS,             // 流程专家需要创建项目结构
-        CallerType.INTERNAL,                       // 内部工具（如createNewProjectFolder）
-        "project_initializer"                      // 仅Project_initializer需要创建项目结构
+        // CallerType.SPECIALIST_CONTENT,            // Content specialist needs to create project structure
+        //CallerType.SPECIALIST_PROCESS,             // Process specialist needs to create project structure
+        CallerType.INTERNAL,                       // Internal tools (like createNewProjectFolder)
+        "project_initializer"                      // Only Project_initializer needs to create project structure
     ]
 };
 

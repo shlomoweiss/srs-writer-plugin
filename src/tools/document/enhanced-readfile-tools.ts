@@ -1,10 +1,10 @@
 /**
- * Enhanced ReadMarkdownFile Tool - AI优化的Markdown文档解析器
+ * Enhanced ReadMarkdownFile Tool - AI-optimized Markdown document parser
  * 
- * 专为AI Agent设计的增强型Markdown文件读取工具
- * 支持结构化解析、多目标搜索、智能缓存等高级功能
+ * Enhanced Markdown file reading tool designed specifically for AI Agents
+ * Supports structured parsing, multi-target search, intelligent caching, and other advanced features
  * 
- * @version 2.0.0 - 完全重写，不保持向后兼容
+ * @version 2.0.0 - Complete rewrite, not backward compatible
  */
 
 import * as vscode from 'vscode';
@@ -34,12 +34,12 @@ const logger = Logger.getInstance();
 export type ParseMode = 'content' | 'structure' | 'toc' | 'full';
 
 /**
- * 目标类型：章节或关键字搜索
+ * Target type: Section or keyword search
  */
 export interface TargetRequest {
     type: 'section' | 'keyword';
     
-    // Section类型参数
+    // Section type parameters
     sid?: string;                        // section stable ID (当type为section时，必需)
     
     // Keyword类型参数
@@ -268,7 +268,7 @@ export interface WarningInfo {
 }
 
 /**
- * 目标处理结果
+ * Target processing result
  */
 export interface TargetResult {
     type: "section" | "keyword_search";
@@ -285,13 +285,13 @@ export interface TargetResult {
     matches?: KeywordMatch[];            // 匹配结果列表
     totalMatches?: number;               // 总匹配数
     
-    // 通用字段
-    error?: ErrorDetails;                // 错误详情
-    warning?: string;                    // 该目标的警告信息
+    // Common fields
+    error?: ErrorDetails;                // Error details
+    warning?: string;                    // Warning information for this target
 }
 
 /**
- * 增强型文件读取结果
+ * Enhanced file read result
  */
 export interface EnhancedReadFileResult {
     success: boolean;
@@ -307,15 +307,15 @@ export interface EnhancedReadFileResult {
     tableOfContents?: TableOfContents[];        // 内部兼容用，不在新输出中使用
     tableOfContentsTree?: TableOfContentsTreeNode[];  // 树状目录结构 (parseMode=structure/full时提供)
     tableOfContentsToCTree?: TableOfContentsToCNode[]; // ToC模式树状结构 (parseMode=toc时提供)
-    contentSummary?: ContentSummary;            // 内容摘要 (parseMode=structure时提供)
+    contentSummary?: ContentSummary;            // Content summary (provided when parseMode=structure)
     
-    // 多目标处理结果
-    results: TargetResult[];             // 各个target的处理结果
+    // Multi-target processing results
+    results: TargetResult[];             // Processing results for each target
     
-    // 元信息
-    parseTime: number;                   // 解析耗时(毫秒)
-    cacheHit: boolean;                   // 是否命中缓存
-    warnings?: WarningInfo[];            // 警告信息
+    // Metadata
+    parseTime: number;                   // Parse time (milliseconds)
+    cacheHit: boolean;                   // Whether cache was hit
+    warnings?: WarningInfo[];            // Warning information
     error?: ErrorDetails;                // 全局错误信息
 }
 
