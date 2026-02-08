@@ -101,7 +101,7 @@ use **section-relative line numbers**（1-based） for `startLine` and `endLine`
   "target": {
     "sid": "/non-functional-requirements/nfr-perf-001"
   },
-  "content": "#### NFR-PERF-001: System Response Time\n\n- **描述**: 系统必须在500ms内响应\n- **指标**: 响应时间\n- **目标值**: ≤ 500ms",
+  "content": "#### NFR-PERF-001: System Response Time\n\n- **Description**: System must respond within 500ms\n- **Metric**: Response time\n- **Target value**: ≤ 500ms",
   "summary": "Update NFR-PERF-001 with complete title and content",
   "priority": 1
 }
@@ -116,7 +116,7 @@ use **section-relative line numbers**（1-based） for `startLine` and `endLine`
       "endLine": 4
     }
   },
-  "content": "- 密码强度验证\n- 双因子认证支持\n- 生物识别登录",  // ✅ CONTENT ONLY - no title
+  "content": "- Password strength validation\n- Two-factor authentication support\n- Biometric login",  // ✅ CONTENT ONLY - no title
   "summary": "Replace lines 2-4 within the user-authentication subsection"
 }
 
@@ -130,7 +130,7 @@ use **section-relative line numbers**（1-based） for `startLine` and `endLine`
       "endLine": 3
     }
   },
-  "content": "- 管理员权限验证\n- 用户角色继承",  // ✅ CONTENT ONLY - no title
+  "content": "- Administrator permission validation\n- User role inheritance",  // ✅ CONTENT ONLY - no title
   "summary": "Insert new permission rules at line 3 within role-permissions subsection",
   "priority": 1
 }
@@ -222,7 +222,7 @@ use **section-relative line numbers**（1-based） for `startLine` and `endLine`
     "sid": "/business-rules/br-001",
     "lineRange": { "startLine": 1, "endLine": 6 }
   },
-  "content": "##### **BR-001**\n- **规则名称**: Updated rule\n- **描述**: Updated description...",  // ❌ INCLUDES TITLE!
+  "content": "##### **BR-001**\n- **Rule Name**: Updated rule\n- **Description**: Updated description...",  // ❌ INCLUDES TITLE!
   "summary": "Update BR-001 rule"
 }
 ```
@@ -230,8 +230,8 @@ use **section-relative line numbers**（1-based） for `startLine` and `endLine`
 ```
 ##### **BR-001**        ← Original title (not replaced)
 ##### **BR-001**        ← Duplicate from your content!
-- **规则名称**: Updated rule
-- **描述**: Updated description...
+- **Rule Name**: Updated rule
+- **Description**: Updated description...
 ```
 
 **✅ Correct way:**
@@ -242,7 +242,7 @@ use **section-relative line numbers**（1-based） for `startLine` and `endLine`
     "sid": "/business-rules/br-001",
     "lineRange": { "startLine": 1, "endLine": 6 }
   },
-  "content": "- **规则名称**: Updated rule\n- **描述**: Updated description...",  // ✅ CONTENT ONLY!
+  "content": "- **Rule Name**: Updated rule\n- **Description**: Updated description...",  // ✅ CONTENT ONLY!
   "summary": "Update BR-001 rule content"
 }
 ```
@@ -256,15 +256,15 @@ use **section-relative line numbers**（1-based） for `startLine` and `endLine`
   "target": {
     "sid": "/non-functional-requirements/nfr-perf-001"
   },
-  "content": "- **描述**: System must respond fast\n- **指标**: Response time",  // ❌ MISSING TITLE!
+  "content": "- **Description**: System must respond fast\n- **Metric**: Response time",  // ❌ MISSING TITLE!
   "summary": "Update NFR-PERF-001"
 }
 ```
 **Result: Title is lost!**
 ```
 (no title at all - the original title was removed but not replaced!)
-- **描述**: System must respond fast
-- **指标**: Response time
+- **Description**: System must respond fast
+- **Metric**: Response time
 ```
 
 **✅ Correct way:**
@@ -274,7 +274,7 @@ use **section-relative line numbers**（1-based） for `startLine` and `endLine`
   "target": {
     "sid": "/non-functional-requirements/nfr-perf-001"
   },
-  "content": "#### NFR-PERF-001: System Response Time\n\n- **描述**: System must respond fast\n- **指标**: Response time",  // ✅ INCLUDES TITLE!
+  "content": "#### NFR-PERF-001: System Response Time\n\n- **Description**: System must respond fast\n- **Metric**: Response time",  // ✅ INCLUDES TITLE!
   "summary": "Replace entire NFR-PERF-001 section including title"
 }
 ```
