@@ -1,14 +1,14 @@
-# 项目复杂度分级标准与SRS模版选择指南
+# Project Complexity Classification Standards and SRS Template Selection Guide
 
-    1.	判定项目类型（4 选 1）
-	•	面向用户交付（Client / Backend）
-	•	面向平台（Platform Infra / Data / Observability 等）
-	•	面向团队效率（Developer Productivity）
-	•	面向安全（Security & Compliance）
-	2.	评估复杂度（简单 / 中等 / 大型 – 按第 2 章决策树或评分表）
-	3.	查表选模版（见附录G）
+    1.	Determine Project Type (Choose 1 of 4)
+	•	User Delivery (Client / Backend)
+	•	Platform (Platform Infra / Data / Observability, etc.)
+	•	Developer Productivity
+	•	Security & Compliance
+	2.	Assess Complexity (Simple / Medium / Large – According to Chapter 2 decision tree or scoring table)
+	3.	Consult table to select template (See Appendix G)
 
-提示： 当前"面向团队效率"与"面向安全"类项目尚无专用 SRS 模版。如项目被归入这两类，请在沟通中明确 "暂无标准模版，可参考中等复杂度平台模版或自行定制"。
+Note: There are currently no dedicated SRS templates for "Developer Productivity" and "Security & Compliance" projects. If a project falls into these two categories, please clarify in communication: "No standard template available, refer to medium-complexity platform template or customize accordingly".
 
 
 ## 项目类型选择
@@ -36,463 +36,463 @@
 - 包括身份认证系统、安全审计平台、合规检查工具、风险监控系统等
 
 
-## 快速判断决策树
+## Quick Decision Tree
 
 
 ```
-开始评估项目
+Start Project Evaluation
     ↓
-Step ➊ 确定项目类型（四选一）
-├─ 直接面向最终用户？ → 面向用户交付 (User Delivery)
-├─ 为其他系统提供基础服务？ → 面向平台 (Platform)
-├─ 主要提升开发效率？ → 面向团队效率 (Developer Productivity)
-└─ 主要关注安全合规？ → 面向安全 (Security & Compliance)
+Step ➊ Determine Project Type (Choose One of Four)
+├─ Directly facing end users? → User Delivery
+├─ Providing basic services for other systems? → Platform
+├─ Mainly improving development efficiency? → Developer Productivity
+└─ Mainly focusing on security and compliance? → Security & Compliance
     ↓
-Step ➋ 评估项目复杂度
+Step ➋ Evaluate Project Complexity
     ↓
-是否有严格合规要求（金融、医疗、政府）？
-    ↓ 是 → 大型/关键系统模版
-    ↓ 否
-是否需要集成 ≥5个 外部系统？
-    ↓ 是 → 大型/关键系统模版
-    ↓ 否
-是否涉及复杂的业务流程（多部门、多审批环节）？
-    ↓ 是 → 大型/关键系统模版
-    ↓ 否
-用户角色是否 ≥4种 且权限差异大？
-    ↓ 是 → 中等复杂度模版
-    ↓ 否
-功能领域是否 ≥3个 且相互关联？
-    ↓ 是 → 中等复杂度模版
-    ↓ 否
-是否需要复杂的数据处理（报表、分析、大量计算）？
-    ↓ 是 → 中等复杂度模版
-    ↓ 否 → 简单项目模版
+Are there strict compliance requirements (finance, healthcare, government)?
+    ↓ Yes → Large/Critical System Template
+    ↓ No
+Does it require integration with ≥5 external systems?
+    ↓ Yes → Large/Critical System Template
+    ↓ No
+Does it involve complex business processes (multi-department, multi-approval stages)?
+    ↓ Yes → Large/Critical System Template
+    ↓ No
+Are there ≥4 user roles with significant permission differences?
+    ↓ Yes → Medium Complexity Template
+    ↓ No
+Are there ≥3 functional areas that are interrelated?
+    ↓ Yes → Medium Complexity Template
+    ↓ No
+Does it require complex data processing (reports, analysis, heavy computation)?
+    ↓ Yes → Medium Complexity Template
+    ↓ No → Simple Project Template
     ↓
-Step ➌ 查表选择对应模版（见附录G）
+Step ➌ Consult Table to Select Corresponding Template (See Appendix G)
 ```
 
 
 ---
 
-## 详细分级标准
+## Detailed Classification Standards
 
-### 🟢 简单项目 (Simple Project)
+### 🟢 Simple Project
 
-**核心特征：单一功能、快速交付、小团队**
+**Core Characteristics: Single Function, Fast Delivery, Small Team**
 
-#### 可观察指标（需求阶段就能确定）
-| 维度 | 标准 |
+#### Observable Indicators (Can be determined at requirements stage)
+| Dimension | Standard |
 |------|------|
-| **业务领域数量** | ≤ 2个相关领域 |
-| **用户角色数量** | ≤ 2种（如普通用户+管理员） |
-| **主要功能领域** | ≤ 2个（如展示+管理） |
-| **外部集成需求** | ≤ 1个（如单一第三方API） |
-| **数据复杂度** | 简单的CRUD操作 |
-| **业务流程复杂度** | 线性流程，少量分支 |
-| **权限控制需求** | 简单的角色区分 |
-| **界面复杂度** | 标准表单和列表页面 |
+| **Number of Business Domains** | ≤ 2 related domains |
+| **Number of User Roles** | ≤ 2 types (e.g., regular user + admin) |
+| **Main Functional Areas** | ≤ 2 areas (e.g., display + management) |
+| **External Integration Requirements** | ≤ 1 (e.g., single third-party API) |
+| **Data Complexity** | Simple CRUD operations |
+| **Business Process Complexity** | Linear process, few branches |
+| **Permission Control Requirements** | Simple role distinction |
+| **Interface Complexity** | Standard forms and list pages |
 
-#### 质性特征
-- ✅ 功能相对单一和聚焦
-- ✅ 业务流程简单直观
-- ✅ 技术栈相对标准和成熟
-- ✅ 无复杂的合规性要求
-- ✅ 用户群体相对同质
-- ✅ 数据模型简单
-- ✅ 无复杂的权限控制需求
-- ✅ 需求描述清晰，易于理解和验证
-- ✅ 需求相对稳定，预期变更较少
+#### Qualitative Characteristics
+- ✅ Relatively single and focused functionality
+- ✅ Simple and intuitive business processes
+- ✅ Relatively standard and mature tech stack
+- ✅ No complex compliance requirements
+- ✅ Relatively homogeneous user base
+- ✅ Simple data model
+- ✅ No complex permission control requirements
+- ✅ Clear requirement descriptions, easy to understand and verify
+- ✅ Requirements relatively stable, expected changes are minimal
 
-#### 典型项目示例
-- **内部工具**：员工考勤系统、简单的报表工具
-- **MVP产品**：单一功能的应用验证
-- **功能增强**：在现有系统上添加新模块
-- **小型网站**：企业官网、简单的电商店铺
-- **自动化脚本**：数据处理工具、批处理系统
+#### Typical Project Examples
+- **Internal Tools**: Employee attendance system, simple reporting tools
+- **MVP Products**: Single-function application validation
+- **Feature Enhancements**: Adding new modules to existing systems
+- **Small Websites**: Company websites, simple e-commerce stores
+- **Automation Scripts**: Data processing tools, batch processing systems
 
 ---
 
-### 🟡 中等复杂度项目 (Medium Complexity Project)
+### 🟡 Medium Complexity Project
 
-**核心特征：多模块集成、中等规模团队、标准业务流程**
+**Core Characteristics: Multi-Module Integration, Medium-Sized Team, Standard Business Processes**
 
-#### 可观察指标（需求阶段就能确定）
-| 维度 | 标准 |
+#### Observable Indicators (Can be determined at requirements stage)
+| Dimension | Standard |
 |------|------|
-| **业务领域数量** | 3-5个相关领域 |
-| **用户角色数量** | 3-6种，权限差异明显 |
-| **主要功能领域** | 3-6个相互关联的领域 |
-| **外部集成需求** | 2-4个外部系统 |
-| **数据复杂度** | 需要复杂查询、报表或分析 |
-| **业务流程复杂度** | 多步骤流程，有并行分支 |
-| **权限控制需求** | 基于角色的细粒度权限 |
-| **界面复杂度** | 需要仪表板、复杂表单 |
+| **Number of Business Domains** | 3-5 related domains |
+| **Number of User Roles** | 3-6 types, with significant permission differences |
+| **Main Functional Areas** | 3-6 interrelated areas |
+| **External Integration Requirements** | 2-4 external systems |
+| **Data Complexity** | Requires complex queries, reports, or analysis |
+| **Business Process Complexity** | Multi-step processes with parallel branches |
+| **Permission Control Requirements** | Fine-grained role-based permissions |
+| **Interface Complexity** | Requires dashboards, complex forms |
 
-#### 质性特征
-- ✅ 多个相关的功能模块
-- ✅ 需要用户权限管理
-- ✅ 涉及多种业务流程
-- ✅ 需要与几个外部系统集成
-- ✅ 有一定的性能要求
-- ✅ 数据关系相对复杂
-- ✅ 需要考虑可扩展性
-- ✅ 有基本的安全要求
-- ✅ 需求可能存在一定歧义，需要澄清过程
-- ✅ 需求可能有适度调整，需要变更管理
+#### Qualitative Characteristics
+- ✅ Multiple related functional modules
+- ✅ Requires user permission management
+- ✅ Involves various business processes
+- ✅ Requires integration with several external systems
+- ✅ Has certain performance requirements
+- ✅ Relatively complex data relationships
+- ✅ Needs to consider scalability
+- ✅ Has basic security requirements
+- ✅ Requirements may have some ambiguity, requiring clarification process
+- ✅ Requirements may need moderate adjustments, requiring change management
 
-#### 典型项目示例
-- **业务管理系统**：CRM、订单管理系统、库存管理
-- **企业应用**：人力资源管理、财务管理（非核心）
-- **电商平台**：中小型B2C/B2B平台
-- **SaaS产品**：项目管理工具、客服系统
-- **移动应用**：功能较完整的App
+#### Typical Project Examples
+- **Business Management Systems**: CRM, order management systems, inventory management
+- **Enterprise Applications**: Human resources management, financial management (non-core)
+- **E-commerce Platforms**: Small to medium-sized B2C/B2B platforms
+- **SaaS Products**: Project management tools, customer service systems
+- **Mobile Applications**: Apps with relatively complete functionality
 
 ---
 
-### 🔴 大型/关键系统项目 (Large/Critical System Project)
+### 🔴 Large/Critical System Project
 
-**核心特征：企业级系统、高合规要求、大团队协作**
+**Core Characteristics: Enterprise-Level System, High Compliance Requirements, Large Team Collaboration**
 
-#### 可观察指标（需求阶段就能确定）
-| 维度 | 标准 |
+#### Observable Indicators (Can be determined at requirements stage)
+| Dimension | Standard |
 |------|------|
-| **业务领域数量** | ≥ 6个领域或跨部门系统 |
-| **用户角色数量** | ≥ 7种，复杂权限体系 |
-| **主要功能领域** | ≥ 7个复杂关联的领域 |
-| **外部集成需求** | ≥ 5个外部系统 |
-| **数据复杂度** | 大数据量、实时处理、复杂分析 |
-| **业务流程复杂度** | 多部门协作、复杂审批链 |
-| **权限控制需求** | 企业级权限管理 |
-| **合规性要求** | 严格的行业法规要求 |
+| **Number of Business Domains** | ≥ 6 domains or cross-departmental systems |
+| **Number of User Roles** | ≥ 7 types, complex permission system |
+| **Main Functional Areas** | ≥ 7 complexly interrelated areas |
+| **External Integration Requirements** | ≥ 5 external systems |
+| **Data Complexity** | Large data volume, real-time processing, complex analysis |
+| **Business Process Complexity** | Multi-department collaboration, complex approval chains |
+| **Permission Control Requirements** | Enterprise-level permission management |
+| **Compliance Requirements** | Strict industry regulatory requirements |
 
-#### 质性特征
-- ✅ 企业核心业务系统
-- ✅ 严格的合规性要求（如SOX、GDPR、HIPAA）
-- ✅ 高可用性要求（99.9%+）
-- ✅ 复杂的安全要求
-- ✅ 国际化和多语言支持
-- ✅ 复杂的数据模型和业务规则
-- ✅ 需要详细的审计和日志
-- ✅ 涉及大量第三方系统集成
-- ✅ 高并发和大数据量处理
-- ✅ 需求往往包含大量模糊概念，需要反复澄清
-- ✅ 需求预期会频繁变更，需要严格的变更控制
+#### Qualitative Characteristics
+- ✅ Enterprise core business system
+- ✅ Strict compliance requirements (such as SOX, GDPR, HIPAA)
+- ✅ High availability requirements (99.9%+)
+- ✅ Complex security requirements
+- ✅ Internationalization and multi-language support
+- ✅ Complex data models and business rules
+- ✅ Requires detailed auditing and logging
+- ✅ Involves integration with numerous third-party systems
+- ✅ High concurrency and large data volume processing
+- ✅ Requirements often contain many vague concepts, requiring repeated clarification
+- ✅ Requirements are expected to change frequently, requiring strict change control
 
-#### 典型项目示例
-- **金融系统**：核心银行系统、交易平台、风控系统
-- **医疗系统**：电子病历系统、医院管理系统
-- **企业ERP**：SAP级别的企业资源规划系统
-- **电信系统**：计费系统、网络管理系统
-- **政府系统**：税务系统、社保系统
-
----
-
-## 边界情况处理
-
-### 情况1：指标跨越多个级别
-**原则：就高不就低**
-- 如果有任何一个关键指标（团队规模、合规要求、外部集成）达到更高级别，选择更高级别的模版
-- 理由：复杂度往往是非线性增长的
-
-### 情况2：项目分阶段交付
-**原则：按最终目标选择**
-- 如果最终系统是大型系统，但分阶段交付，选择大型系统模版
-- 在各阶段文档中标注当前阶段的范围
-- 理由：保证文档的一致性和前瞻性
-
-### 情况3：现有系统的功能增强
-**评估原则：**
-- 如果增强功能相对独立 → 按增强部分的复杂度选择
-- 如果需要大幅修改现有架构 → 按整个系统的复杂度选择
-
-
-### 情况4：项目类型升级
-**处理原则：**
-- 如果项目在开发过程中从一种类型演化为另一种类型（如Platform → Security），需要重新评估模版适用性
-- **Platform → Security/Compliance**：建议手动创建SRS模版，重点关注安全需求和合规条款
-- **User Delivery → Platform**：可沿用原模版，但需增加平台特有的NFR（如SLA、监控要求）
-- **任何类型 → Developer Productivity**：当前无专用模版，建议参考《通用需求文档骨架》
-- 类型变更时应在文档版本历史中详细记录原因和影响范围
-
+#### Typical Project Examples
+- **Financial Systems**: Core banking systems, trading platforms, risk control systems
+- **Healthcare Systems**: Electronic medical record systems, hospital management systems
+- **Enterprise ERP**: SAP-level enterprise resource planning systems
+- **Telecom Systems**: Billing systems, network management systems
+- **Government Systems**: Tax systems, social security systems
 
 ---
 
-## 特殊考虑因素
+## Boundary Case Handling
 
-### 🚨 强制使用大型/关键系统模版的情况
-无论其他指标如何，以下情况必须使用完整版模版：
+### Case 1: Indicators Span Multiple Levels
+**Principle: Go Higher, Not Lower**
+- If any key indicator (team size, compliance requirements, external integration) reaches a higher level, choose the higher-level template
+- Rationale: Complexity often grows non-linearly
 
-1. **合规性要求**
-   - 金融行业监管要求（如SOX、Basel III）
-   - 医疗行业合规（如HIPAA、FDA）
-   - 数据保护法规（如GDPR、CCPA）
+### Case 2: Phased Project Delivery
+**Principle: Choose Based on Final Goal**
+- If the final system is a large system but delivered in phases, choose the large system template
+- Mark the scope of the current phase in each phase's documentation
+- Rationale: Ensure consistency and foresight in documentation
 
-2. **安全等级要求**
-   - 涉及支付处理
-   - 处理个人敏感信息
-   - 关键基础设施
+### Case 3: Feature Enhancements to Existing Systems
+**Evaluation Principles:**
+- If the enhancement is relatively independent → Choose based on the complexity of the enhancement
+- If significant modification to existing architecture is needed → Choose based on the complexity of the entire system
 
-3. **业务关键性**
-   - 系统故障会导致业务停摆
-   - 涉及大额资金处理
-   - 影响大量用户的核心服务
 
-### ⚡ 需求变更频繁的项目特殊考虑
-以下情况建议至少选择中等复杂度模版，即使其他指标显示为简单项目：
+### Case 4: Project Type Upgrade
+**Handling Principles:**
+- If a project evolves from one type to another during development (e.g., Platform → Security), the template applicability needs to be re-evaluated
+- **Platform → Security/Compliance**: Recommend manually creating an SRS template, focusing on security requirements and compliance clauses
+- **User Delivery → Platform**: Can continue using the original template, but need to add platform-specific NFRs (such as SLA, monitoring requirements)
+- **Any Type → Developer Productivity**: Currently no dedicated template, recommend referring to the "General Requirements Document Framework"
+- When type changes occur, the reasons and impact scope should be recorded in detail in the document version history
 
-1. **探索性项目**：产品方向不确定，需求预期频繁大幅调整
-2. **快速迭代项目**：需要根据用户反馈快速pivot功能
-3. **跨部门协作项目**：涉及多个业务部门，需求容易发生冲突和变更
-
-**原因：** 这类项目需要更严格的需求管理和变更追踪机制，简单模版可能无法提供足够的文档支撑。
 
 ---
 
-## 实用检查清单
+## Special Considerations
 
-### 团队使用步骤：
-1. **收集项目信息**（5分钟）
-2. **填写量化指标表**（5分钟）
-3. **检查质性特征**
-4. **进行MVP项目识别** (3分钟)
-5. **考虑特殊因素**（5分钟）
-6. **选择对应模版**（1分钟）
-7. **确定MVP适配策略** (2分钟)
+### 🚨 Cases Requiring Mandatory Use of Large/Critical System Template
+Regardless of other indicators, the following cases must use the full template:
 
-### 快速评估表格（基于需求分析结果）
+1. **Compliance Requirements**
+   - Financial industry regulatory requirements (such as SOX, Basel III)
+   - Healthcare industry compliance (such as HIPAA, FDA)
+   - Data protection regulations (such as GDPR, CCPA)
 
-| 评估维度 | 我们的项目情况 | 得分 |
+2. **Security Level Requirements**
+   - Involves payment processing
+   - Handles personal sensitive information
+   - Critical infrastructure
+
+3. **Business Criticality**
+   - System failure would lead to business shutdown
+   - Involves large-scale financial processing
+   - Core services affecting a large number of users
+
+### ⚡ Special Considerations for Projects with Frequent Requirement Changes
+The following cases recommend choosing at least a medium complexity template, even if other indicators suggest a simple project:
+
+1. **Exploratory Projects**: Product direction is uncertain, requirements are expected to undergo frequent major adjustments
+2. **Rapid Iteration Projects**: Need to quickly pivot features based on user feedback
+3. **Cross-Department Collaboration Projects**: Involves multiple business departments, requirements are prone to conflicts and changes
+
+**Rationale:** These types of projects require stricter requirements management and change tracking mechanisms; simple templates may not provide sufficient documentation support.
+
+---
+
+## Practical Checklist
+
+### Team Usage Steps:
+1. **Collect Project Information** (5 minutes)
+2. **Fill Out Quantitative Indicator Table** (5 minutes)
+3. **Check Qualitative Characteristics**
+4. **Conduct MVP Project Identification** (3 minutes)
+5. **Consider Special Factors** (5 minutes)
+6. **Select Corresponding Template** (1 minute)
+7. **Determine MVP Adaptation Strategy** (2 minutes)
+
+### Quick Evaluation Table (Based on Requirements Analysis Results)
+
+| Evaluation Dimension | Our Project Status | Score |
 |----------|----------------|------|
-| **业务领域数量** | ___ 个业务领域 | 1-2个(1分) / 3-5个(2分) / 6+个(3分) |
-| **用户角色类型** | ___ 种用户角色 | ≤2种(1分) / 3-6种(2分) / 7+种(3分) |
-| **外部系统集成** | ___ 个外部系统 | ≤1个(1分) / 2-4个(2分) / 5+个(3分) |
-| **业务流程复杂度** | 描述主要流程特点 | 简单线性(1分) / 多步骤分支(2分) / 跨部门协作(3分) |
-| **数据处理复杂度** | 描述数据处理需求 | 简单CRUD(1分) / 报表分析(2分) / 大数据实时(3分) |
-| **需求明确性** | 需求描述的清晰程度 | 清晰明确(1分) / 部分歧义待澄清(2分) / 大量模糊概念(3分) |
-| **需求稳定性预期** | 预期的需求变更频率 | 相对稳定(1分) / 适度调整(2分) / 频繁大幅变更(3分) |
-| **合规性要求** | 是否有行业合规要求 | 无(0分) / 一般(1分) / 严格(3分) |
+| **Number of Business Domains** | ___ business domains | 1-2(1 point) / 3-5(2 points) / 6+(3 points) |
+| **User Role Types** | ___ user roles | ≤2 types(1 point) / 3-6 types(2 points) / 7+ types(3 points) |
+| **External System Integration** | ___ external systems | ≤1(1 point) / 2-4(2 points) / 5+(3 points) |
+| **Business Process Complexity** | Describe main process characteristics | Simple linear(1 point) / Multi-step branches(2 points) / Cross-department collaboration(3 points) |
+| **Data Processing Complexity** | Describe data processing requirements | Simple CRUD(1 point) / Reporting & analysis(2 points) / Big data real-time(3 points) |
+| **Requirement Clarity** | Clarity level of requirement description | Clear & explicit(1 point) / Partial ambiguity to clarify(2 points) / Many vague concepts(3 points) |
+| **Expected Requirement Stability** | Expected frequency of requirement changes | Relatively stable(1 point) / Moderate adjustment(2 points) / Frequent major changes(3 points) |
+| **Compliance Requirements** | Any industry compliance requirements | None(0 points) / General(1 point) / Strict(3 points) |
 
-**总分计算：**
-- **8-11分**：简单项目模版
-- **12-16分**：中等复杂度模版  
-- **17-24分**：大型/关键系统模版
+**Total Score Calculation:**
+- **8-11 points**: Simple Project Template
+- **12-16 points**: Medium Complexity Template  
+- **17-24 points**: Large/Critical System Template
 
-**→ 根据以上评估，推荐使用：[ ] 简单  [ ] 中等  [ ] 复杂 模版**
+**→ Based on the above evaluation, recommend using: [ ] Simple  [ ] Medium  [ ] Complex Template**
 
-然后进行是否应用MVP规则的判断
+Then proceed to determine whether to apply MVP rules
 
-MVP识别快速检查表
-回答以下问题进行MVP识别：
+MVP Identification Quick Checklist
+Answer the following questions for MVP identification:
 
-| 检查项 | 问题 | 答案 |
+| Check Item | Question | Answer |
 |--------|------|------|
-| **时间压力** | 开发周期是否≤4周？是否有紧急deadline？ | 是/否 |
-| **资源限制** | 团队规模是否≤3人？预算是否严格受限？ | 是/否 |
-| **目标特征** | 是否明确提及"验证"、"原型"、"MVP"？ | 是/否 |
-| **功能范围** | 是否明确限定为"核心功能"、"最小版本"？ | 是/否 |
+| **Time Pressure** | Is development cycle ≤4 weeks? Is there an urgent deadline? | Yes/No |
+| **Resource Constraints** | Is team size ≤3 people? Is budget strictly limited? | Yes/No |
+| **Objective Characteristics** | Is there explicit mention of "validation", "prototype", "MVP"? | Yes/No |
+| **Functional Scope** | Is it explicitly limited to "core features", "minimum version"? | Yes/No |
 
-判定结果：
+Determination Result:
 
-任意一项为"是" → 建议标记为MVP项目
-多项为"是" → 强烈建议标记为MVP项目并应用适配策略
-**→ MVP项目判定：[ ] 是  [ ] 否**
+Any one item is "Yes" → Recommend marking as MVP project
+Multiple items are "Yes" → Strongly recommend marking as MVP project and applying adaptation strategy
+**→ MVP Project Determination: [ ] Yes  [ ] No**
 
 ---
 
-## MVP项目识别与适配
-### MVP项目识别标准
-以下任一条件满足，即可识别为MVP项目：
-#### 时间约束指标
+## MVP Project Identification and Adaptation
+### MVP Project Identification Criteria
+An MVP project can be identified if any of the following conditions are met:
+#### Time Constraint Indicators
 
-开发周期 ≤ 4周
-上线时间有明确且紧迫的deadline（如演示、发布会、展会）
-明确表达"快速验证"、"原型"、"实验"、"概念验证"等意图
+Development cycle ≤ 4 weeks
+Launch time has a clear and urgent deadline (such as demo, release event, exhibition)
+Explicitly expresses intentions such as "rapid validation", "prototype", "experiment", "proof of concept"
 
-#### 资源约束指标
+#### Resource Constraint Indicators
 
-开发团队 ≤ 3人
-预算极其有限或明确的成本约束
-明确的资源限制（如学习项目、兼职开发、个人项目）
+Development team ≤ 3 people
+Budget is extremely limited or has explicit cost constraints
+Clear resource limitations (such as learning project, part-time development, personal project)
 
-#### 目标导向指标
+#### Goal-Oriented Indicators
 
-- 明确表达为"最小可行产品"、"MVP"、"原型验证"
-- 核心目标是"验证假设"、"测试市场"、"获取用户反馈"
-- 功能范围明确限定为"核心流程"、"最基本功能"
-- 明确提及"后续会扩展"、"先做一个简单版本"
+- Explicitly described as "Minimum Viable Product", "MVP", "prototype validation"
+- Core objective is "validate hypothesis", "test market", "obtain user feedback"
+- Functional scope is explicitly limited to "core process", "most basic features"
+- Explicitly mentions "will expand later", "make a simple version first"
 
-### MVP适配策略
-✅ 保持完整详细的部分
-以下内容不因MVP而降低要求：
+### MVP Adaptation Strategy
+✅ Parts to Keep Complete and Detailed
+The following content should not have reduced requirements due to MVP:
 
-1. 核心功能需求（FR）详细程度
+1. Core Functional Requirements (FR) Detail Level
 
-    - 即使是MVP，复杂功能仍需详细描述
-    - 依赖多的集成仍需完整分析
-    - 业务逻辑复杂度如实反映
+    - Even for MVP, complex functions still need detailed description
+    - Integrations with many dependencies still need complete analysis
+    - Business logic complexity should be reflected truthfully
 
-2. 关键非功能需求（NFR）
+2. Key Non-Functional Requirements (NFR)
 
-    - 安全基线要求不能降低
-    - 核心性能指标需明确定义
-    - 关键集成的可靠性要求
-
-
-3. 风险控制要求
-
-    - 数据安全和隐私保护
-    - 关键业务流程的准确性
-    - 必要的错误处理和边界检查
+    - Security baseline requirements cannot be lowered
+    - Core performance indicators need clear definition
+    - Reliability requirements for key integrations
 
 
+3. Risk Control Requirements
 
-📉 可以适当简化的部分
-以下章节在MVP模式下可以简化处理：
-
-1. 前瞻性规划章节
-
-    - 演进规划/未来展望 → 简化为基本方向说明
-    - 扩展性架构设计 → 标注"MVP阶段可接受技术债务"
-    - 国际化/多语言支持 → 除非核心需求，否则可暂缓
-
-
-2. 企业级治理要求
-
-    - 详细审计日志 → 简化为基本操作记录
-    - 复杂权限矩阵 → 简化为基本角色权限
-    - 数据生命周期管理 → 简化为基本备份策略
-    - 详细合规要求 → 保持基本合规，详细实施可后期完善
-
-
-3. 精细化用户体验
-
-    - 详细用户旅程映射 → 聚焦核心流程验证
-    - 细粒度UI/UX规范 → 可接受原型级别界面
-    - 复杂交互设计 → 优先功能可用性
-
-
-4. 运维管理要求
-
-    - 详细监控告警策略 → 简化为基本监控
-    - 自动化运维流程 → 可接受手动运维
-    - 灾备恢复方案 → 简化为基本备份
-    - 容量规划细节 → 按当前需求配置
+    - Data security and privacy protection
+    - Accuracy of critical business processes
+    - Necessary error handling and boundary checks
 
 
 
-⚖️ 质量标准调整原则
+📉 Parts That Can Be Appropriately Simplified
+The following sections can be simplified in MVP mode:
 
-1. 性能要求适度放宽
+1. Forward-Looking Planning Sections
 
-    - 响应时间：5秒内可接受（而非1秒）
-    - 并发用户：按实际预期设定（而非过度设计）
-    - 可用性：95%+可接受（而非99.9%）
-
-
-2. 验收标准简化
-
-    - 重点关注"核心价值验证"而非"功能完整性"
-    - 边界情况处理可以更宽松
-    - 错误处理重点保证主流程
+    - Evolution planning/future outlook → Simplified to basic direction description
+    - Extensibility architecture design → Mark as "technical debt acceptable in MVP stage"
+    - Internationalization/multi-language support → Can be postponed unless core requirement
 
 
-3. 文档要求调整
+2. Enterprise-Level Governance Requirements
 
-    - 用户手册可以是基本使用说明
-    - 运维文档可以是简化版本
-    - API文档重点覆盖核心接口
+    - Detailed audit logs → Simplified to basic operation records
+    - Complex permission matrix → Simplified to basic role permissions
+    - Data lifecycle management → Simplified to basic backup strategy
+    - Detailed compliance requirements → Maintain basic compliance, detailed implementation can be improved later
+
+
+3. Refined User Experience
+
+    - Detailed user journey mapping → Focus on core process validation
+    - Fine-grained UI/UX specifications → Prototype-level interface acceptable
+    - Complex interaction design → Prioritize functional usability
+
+
+4. Operations Management Requirements
+
+    - Detailed monitoring and alerting strategy → Simplified to basic monitoring
+    - Automated operations processes → Manual operations acceptable
+    - Disaster recovery plan → Simplified to basic backup
+    - Capacity planning details → Configure according to current needs
 
 
 
-MVP判定决策记录格式
-当项目被识别为MVP时，在 classification_decision.md 中应记录：
+⚖️ Quality Standard Adjustment Principles
+
+1. Performance Requirements Moderately Relaxed
+
+    - Response time: Within 5 seconds acceptable (rather than 1 second)
+    - Concurrent users: Set according to actual expectations (rather than over-design)
+    - Availability: 95%+ acceptable (rather than 99.9%)
+
+
+2. Acceptance Criteria Simplified
+
+    - Focus on "core value validation" rather than "feature completeness"
+    - Boundary case handling can be more lenient
+    - Error handling focuses on main process
+
+
+3. Documentation Requirements Adjusted
+
+    - User manual can be basic usage instructions
+    - Operations documentation can be simplified version
+    - API documentation focuses on core interfaces
+
+
+
+MVP Determination Decision Record Format
+When a project is identified as MVP, record in classification_decision.md:
 
 ```markdown
 
-## MVP状态判定
-**是否MVP项目**: 是
-**MVP判定依据**: 
-时间约束：[具体描述，如"需要在2周内完成demo"]
-资源约束：[具体描述，如"团队只有2名开发人员"]
-目标导向：[具体描述，如"主要用于验证商业模式假设"]                                              
+## MVP Status Determination
+**Is MVP Project**: Yes
+**MVP Determination Basis**: 
+Time Constraints: [Specific description, e.g., "Need to complete demo within 2 weeks"]
+Resource Constraints: [Specific description, e.g., "Team has only 2 developers"]
+Goal-Oriented: [Specific description, e.g., "Mainly used to validate business model hypothesis"]                                              
 
-## MVP适配策略
-**简化章节**: [列出在此项目中可以简化的具体章节]
-**保持详细章节**: [列出必须保持详细的关键章节]
-**质量标准调整**: [列出调整的具体标准，如性能要求等]
+## MVP Adaptation Strategy
+**Simplified Sections**: [List specific sections that can be simplified in this project]
+**Detailed Sections to Maintain**: [List key sections that must remain detailed]
+**Quality Standard Adjustments**: [List specific adjusted standards, such as performance requirements]
 ```
 
 ---
 
-## 模版升级路径
+## Template Upgrade Path
 
-项目在开发过程中如果复杂度发生变化，可以按以下方式处理：
+If complexity changes during project development, it can be handled as follows:
 
-### 升级路径：
-- **简单 → 中等**：保留原有内容，增加NFR分类和详细章节
-- **中等 → 复杂**：扩展合规性、国际化等企业级要求
-- **简单 → 复杂**：建议重写，但可以复用核心功能需求部分
+### Upgrade Paths:
+- **Simple → Medium**: Keep original content, add NFR classification and detailed sections
+- **Medium → Complex**: Expand compliance, internationalization, and other enterprise-level requirements
+- **Simple → Complex**: Recommend rewriting, but can reuse core functional requirements part
 
-### 版本管理：
-- 升级时在文档控制信息中记录模版变更原因
-- 保持需求ID的连续性和一致性
+### Version Management:
+- Record template change reasons in document control information during upgrade
+- Maintain continuity and consistency of requirement IDs
 
 ---
 
 
-## 附录G — '项目类型 × 复杂度' 模版速查表
+## Appendix G — 'Project Type × Complexity' Template Quick Reference Table
 
-| 项目类型 \ 复杂度 | 🟢 简单 | 🟡 中等 | 🔴 大型 |
+| Project Type \ Complexity | 🟢 Simple | 🟡 Medium | 🔴 Large |
 |------------------|--------|--------|--------|
-| **面向用户交付<br/>(User Delivery)** | .cursor/rules/srs-template/SmallSizeProject_for_User.md | .cursor/rules/srs-template/MidSizeProject_for_User.md | .cursor/rules/srs-template/ComplexProject_for_User.md |
-| **面向平台<br/>(Platform)** | .cursor/rules/srs-template/SmallSizeProject_for_Platform.md | .cursor/rules/srs-template/MidSizeProject_for_Platform.md | .cursor/rules/srs-template/ComplexProject_for_Platform.md |
-| **面向团队效率<br/>(Developer Productivity)** | ⚠ 无模板 | ⚠ 无模板 | ⚠ 无模板 |
-| **面向安全<br/>(Security & Compliance)** | ⚠ 无模板 | ⚠ 无模板 | ⚠ 无模板 |
+| **User Delivery** | .cursor/rules/srs-template/SmallSizeProject_for_User.md | .cursor/rules/srs-template/MidSizeProject_for_User.md | .cursor/rules/srs-template/ComplexProject_for_User.md |
+| **Platform** | .cursor/rules/srs-template/SmallSizeProject_for_Platform.md | .cursor/rules/srs-template/MidSizeProject_for_Platform.md | .cursor/rules/srs-template/ComplexProject_for_Platform.md |
+| **Developer Productivity** | ⚠ No Template | ⚠ No Template | ⚠ No Template |
+| **Security & Compliance** | ⚠ No Template | ⚠ No Template | ⚠ No Template |
 
-### 模版说明
+### Template Descriptions
 
-#### 面向用户交付 (User Delivery) 模版
-- **.cursor/rules/srs-template/SmallSizeProject_for_User.md**：适用于简单的用户产品，重点关注核心功能和基本用户体验
-- **.cursor/rules/srs-template/MidSizeProject_for_User.md**：适用于功能较完整的用户产品，包含用户权限管理和业务流程
-- **.cursor/rules/srs-template/ComplexProject_for_User.md**：适用于大型用户产品，包含完整的用户生命周期管理和复杂业务逻辑
+#### User Delivery Templates
+- **.cursor/rules/srs-template/SmallSizeProject_for_User.md**: Suitable for simple user products, focusing on core features and basic user experience
+- **.cursor/rules/srs-template/MidSizeProject_for_User.md**: Suitable for user products with relatively complete functionality, including user permission management and business processes
+- **.cursor/rules/srs-template/ComplexProject_for_User.md**: Suitable for large-scale user products, including complete user lifecycle management and complex business logic
 
-#### 面向平台 (Platform) 模版
-- **.cursor/rules/srs-template/SmallSizeProject_for_Platform.md**：适用于简单的基础服务，重点关注基本功能和稳定性
-- **.cursor/rules/srs-template/MidSizeProject_for_Platform.md**：适用于中型平台服务，包含监控、运维和扩展性要求
-- **.cursor/rules/srs-template/ComplexProject_for_Platform.md**：适用于企业级平台，包含完整的SLA、灾备和治理要求
+#### Platform Templates
+- **.cursor/rules/srs-template/SmallSizeProject_for_Platform.md**: Suitable for simple infrastructure services, focusing on basic functionality and stability
+- **.cursor/rules/srs-template/MidSizeProject_for_Platform.md**: Suitable for medium-sized platform services, including monitoring, operations, and scalability requirements
+- **.cursor/rules/srs-template/ComplexProject_for_Platform.md**: Suitable for enterprise-level platforms, including complete SLA, disaster recovery, and governance requirements
 
-#### 暂无模版类型处理
-对于标记为"⚠ 无模板"的项目类型：
+#### Handling Types Without Templates
+For project types marked as "⚠ No Template":
 
-> **暂未提供对应 SRS 模版，请联系架构团队或参考《通用需求文档骨架》自行编制。**
+> **No corresponding SRS template is currently provided. Please contact the architecture team or refer to the "General Requirements Document Framework" to create your own.**
 
-**建议处理方式：**
-- **面向团队效率项目**：可参考 .cursor/rules/srs-template/MidSizeProject_for_User.md 或 .cursor/rules/srs-template/MidSizeProject_for_Platform.md，重点关注工具易用性和集成要求
-- **面向安全项目**：可参考 .cursor/rules/srs-template/ComplexProject_for_User.md 或 .cursor/rules/srs-template/ComplexProject_for_Platform.md 作为基础，额外增加安全合规章节
-- **混合类型项目**：选择主要类型对应的模版，在需求分析阶段补充其他类型的特殊要求
+**Recommended Approaches:**
+- **Developer Productivity Projects**: Can refer to .cursor/rules/srs-template/MidSizeProject_for_User.md or .cursor/rules/srs-template/MidSizeProject_for_Platform.md, focusing on tool usability and integration requirements
+- **Security Projects**: Can refer to .cursor/rules/srs-template/ComplexProject_for_User.md or .cursor/rules/srs-template/ComplexProject_for_Platform.md as a foundation, additionally adding security compliance sections
+- **Hybrid Type Projects**: Choose the template corresponding to the primary type, and supplement with special requirements of other types during requirements analysis phase
 
 ---
 
-## 🚨 重要：输出格式要求
+## 🚨 Important: Output Format Requirements
 
-**ComplexityClassification specialist必须严格按照以下JSON格式输出：**
+**ComplexityClassification specialist must strictly output in the following JSON format:**
 
 ```json
 {
   "requires_file_editing": false,
-  "content": "## 项目复杂度分析报告\n\n### 项目类型识别\n基于您提供的需求描述，该项目属于：**面向用户交付 (User Delivery)**\n\n### 复杂度评估\n根据以下关键指标分析：\n- 业务领域数量：2个（用户管理、内容展示）\n- 用户角色类型：3种（普通用户、管理员、访客）\n- 外部系统集成：1个（第三方认证）\n- 业务流程复杂度：中等（多步骤注册流程）\n\n**评估结果：中等复杂度项目**\n\n### 推荐模版\n建议使用：`.cursor/rules/srs-template/MidSizeProject_for_User.md`\n\n### 特殊考虑\n- 无特殊合规要求\n- 需求相对稳定\n- 建议关注用户体验设计",
+  "content": "## Project Complexity Analysis Report\n\n### Project Type Identification\nBased on your requirement description, this project belongs to: **User Delivery**\n\n### Complexity Evaluation\nBased on the following key indicator analysis:\n- Number of business domains: 2 (user management, content display)\n- User role types: 3 types (regular user, administrator, visitor)\n- External system integration: 1 (third-party authentication)\n- Business process complexity: Medium (multi-step registration process)\n\n**Evaluation Result: Medium Complexity Project**\n\n### Recommended Template\nRecommend using: `.cursor/rules/srs-template/MidSizeProject_for_User.md`\n\n### Special Considerations\n- No special compliance requirements\n- Requirements relatively stable\n- Recommend focusing on user experience design",
   "structuredData": {
     "type": "ComplexityClassification",
     "data": {
       "projectType": {
         "category": "User Delivery",
-        "description": "面向用户交付",
-        "characteristics": ["直接面向最终用户", "关注用户体验", "业务价值交付"]
+        "description": "User Delivery",
+        "characteristics": ["Directly facing end users", "Focus on user experience", "Business value delivery"]
       },
       "complexityLevel": {
         "level": "Medium",
-        "description": "中等复杂度",
+        "description": "Medium Complexity",
         "score": 14,
         "breakdown": {
           "businessDomains": {"count": 2, "score": 1},
@@ -507,23 +507,23 @@ MVP判定决策记录格式
       },
       "recommendedTemplate": {
         "path": ".cursor/rules/srs-template/MidSizeProject_for_User.md",
-        "rationale": "适合功能较完整的用户产品，包含用户权限管理和业务流程"
+        "rationale": "Suitable for user products with relatively complete functionality, including user permission management and business processes"
       },
       "isMVP": false,
       "mvpAnalysis": {
         "timeConstraints": false,
         "resourceConstraints": false,
         "goalOriented": false,
-        "reasoning": "项目未显示明显的MVP特征"
+        "reasoning": "Project does not show obvious MVP characteristics"
       },
       "specialConsiderations": [
-        "需求相对稳定，预期变更较少",
-        "无特殊合规性要求",
-        "建议重点关注用户体验设计"
+        "Requirements relatively stable, expected changes are minimal",
+        "No special compliance requirements",
+        "Recommend focusing on user experience design"
       ],
       "riskFactors": [
-        "用户角色权限需要仔细设计",
-        "外部集成的稳定性需要考虑"
+        "User role permissions need careful design",
+        "External integration stability needs consideration"
       ]
     },
     "confidence": 0.87
@@ -535,23 +535,23 @@ MVP判定决策记录格式
     "estimatedReadingTime": "2 minutes"
   },
   "qualityAssessment": {
-    "strengths": ["清晰的分类逻辑", "量化的评估标准", "明确的模版推荐"],
-    "weaknesses": ["可能需要更多项目细节确认"],
+    "strengths": ["Clear classification logic", "Quantified evaluation standards", "Clear template recommendations"],
+    "weaknesses": ["May need more project detail confirmation"],
     "confidenceLevel": 87
   },
   "nextSteps": [
-    "使用推荐的模版开始编写SRS文档",
-    "如项目需求有重大变更，请重新评估复杂度",
-    "在文档中记录分类决策以便后续参考"
+    "Use the recommended template to start writing SRS documentation",
+    "If project requirements have significant changes, please re-evaluate complexity",
+    "Record classification decisions in documentation for future reference"
   ]
 }
 ```
 
-### 🔑 关键要求：
-1. **requires_file_editing必须设为false**，因为仅提供分析和建议，不进行文件操作
-2. **不需要edit_instructions和target_file字段**
-3. **structuredData.type必须为"ComplexityClassification"**
-4. **必须明确指出项目类型、复杂度级别和推荐模版**
-5. **必须包含评分细节和决策依据**
-6. **需要评估是否为MVP项目**
-7. **content字段应包含完整的分析报告**
+### 🔑 Key Requirements:
+1. **requires_file_editing must be set to false**, as it only provides analysis and recommendations, no file operations
+2. **edit_instructions and target_file fields are not needed**
+3. **structuredData.type must be "ComplexityClassification"**
+4. **Must clearly indicate project type, complexity level, and recommended template**
+5. **Must include scoring details and decision basis**
+6. **Need to evaluate whether it's an MVP project**
+7. **content field should contain a complete analysis report**
